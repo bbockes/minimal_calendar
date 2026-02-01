@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Calendar 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #fff;
+            color: #000;
+            font-size: 11px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb a {
+            color: #0066cc;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Year View - Linear horizontal layout */
+        .year-view {
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .year-view .month-column {
+            flex: 0 0 auto;
+            width: 105px;
+            border-right: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .year-view .month-column:last-child {
+            border-right: none;
+        }
+
+        .year-view .month-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+            text-transform: uppercase;
+        }
+
+        .year-view .day-row {
+            display: flex;
+            border-bottom: 1px solid #e5e5e5;
+            min-height: 18px;
+        }
+
+        .year-view .day-row:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+
+        .year-view .day-number {
+            width: 20px;
+            padding: 2px 5px;
+            font-size: 10px;
+            text-align: left;
+        }
+
+        .year-view .day-name {
+            flex: 1;
+            padding: 2px 5px;
+            font-size: 9px;
+            color: #888;
+            text-align: left;
+        }
+
+        /* Month View */
+        .month-view {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .month-view .month-container {
+            border: 1px solid #ddd;
+        }
+
+        .month-view .month-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .month-view .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .month-view .day-label {
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            border-right: 1px solid #e5e5e5;
+        }
+
+        .month-view .day-label:last-child {
+            border-right: none;
+        }
+
+        .month-view .day {
+            min-height: 60px;
+            padding: 5px;
+            border-bottom: 1px solid #e5e5e5;
+            border-right: 1px solid #e5e5e5;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 11px;
+        }
+
+        .month-view .day:nth-child(7n) {
+            border-right: none;
+        }
+
+        .month-view .day:hover {
+            background-color: #f0f0f0;
+        }
+
+        .month-view .day.empty {
+            cursor: default;
+            background-color: #fafafa;
+        }
+
+        .month-view .day.empty:hover {
+            background-color: #fafafa;
+        }
+
+        /* Week View */
+        .week-view {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .week-view .week-container {
+            border: 1px solid #ddd;
+        }
+
+        .week-view .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .week-view .day-label {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            border-right: 1px solid #e5e5e5;
+        }
+
+        .week-view .day-label:last-child {
+            border-right: none;
+        }
+
+        .week-view .day {
+            min-height: 150px;
+            padding: 10px;
+            border-right: 1px solid #e5e5e5;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+
+        .week-view .day:nth-child(7n) {
+            border-right: none;
+        }
+
+        .week-view .day:hover {
+            background-color: #f0f0f0;
+        }
+
+        .week-view .day.empty {
+            cursor: default;
+            background-color: #fafafa;
+        }
+
+        .week-view .day.empty:hover {
+            background-color: #fafafa;
+        }
+
+        /* Day View */
+        .day-view {
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .day-view .day-number {
+            font-size: 96px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .day-view .day-info {
+            font-size: 20px;
+            color: #666;
+        }
+
+        /* Navigation */
+        .navigation {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 8px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .nav-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-btn:disabled:hover {
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="title">2026</h1>
+        <div class="breadcrumb" id="breadcrumb"></div>
+    </div>
+    
+    <div class="navigation" id="navigation" style="display: none;">
+        <button class="nav-btn" id="prevBtn">← Previous</button>
+        <button class="nav-btn" id="nextBtn">Next →</button>
+    </div>
+    
+    <div id="calendar"></div>
+
+    <script>
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthAbbr = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                          'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayAbbr = ['SU', 'M', 'T', 'W', 'TH', 'F', 'SA'];
+        
+        let currentView = 'year';
+        let currentMonth = 0;
+        let currentWeek = 0;
+        let currentDay = null;
+
+        function getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        function getFirstDayOfMonth(year, month) {
+            return new Date(year, month, 1).getDay();
+        }
+
+        function renderYearView() {
+            currentView = 'year';
+            document.getElementById('title').textContent = '2026';
+            document.getElementById('breadcrumb').innerHTML = '';
+            document.getElementById('navigation').style.display = 'none';
+            
+            const calendar = document.getElementById('calendar');
+            calendar.className = 'year-view';
+            calendar.innerHTML = '';
+
+            // Create 12 month columns
+            for (let month = 0; month < 12; month++) {
+                const monthCol = document.createElement('div');
+                monthCol.className = 'month-column';
+                monthCol.onclick = () => renderMonthView(month);
+
+                const header = document.createElement('div');
+                header.className = 'month-header';
+                header.textContent = monthAbbr[month];
+                monthCol.appendChild(header);
+
+                const daysInMonth = getDaysInMonth(2026, month);
+                const firstDay = getFirstDayOfMonth(2026, month);
+
+                // Create rows for each day
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayRow = document.createElement('div');
+                    dayRow.className = 'day-row';
+
+                    const dayNum = document.createElement('div');
+                    dayNum.className = 'day-number';
+                    dayNum.textContent = day;
+                    dayRow.appendChild(dayNum);
+
+                    const dayName = document.createElement('div');
+                    dayName.className = 'day-name';
+                    const date = new Date(2026, month, day);
+                    dayName.textContent = dayAbbr[date.getDay()];
+                    dayRow.appendChild(dayName);
+
+                    monthCol.appendChild(dayRow);
+                }
+
+                calendar.appendChild(monthCol);
+            }
+        }
+
+        function renderMonthView(month) {
+            currentView = 'month';
+            currentMonth = month;
+            document.getElementById('title').textContent = monthNames[month] + ' 2026';
+            document.getElementById('breadcrumb').innerHTML = '<a onclick="renderYearView()">2026</a> > ' + monthNames[month];
+            document.getElementById('navigation').style.display = 'block';
+            updateNavButtons();
+
+            const calendar = document.getElementById('calendar');
+            calendar.className = 'month-view';
+            calendar.innerHTML = '';
+
+            const container = document.createElement('div');
+            container.className = 'month-container';
+
+            const header = document.createElement('div');
+            header.className = 'month-header';
+            header.textContent = monthNames[month];
+            container.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = 'calendar-grid';
+
+            // Day labels
+            dayNames.forEach(day => {
+                const label = document.createElement('div');
+                label.className = 'day-label';
+                label.textContent = day;
+                grid.appendChild(label);
+            });
+
+            const firstDay = getFirstDayOfMonth(2026, month);
+            const daysInMonth = getDaysInMonth(2026, month);
+
+            // Empty cells before first day
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'day empty';
+                grid.appendChild(emptyDay);
+            }
+
+            // Days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+                dayDiv.textContent = day;
+                const currentDayNum = day;
+                dayDiv.onclick = (e) => {
+                    e.stopPropagation();
+                    const weekNum = Math.floor((firstDay + currentDayNum - 1) / 7);
+                    renderWeekView(month, weekNum);
+                };
+                grid.appendChild(dayDiv);
+            }
+
+            container.appendChild(grid);
+            calendar.appendChild(container);
+        }
+
+        function renderWeekView(month, weekIndex) {
+            currentView = 'week';
+            currentMonth = month;
+            currentWeek = weekIndex;
+
+            const firstDay = getFirstDayOfMonth(2026, month);
+            const daysInMonth = getDaysInMonth(2026, month);
+            
+            const startDay = weekIndex * 7 - firstDay + 1;
+            const endDay = Math.min(startDay + 6, daysInMonth);
+
+            document.getElementById('title').textContent = `${monthNames[month]} 2026 - Week ${weekIndex + 1}`;
+            document.getElementById('breadcrumb').innerHTML = 
+                `<a onclick="renderYearView()">2026</a> > <a onclick="renderMonthView(${month})">${monthNames[month]}</a> > Week ${weekIndex + 1}`;
+            document.getElementById('navigation').style.display = 'block';
+            updateNavButtons();
+
+            const calendar = document.getElementById('calendar');
+            calendar.className = 'week-view';
+            calendar.innerHTML = '';
+
+            const container = document.createElement('div');
+            container.className = 'week-container';
+
+            const grid = document.createElement('div');
+            grid.className = 'calendar-grid';
+
+            // Day labels
+            for (let i = 0; i < 7; i++) {
+                const label = document.createElement('div');
+                label.className = 'day-label';
+                label.textContent = dayNames[i];
+                grid.appendChild(label);
+            }
+
+            // Days
+            for (let i = 0; i < 7; i++) {
+                const dayNum = startDay + i;
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+                
+                if (dayNum >= 1 && dayNum <= daysInMonth) {
+                    dayDiv.textContent = dayNum;
+                    dayDiv.onclick = () => renderDayView(month, dayNum);
+                } else {
+                    dayDiv.classList.add('empty');
+                }
+                
+                grid.appendChild(dayDiv);
+            }
+
+            container.appendChild(grid);
+            calendar.appendChild(container);
+        }
+
+        function renderDayView(month, day) {
+            currentView = 'day';
+            currentMonth = month;
+            currentDay = day;
+
+            const date = new Date(2026, month, day);
+            const dayName = dayNames[date.getDay()];
+            const weekNum = Math.floor((getFirstDayOfMonth(2026, month) + day - 1) / 7);
+
+            document.getElementById('title').textContent = `${monthNames[month]} ${day}, 2026`;
+            document.getElementById('breadcrumb').innerHTML = 
+                `<a onclick="renderYearView()">2026</a> > <a onclick="renderMonthView(${month})">${monthNames[month]}</a> > <a onclick="renderWeekView(${month}, ${weekNum})">Week ${weekNum + 1}</a> > Day ${day}`;
+            document.getElementById('navigation').style.display = 'block';
+            updateNavButtons();
+
+            const calendar = document.getElementById('calendar');
+            calendar.className = 'day-view';
+            calendar.innerHTML = `
+                <div class="day-number">${day}</div>
+                <div class="day-info">${dayName}, ${monthNames[month]} 2026</div>
+            `;
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (currentView === 'month') {
+                prevBtn.disabled = currentMonth === 0;
+                nextBtn.disabled = currentMonth === 11;
+            } else if (currentView === 'week') {
+                const firstDay = getFirstDayOfMonth(2026, currentMonth);
+                const daysInMonth = getDaysInMonth(2026, currentMonth);
+                const totalWeeks = Math.ceil((firstDay + daysInMonth) / 7);
+                
+                prevBtn.disabled = currentWeek === 0 && currentMonth === 0;
+                nextBtn.disabled = currentWeek === totalWeeks - 1 && currentMonth === 11;
+            } else if (currentView === 'day') {
+                const daysInMonth = getDaysInMonth(2026, currentMonth);
+                prevBtn.disabled = currentDay === 1 && currentMonth === 0;
+                nextBtn.disabled = currentDay === daysInMonth && currentMonth === 11;
+            }
+        }
+
+        document.getElementById('prevBtn').onclick = () => {
+            if (currentView === 'month') {
+                if (currentMonth > 0) renderMonthView(currentMonth - 1);
+            } else if (currentView === 'week') {
+                if (currentWeek > 0) {
+                    renderWeekView(currentMonth, currentWeek - 1);
+                } else if (currentMonth > 0) {
+                    const firstDay = getFirstDayOfMonth(2026, currentMonth - 1);
+                    const daysInMonth = getDaysInMonth(2026, currentMonth - 1);
+                    const totalWeeks = Math.ceil((firstDay + daysInMonth) / 7);
+                    renderWeekView(currentMonth - 1, totalWeeks - 1);
+                }
+            } else if (currentView === 'day') {
+                if (currentDay > 1) {
+                    renderDayView(currentMonth, currentDay - 1);
+                } else if (currentMonth > 0) {
+                    const prevMonthDays = getDaysInMonth(2026, currentMonth - 1);
+                    renderDayView(currentMonth - 1, prevMonthDays);
+                }
+            }
+        };
+
+        document.getElementById('nextBtn').onclick = () => {
+            if (currentView === 'month') {
+                if (currentMonth < 11) renderMonthView(currentMonth + 1);
+            } else if (currentView === 'week') {
+                const firstDay = getFirstDayOfMonth(2026, currentMonth);
+                const daysInMonth = getDaysInMonth(2026, currentMonth);
+                const totalWeeks = Math.ceil((firstDay + daysInMonth) / 7);
+                
+                if (currentWeek < totalWeeks - 1) {
+                    renderWeekView(currentMonth, currentWeek + 1);
+                } else if (currentMonth < 11) {
+                    renderWeekView(currentMonth + 1, 0);
+                }
+            } else if (currentView === 'day') {
+                const daysInMonth = getDaysInMonth(2026, currentMonth);
+                if (currentDay < daysInMonth) {
+                    renderDayView(currentMonth, currentDay + 1);
+                } else if (currentMonth < 11) {
+                    renderDayView(currentMonth + 1, 1);
+                }
+            }
+        };
+
+        renderYearView();
+    </script>
+</body>
+</html>
