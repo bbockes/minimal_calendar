@@ -26,12 +26,15 @@
             text-align: center;
         }
 
-        .header h1 {
+        #title {
             font-size: 36px;
             font-weight: bold;
             margin-bottom: 15px;
+            margin-top: -10px;
             position: relative;
             z-index: 10;
+            text-align: center;
+            display: block;
         }
 
         .slider {
@@ -91,6 +94,7 @@
         .year-view-container {
             display: flex;
             flex-direction: column;
+            margin-top: 65px;
         }
 
         .year-view {
@@ -156,6 +160,24 @@
         .year-view .day-row.marked .day-number,
         .year-view .day-row.marked .day-name {
             color: #fff !important;
+        }
+
+        .year-view .day-row.today {
+            position: relative;
+        }
+
+        .year-view .day-row.today::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--today-border-color, #2D5A4A);
+        }
+
+        .year-view .day-row.today .day-number {
+            font-weight: 700;
         }
 
         .year-view .day-number {
@@ -416,7 +438,7 @@
         /* Habit Tracker Controls */
         .habit-toggle-container {
             position: absolute;
-            top: 30px;
+            top: 70px;
             left: 30px;
             z-index: 200;
             display: flex;
@@ -427,7 +449,7 @@
 
         .habit-controls-right {
             position: absolute;
-            top: 30px;
+            top: 70px;
             right: 30px;
             z-index: 200;
             display: flex;
@@ -494,8 +516,6 @@
             font-weight: 500;
             color: #000;
             padding: 10px 16px;
-            border-radius: 24px;
-            border: 2px solid #ccc;
             background: #fff;
             display: flex;
             align-items: center;
@@ -513,6 +533,38 @@
 
         .streak-text {
             font-size: 14px;
+        }
+
+        .streak-toggle-btn {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 10px;
+            cursor: pointer;
+            margin-left: -6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+            width: 32px;
+            height: 32px;
+        }
+
+        .streak-toggle-btn:hover {
+            background: #f0f0f0;
+            border: none;
+            color: #333;
+        }
+
+        .streak-toggle-btn svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .streak-toggle-btn svg {
+            display: block;
         }
 
         .habit-select {
@@ -835,6 +887,25 @@
             background-color: #ffcccc;
         }
 
+        .mark-today-btn {
+            padding: 10px 16px;
+            border-radius: 24px;
+            border: 2px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            user-select: none;
+            color: #000;
+        }
+
+        .mark-today-btn:hover {
+            border-color: #2D5A4A;
+            background-color: #e8f0ed;
+        }
+
         /* Custom Alert/Confirm Modal */
         .custom-modal-overlay {
             display: none;
@@ -937,11 +1008,17 @@
         <div class="habit-streak-display hidden" id="habitStreakDisplay">
             <span class="streak-icon">🔥</span>
             <span class="streak-text" id="streakText">0 day streak</span>
+            <button class="streak-toggle-btn" id="streakToggleBtn" title="Toggle between current and longest streak">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 17H4M4 17L8 13M4 17L8 21M4 7H20M20 7L16 3M20 7L16 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
         </div>
     </div>
 
     <div class="habit-controls-right">
         <button class="clear-all-btn" id="clearAllBtn">Clear All</button>
+        <button class="mark-today-btn" id="markTodayBtn">Mark Today</button>
         <div class="habit-toggle-wrapper">
             <div class="habit-toggle" id="habitToggle" title="Toggle Habit Tracker">
                 <div class="habit-toggle-slider"></div>
@@ -963,8 +1040,9 @@
         </div>
     </div>
     
+    <div id="title">2026</div>
+    
     <div class="header">
-        <h1 id="title">2026</h1>
         <div class="slider" id="slider"></div>
     </div>
     
@@ -1003,6 +1081,7 @@
         let habitTrackerEnabled = false;
         let selectedHabitId = null;
         let habits = [];
+        let showLongestStreak = false;
         
         // Habit colors - default green first, then cycle through others
         // All colors meet WCAG AAA contrast (7:1) with white text
@@ -1250,6 +1329,7 @@
             // Re-render year view to update marked dates
             renderYearView();
             updateStreakDisplay();
+            updateMarkTodayButton();
         }
 
         function populateHabitDropdown() {
@@ -1323,6 +1403,7 @@
                     updateHabitButtonColor();
                     updateStreakDisplay();
                     updateHabitToggleUI();
+                    updateMarkTodayButton();
                     closeDropdown();
                     updateSelectedItem();
                     // Re-render current view
@@ -1332,6 +1413,7 @@
                         renderMonthView(currentMonth);
                     }
                     updateStreakDisplay();
+                    updateMarkTodayButton();
                 };
                 menu.appendChild(item);
             });
@@ -1543,13 +1625,29 @@
             
             streakDisplay.classList.remove('hidden');
             
-            if (currentStreak === 0) {
-                streakText.textContent = 'No streak yet';
-            } else if (currentStreak === 1) {
-                streakText.textContent = '1 day streak';
+            // Toggle button state is handled by the display logic, no visual change needed
+            
+            // Display the appropriate streak based on toggle state
+            if (showLongestStreak) {
+                if (longestStreak === 0) {
+                    streakText.textContent = 'Longest Streak: 0 days';
+                } else if (longestStreak === 1) {
+                    streakText.textContent = 'Longest Streak: 1 day';
+                } else {
+                    streakText.textContent = `Longest Streak: ${longestStreak} days`;
+                }
             } else {
-                streakText.textContent = `${currentStreak} day streak`;
+                if (currentStreak === 0) {
+                    streakText.textContent = 'Current Streak: 0 days';
+                } else if (currentStreak === 1) {
+                    streakText.textContent = 'Current Streak: 1 day';
+                } else {
+                    streakText.textContent = `Current Streak: ${currentStreak} days`;
+                }
             }
+            
+            // Update Mark Today button color
+            updateMarkTodayButton();
         }
 
         // Toggle date marked state
@@ -1676,18 +1774,88 @@
             // Re-render year view to update marked dates
             renderYearView();
             updateStreakDisplay();
+            updateMarkTodayButton();
         }
 
         // Update clear all button visibility based on edit tracker
         function updateClearAllButton() {
             const clearAllBtn = document.getElementById('clearAllBtn');
+            const markTodayBtn = document.getElementById('markTodayBtn');
             if (!habitTrackerEnabled) {
                 clearAllBtn.style.visibility = 'hidden';
                 clearAllBtn.style.pointerEvents = 'none';
+                if (markTodayBtn) {
+                    markTodayBtn.style.visibility = 'hidden';
+                    markTodayBtn.style.pointerEvents = 'none';
+                }
             } else {
                 clearAllBtn.style.visibility = 'visible';
                 clearAllBtn.style.pointerEvents = 'auto';
+                if (markTodayBtn) {
+                    markTodayBtn.style.visibility = 'visible';
+                    markTodayBtn.style.pointerEvents = 'auto';
+                }
             }
+            updateMarkTodayButton();
+        }
+
+        // Update Mark Today button color based on whether today is marked
+        function updateMarkTodayButton() {
+            const markTodayBtn = document.getElementById('markTodayBtn');
+            if (!markTodayBtn || !habitTrackerEnabled || !selectedHabitId) {
+                if (markTodayBtn) {
+                    markTodayBtn.style.backgroundColor = '#fff';
+                    markTodayBtn.style.borderColor = '#ccc';
+                    markTodayBtn.style.color = '#000';
+                }
+                return;
+            }
+            
+            const now = new Date();
+            const today = (now.getFullYear() === 2026) 
+                ? new Date(2026, now.getMonth(), now.getDate())
+                : new Date(2026, 1, 2); // Feb 2, 2026 as reference
+            
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const day = today.getDate();
+            
+            const isTodayMarked = isDateMarked(year, month, day, selectedHabitId);
+            const habitColor = getSelectedHabitColor();
+            
+            if (isTodayMarked && habitColor) {
+                markTodayBtn.style.backgroundColor = habitColor;
+                markTodayBtn.style.borderColor = habitColor;
+                markTodayBtn.style.color = '#fff';
+            } else {
+                markTodayBtn.style.backgroundColor = '#fff';
+                markTodayBtn.style.borderColor = '#ccc';
+                markTodayBtn.style.color = '#000';
+            }
+        }
+
+        // Mark today's date
+        function markToday() {
+            if (!habitTrackerEnabled || !selectedHabitId) {
+                return;
+            }
+            
+            const now = new Date();
+            const today = (now.getFullYear() === 2026) 
+                ? new Date(2026, now.getMonth(), now.getDate())
+                : new Date(2026, 1, 2); // Feb 2, 2026 as reference
+            
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const day = today.getDate();
+            
+            // Mark today's date
+            toggleDateMarked(year, month, day, selectedHabitId);
+            
+            // Re-render to update display
+            renderYearView();
+            updateStreakDisplay();
+            updateMarkTodayButton();
         }
 
         // Initialize habit tracker toggle
@@ -1699,8 +1867,21 @@
             const toggle = document.getElementById('habitToggle');
             toggle.addEventListener('click', toggleHabitTracker);
             
+            const streakToggleBtn = document.getElementById('streakToggleBtn');
+            if (streakToggleBtn) {
+                streakToggleBtn.addEventListener('click', () => {
+                    showLongestStreak = !showLongestStreak;
+                    updateStreakDisplay();
+                });
+            }
+            
             const clearAllBtn = document.getElementById('clearAllBtn');
             clearAllBtn.addEventListener('click', clearAllMarkedDates);
+            
+            const markTodayBtn = document.getElementById('markTodayBtn');
+            if (markTodayBtn) {
+                markTodayBtn.addEventListener('click', markToday);
+            }
             
             const habitSelectButton = document.getElementById('habitSelectButton');
             habitSelectButton.addEventListener('click', (e) => {
@@ -1875,6 +2056,22 @@
                     const dayRow = document.createElement('div');
                     dayRow.className = 'day-row';
                     dayRow.style.cursor = 'pointer';
+                    
+                    // Check if this is today's date
+                    const now = new Date();
+                    const today = (now.getFullYear() === 2026) 
+                        ? new Date(2026, now.getMonth(), now.getDate())
+                        : new Date(2026, 1, 2); // Feb 2, 2026 as reference
+                    if (2026 === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+                        dayRow.classList.add('today');
+                        // Apply habit color to the border if a habit is selected
+                        if (selectedHabitId) {
+                            const habitColor = getSelectedHabitColor();
+                            if (habitColor) {
+                                dayRow.style.setProperty('--today-border-color', habitColor);
+                            }
+                        }
+                    }
                     
                     // Check if date is marked for selected habit and apply styling
                     if (selectedHabitId && isDateMarked(2026, month, day, selectedHabitId)) {
