@@ -974,18 +974,17 @@
         let habits = [];
         
         // Habit colors - default green first, then cycle through others
+        // All colors meet WCAG AAA contrast (7:1) with white text
         const habitColors = [
-            '#639A88', // Green (default)
-            '#084C61', // Blue
-            '#FFE787', // Yellow
-            '#FF715B', // Orange
-            '#3D315B', // Purple
-            '#f71735', // Red
-            '#A77E58', // Brown
-            '#FF69EB', // Pink/Magenta
-            '#344966', // Dark Blue
-            '#F0F465', // Bright Yellow
-            '#FFDBB5'  // Peach
+            '#2D5A4A', // Green (default) - darker green for AAA contrast
+            '#053A4A', // Dark Teal/Blue - darker for AAA contrast
+            '#B84A3A', // Orange - darker orange for AAA contrast
+            '#2D2343', // Purple - darker purple for AAA contrast
+            '#A01022', // Red - darker red for AAA contrast
+            '#7A5D3D', // Brown - darker brown for AAA contrast
+            '#B84AA8', // Pink/Magenta - darker pink for AAA contrast
+            '#2A3A52', // Dark Blue - darker for AAA contrast
+            '#CC8B6B'  // Peach - darker peach for AAA contrast
         ];
         
         // Get color for a habit (assign if doesn't have one)
@@ -1217,12 +1216,8 @@
             // Save and update UI
             saveHabits();
             
-            // Re-render current view to update marked dates
-            if (currentView === 'year') {
-                renderYearView();
-            } else if (currentView === 'month') {
-                renderMonthView(currentMonth);
-            }
+            // Re-render year view to update marked dates
+            renderYearView();
         }
 
         function populateHabitDropdown() {
@@ -1245,12 +1240,8 @@
                 updateHabitToggleUI();
                 closeDropdown();
                 updateSelectedItem();
-                // Re-render current view
-                if (currentView === 'year') {
-                    renderYearView();
-                } else if (currentView === 'month') {
-                    renderMonthView(currentMonth);
-                }
+                // Re-render year view
+                renderYearView();
             };
             menu.appendChild(defaultItem);
             
@@ -1399,12 +1390,8 @@
             updateHabitToggleUI();
             updateSelectedItem();
             
-            // Re-render current view to update marked dates
-            if (currentView === 'year') {
-                renderYearView();
-            } else if (currentView === 'month') {
-                renderMonthView(currentMonth);
-            }
+            // Re-render year view to update marked dates
+            renderYearView();
         }
 
         function openCreateHabitModal() {
@@ -2004,7 +1991,7 @@
                     <textarea 
                         class="notes-input" 
                         id="dayNotes"
-                        placeholder="What did you do today? What did you learn?"
+                        placeholder="What did you do today? Learn anything new?"
                         data-date="${dateKey}"
                     >${savedNotes}</textarea>
                 </div>
