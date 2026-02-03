@@ -101,7 +101,7 @@
 
         .year-view .month-column {
             flex: 0 0 auto;
-            width: 160px;
+            width: 168px;
             border-right: 1px solid #ddd;
         }
 
@@ -112,24 +112,29 @@
         .year-view .month-header {
             text-align: center;
             font-weight: bold;
-            font-size: 22px;
-            padding: 15px 0;
+            font-size: 23px;
+            padding: 16px 0;
             border-bottom: 1px solid #ddd;
             text-transform: uppercase;
             margin-top: 0;
             transition: background-color 0.2s;
+            cursor: default;
         }
 
         .year-view .month-header:hover {
-            background-color: #d3d3d3;
+            background-color: transparent;
         }
 
         .year-view .day-row {
             display: flex;
             align-items: center;
             border-bottom: 1px solid #e5e5e5;
-            min-height: 28px;
+            min-height: 29px;
             transition: background-color 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .year-view .day-row:nth-child(even) {
@@ -140,26 +145,47 @@
             background-color: #d3d3d3;
         }
 
+        .year-view .day-row.marked {
+            color: #fff;
+        }
+
+        .year-view .day-row.marked:hover {
+            opacity: 0.85;
+        }
+
+        .year-view .day-row.marked .day-number,
+        .year-view .day-row.marked .day-name {
+            color: #fff !important;
+        }
+
         .year-view .day-number {
-            width: 35px;
+            width: 37px;
             padding: 4px 8px;
-            font-size: 14px;
+            font-size: 15px;
             text-align: left;
             line-height: 1;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .year-view .day-name {
             flex: 1;
             padding: 4px 8px;
-            font-size: 12px;
+            font-size: 13px;
             color: #888;
             text-align: left;
             line-height: 1;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         /* Month View */
         .month-view {
-            max-width: 1000px;
+            max-width: 1050px;
             margin: 0 auto;
             position: relative;
         }
@@ -193,22 +219,22 @@
         .month-view .month-header {
             text-align: center;
             font-weight: bold;
-            font-size: 42px;
-            padding: 30px;
+            font-size: 44px;
+            padding: 32px;
             border-bottom: 1px solid #ddd;
         }
 
         .month-view .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            min-height: 588px;
+            min-height: 617px;
         }
 
         .month-view .day-label {
             text-align: center;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
-            padding: 12px;
+            padding: 13px;
             background-color: #f5f5f5;
             border-bottom: 1px solid #ddd;
             border-right: 1px solid #e5e5e5;
@@ -219,13 +245,17 @@
         }
 
         .month-view .day {
-            min-height: 90px;
-            padding: 10px;
+            min-height: 95px;
+            padding: 11px;
             border-bottom: 1px solid #e5e5e5;
             border-right: 1px solid #e5e5e5;
             cursor: pointer;
             transition: background-color 0.2s;
-            font-size: 16px;
+            font-size: 17px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .month-view .day:nth-child(7n + 7),
@@ -238,6 +268,14 @@
 
         .month-view .day:hover {
             background-color: #f0f0f0;
+        }
+
+        .month-view .day.marked {
+            color: #fff !important;
+        }
+
+        .month-view .day.marked:hover {
+            opacity: 0.85;
         }
 
         .month-view .day.empty {
@@ -323,7 +361,7 @@
         }
 
         .day-view .day-date {
-            font-size: 18px;
+            font-size: 22px;
             color: #000;
             font-weight: 700;
         }
@@ -340,7 +378,7 @@
             width: 100%;
             padding: 15px;
             font-family: 'Work Sans', sans-serif;
-            font-size: 16px;
+            font-size: 18px;
             border: 1px solid #ddd;
             border-radius: 4px;
             resize: none;
@@ -375,10 +413,525 @@
             color: #000;
         }
 
+        /* Habit Tracker Controls */
+        .habit-toggle-container {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            z-index: 200;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .habit-controls-right {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            z-index: 200;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .habit-toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .habit-toggle {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background-color: #ccc;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            user-select: none;
+        }
+
+        .habit-toggle.active {
+            background-color: #639A88; /* Default, can be overridden by inline style */
+        }
+
+        .habit-toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background-color: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .habit-toggle.active .habit-toggle-slider {
+            transform: translateX(22px);
+        }
+
+        .habit-toggle-text {
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Work Sans', sans-serif;
+            color: #000;
+            user-select: none;
+        }
+
+        .habit-select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .habit-select {
+            padding: 10px 16px;
+            padding-right: 40px;
+            border-radius: 24px;
+            border: 2px solid #ccc;
+            background: #fff;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            min-width: 180px;
+        }
+
+        .habit-select:hover {
+            border-color: #999;
+            background-color: #f5f5f5;
+        }
+
+        .habit-select:focus {
+            border-color: #639A88;
+            background-color: #fff;
+        }
+
+        /* Custom dropdown */
+        .custom-dropdown {
+            position: relative;
+            min-width: 250px;
+        }
+
+        .custom-dropdown-button {
+            width: 100%;
+            padding: 10px 16px;
+            padding-right: 40px;
+            border-radius: 24px;
+            border: 2px solid #ccc;
+            background: #fff;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .custom-dropdown-button:hover {
+            border-color: #999;
+            background-color: #f5f5f5;
+        }
+
+        .custom-dropdown-button.active {
+            border-color: #639A88;
+            background-color: #fff;
+        }
+
+        .custom-dropdown-button::after {
+            content: '';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            transition: transform 0.3s ease;
+        }
+
+        .custom-dropdown-button.active::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .custom-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .custom-dropdown-menu.active {
+            display: block;
+        }
+
+        .custom-dropdown-item {
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            background: #fff;
+            width: 100%;
+            text-align: left;
+            font-family: 'Work Sans', sans-serif;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .custom-dropdown-item:nth-child(even) {
+            background: #f5f5f5;
+        }
+
+        .custom-dropdown-item:hover {
+            background: #e0e0e0 !important;
+        }
+
+        .custom-dropdown-item.selected {
+            background: #639A88;
+            color: #fff;
+        }
+
+        .custom-dropdown-item.selected:hover {
+            background: #558A78 !important;
+        }
+
+        .custom-dropdown-item-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-dropdown-item-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-dropdown-item-delete {
+            padding: 4px 8px;
+            border: none;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            transition: color 0.2s ease;
+            flex-shrink: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .custom-dropdown-item:hover .custom-dropdown-item-delete {
+            color: #666;
+        }
+
+        .custom-dropdown-item.selected .custom-dropdown-item-delete {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .custom-dropdown-item.selected:hover .custom-dropdown-item-delete {
+            color: #fff;
+        }
+
+        .custom-dropdown-item-delete:hover {
+            color: #d32f2f !important;
+        }
+
+        .create-habit-btn {
+            padding: 10px 16px;
+            border-radius: 24px;
+            border: 2px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            user-select: none;
+            color: #000;
+        }
+
+        .create-habit-btn:hover {
+            border-color: #999;
+            background-color: #f5f5f5;
+        }
+
+        .create-habit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .create-habit-modal.active {
+            display: flex;
+        }
+
+        .create-habit-content {
+            background: #fff;
+            width: 55vw;
+            height: 60vh;
+            max-width: 770px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid #ddd;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .create-habit-content h3 {
+            margin-bottom: 30px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .create-habit-input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .create-habit-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .create-habit-input:focus {
+            border-color: #639A88;
+        }
+
+        .create-habit-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .create-habit-btn-modal {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: 2px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .create-habit-btn-modal:hover {
+            background-color: #f5f5f5;
+        }
+
+        .create-habit-btn-modal.primary {
+            background: #639A88;
+            color: #fff;
+            border-color: #639A88;
+        }
+
+        .create-habit-btn-modal.primary:hover {
+            background: #558A78;
+            border-color: #558A78;
+        }
+
+        .clear-all-btn {
+            padding: 10px 16px;
+            border-radius: 24px;
+            border: 2px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            user-select: none;
+            color: #000;
+        }
+
+        .clear-all-btn:hover {
+            border-color: #ff9999;
+            background-color: #ffcccc;
+        }
+
+        /* Custom Alert/Confirm Modal */
+        .custom-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-modal-overlay.active {
+            display: flex;
+        }
+
+        .custom-modal {
+            background: #fff;
+            width: 55vw;
+            max-width: 770px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid #ddd;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .custom-modal-title {
+            font-family: 'Work Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 30px;
+        }
+
+        .custom-modal-message {
+            font-family: 'Work Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 400;
+            color: #000;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .custom-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .custom-modal-btn {
+            padding: 12px 24px;
+            border-radius: 4px;
+            border: 2px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #000;
+        }
+
+        .custom-modal-btn:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+        }
+
+        .custom-modal-btn.primary {
+            background: #639A88;
+            color: #fff;
+            border-color: #639A88;
+        }
+
+        .custom-modal-btn.primary:hover {
+            background: #558A78;
+            border-color: #558A78;
+        }
+
 
     </style>
 </head>
 <body>
+    <div class="habit-toggle-container">
+        <div class="habit-select-wrapper">
+            <div class="custom-dropdown">
+                <button class="custom-dropdown-button" id="habitSelectButton">
+                    Select Habit
+                </button>
+                <div class="custom-dropdown-menu" id="habitDropdownMenu">
+                    <!-- Options will be populated by JavaScript -->
+                </div>
+            </div>
+            <button class="create-habit-btn" id="createHabitBtn">+ New</button>
+        </div>
+    </div>
+
+    <div class="habit-controls-right">
+        <button class="clear-all-btn" id="clearAllBtn">Clear All</button>
+        <div class="habit-toggle-wrapper">
+            <div class="habit-toggle" id="habitToggle" title="Toggle Habit Tracker">
+                <div class="habit-toggle-slider"></div>
+            </div>
+            <span class="habit-toggle-text">Edit Tracker</span>
+        </div>
+    </div>
+
+    <div class="create-habit-modal" id="createHabitModal">
+        <div class="create-habit-content">
+            <h3>Create a New Habit</h3>
+            <div class="create-habit-input-wrapper">
+                <input type="text" class="create-habit-input" id="habitNameInput" placeholder="Enter habit name..." />
+            </div>
+            <div class="create-habit-buttons">
+                <button class="create-habit-btn-modal" id="cancelHabitBtn">Cancel</button>
+                <button class="create-habit-btn-modal primary" id="saveHabitBtn">Create</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="header">
         <h1 id="title">2026</h1>
         <div class="slider" id="slider"></div>
@@ -397,6 +950,14 @@
         </div>
     </div>
 
+    <div class="custom-modal-overlay" id="customModalOverlay">
+        <div class="custom-modal" id="customModal">
+            <div class="custom-modal-title" id="customModalTitle"></div>
+            <div class="custom-modal-message" id="customModalMessage"></div>
+            <div class="custom-modal-buttons" id="customModalButtons"></div>
+        </div>
+    </div>
+
     <script>
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                           'July', 'August', 'September', 'October', 'November', 'December'];
@@ -408,6 +969,701 @@
         let currentView = 'year';
         let currentMonth = 0;
         let currentDay = null;
+        let habitTrackerEnabled = false;
+        let selectedHabitId = null;
+        let habits = [];
+        
+        // Habit colors - default green first, then cycle through others
+        const habitColors = [
+            '#639A88', // Green (default)
+            '#084C61', // Blue
+            '#FFE787', // Yellow
+            '#FF715B', // Orange
+            '#3D315B', // Purple
+            '#f71735', // Red
+            '#A77E58', // Brown
+            '#FF69EB', // Pink/Magenta
+            '#344966', // Dark Blue
+            '#F0F465', // Bright Yellow
+            '#FFDBB5'  // Peach
+        ];
+        
+        // Get color for a habit (assign if doesn't have one)
+        function getHabitColor(habit) {
+            if (!habit.color) {
+                // Assign color based on index
+                const index = habits.indexOf(habit);
+                habit.color = habitColors[index % habitColors.length];
+                saveHabits();
+            }
+            return habit.color;
+        }
+        
+        // Get current selected habit's color
+        function getSelectedHabitColor() {
+            if (!selectedHabitId) return null;
+            const habit = habits.find(h => h.id === selectedHabitId);
+            return habit ? getHabitColor(habit) : null;
+        }
+        
+        // Darken a color for hover states
+        function darkenColor(color, percent) {
+            const num = parseInt(color.replace("#",""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+        
+        // Apply habit color to a cell element
+        function applyHabitColorToCell(cell) {
+            const habitColor = getSelectedHabitColor();
+            if (habitColor && cell) {
+                cell.style.backgroundColor = habitColor;
+                cell.style.color = '#fff';
+                // Store original color for hover
+                cell.dataset.habitColor = habitColor;
+                cell.classList.add('marked');
+            }
+        }
+        
+        // Remove habit color from a cell
+        function removeHabitColorFromCell(cell) {
+            if (cell) {
+                cell.style.backgroundColor = '';
+                cell.style.color = '';
+                delete cell.dataset.habitColor;
+                cell.classList.remove('marked');
+            }
+        }
+        
+        // Mark a cell with the selected habit's color
+        function markCellWithHabitColor(cell) {
+            if (selectedHabitId && cell) {
+                applyHabitColorToCell(cell);
+            } else if (cell) {
+                cell.classList.add('marked');
+            }
+        }
+        
+        // Toggle cell marking with habit color
+        function toggleCellWithHabitColor(cell) {
+            if (cell.classList.contains('marked')) {
+                removeHabitColorFromCell(cell);
+            } else {
+                markCellWithHabitColor(cell);
+            }
+        }
+        let isDragging = false;
+        let dragStartCell = null;
+        let dragStartState = null;
+        let dragProcessedCells = new Set();
+        let mouseDownPos = null;
+        let hasMoved = false;
+
+        // Custom modal functions
+        function showCustomAlert(message, title = 'Notification') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModalOverlay');
+                const modalTitle = document.getElementById('customModalTitle');
+                const modalMessage = document.getElementById('customModalMessage');
+                const modalButtons = document.getElementById('customModalButtons');
+                
+                modalTitle.textContent = title;
+                modalMessage.innerHTML = message;
+                modalButtons.innerHTML = '';
+                
+                const okBtn = document.createElement('button');
+                okBtn.className = 'custom-modal-btn primary';
+                okBtn.textContent = 'OK';
+                okBtn.onclick = () => {
+                    overlay.classList.remove('active');
+                    resolve(true);
+                };
+                modalButtons.appendChild(okBtn);
+                
+                overlay.classList.add('active');
+                
+                // Close on overlay click
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('active');
+                        resolve(true);
+                    }
+                };
+            });
+        }
+
+        function showCustomConfirm(message, title = 'Confirm') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModalOverlay');
+                const modalTitle = document.getElementById('customModalTitle');
+                const modalMessage = document.getElementById('customModalMessage');
+                const modalButtons = document.getElementById('customModalButtons');
+                
+                modalTitle.textContent = title;
+                modalMessage.innerHTML = message;
+                modalButtons.innerHTML = '';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'custom-modal-btn';
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.onclick = () => {
+                    overlay.classList.remove('active');
+                    resolve(false);
+                };
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'custom-modal-btn primary';
+                confirmBtn.textContent = 'OK';
+                confirmBtn.onclick = () => {
+                    overlay.classList.remove('active');
+                    resolve(true);
+                };
+                
+                modalButtons.appendChild(cancelBtn);
+                modalButtons.appendChild(confirmBtn);
+                
+                overlay.classList.add('active');
+                
+                // Close on overlay click (treats as cancel)
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('active');
+                        resolve(false);
+                    }
+                };
+            });
+        }
+
+        // Load habit tracker state from localStorage
+        function loadHabitTrackerState() {
+            const saved = localStorage.getItem('habitTrackerEnabled');
+            habitTrackerEnabled = saved === 'true';
+            updateHabitToggleUI();
+        }
+
+        // Update habit toggle UI
+        function updateHabitToggleUI() {
+            const toggle = document.getElementById('habitToggle');
+            if (habitTrackerEnabled) {
+                toggle.classList.add('active');
+                // Use selected habit's color if available
+                const habitColor = getSelectedHabitColor();
+                if (habitColor) {
+                    toggle.style.backgroundColor = habitColor;
+                    toggle.style.borderColor = habitColor;
+                }
+            } else {
+                toggle.classList.remove('active');
+                toggle.style.backgroundColor = '';
+                toggle.style.borderColor = '';
+            }
+            updateClearAllButton();
+        }
+
+        // Toggle habit tracker
+        function toggleHabitTracker() {
+            habitTrackerEnabled = !habitTrackerEnabled;
+            localStorage.setItem('habitTrackerEnabled', habitTrackerEnabled.toString());
+            updateHabitToggleUI();
+        }
+
+        // Habit management functions
+        function loadHabits() {
+            const saved = localStorage.getItem('habits');
+            habits = saved ? JSON.parse(saved) : [];
+            
+            // Assign colors to existing habits that don't have them
+            habits.forEach((habit, index) => {
+                if (!habit.color) {
+                    habit.color = habitColors[index % habitColors.length];
+                }
+            });
+            if (habits.length > 0) {
+                saveHabits(); // Save colors if any were assigned
+            }
+            
+            populateHabitDropdown();
+        }
+
+        function saveHabits() {
+            localStorage.setItem('habits', JSON.stringify(habits));
+            populateHabitDropdown();
+        }
+
+        function deleteHabit(habitId) {
+            // Remove habit from array
+            habits = habits.filter(h => h.id !== habitId);
+            
+            // Clear all marked dates for this habit
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith(`habit-${habitId}-`)) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            // If this habit was selected, clear selection
+            if (selectedHabitId === habitId) {
+                selectedHabitId = null;
+                const button = document.getElementById('habitSelectButton');
+                button.textContent = 'Select Habit';
+            }
+            
+            // Save and update UI
+            saveHabits();
+            
+            // Re-render current view to update marked dates
+            if (currentView === 'year') {
+                renderYearView();
+            } else if (currentView === 'month') {
+                renderMonthView(currentMonth);
+            }
+        }
+
+        function populateHabitDropdown() {
+            const menu = document.getElementById('habitDropdownMenu');
+            const button = document.getElementById('habitSelectButton');
+            const currentValue = selectedHabitId;
+            
+            // Clear existing options
+            menu.innerHTML = '';
+            
+            // Add "Select Habit" option
+            const defaultItem = document.createElement('button');
+            defaultItem.className = 'custom-dropdown-item';
+            defaultItem.textContent = 'Select Habit';
+            defaultItem.dataset.value = '';
+            defaultItem.onclick = () => {
+                selectedHabitId = null;
+                button.textContent = 'Select Habit';
+                updateHabitButtonColor();
+                updateHabitToggleUI();
+                closeDropdown();
+                updateSelectedItem();
+                // Re-render current view
+                if (currentView === 'year') {
+                    renderYearView();
+                } else if (currentView === 'month') {
+                    renderMonthView(currentMonth);
+                }
+            };
+            menu.appendChild(defaultItem);
+            
+            // Add habits
+            habits.forEach(habit => {
+                const item = document.createElement('button');
+                item.className = 'custom-dropdown-item';
+                item.dataset.value = habit.id;
+                
+                const itemText = document.createElement('span');
+                itemText.className = 'custom-dropdown-item-text';
+                
+                const colorDot = document.createElement('span');
+                colorDot.className = 'custom-dropdown-item-color';
+                colorDot.style.backgroundColor = getHabitColor(habit);
+                
+                const habitNameSpan = document.createElement('span');
+                habitNameSpan.textContent = habit.name;
+                
+                itemText.appendChild(colorDot);
+                itemText.appendChild(habitNameSpan);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'custom-dropdown-item-delete';
+                deleteBtn.textContent = '×';
+                deleteBtn.title = 'Delete habit';
+                deleteBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    const confirmed = await showCustomConfirm(
+                        `Are you sure you want to delete <strong>"${habit.name}"</strong>?`,
+                        'Delete Habit'
+                    );
+                    if (confirmed) {
+                        deleteHabit(habit.id);
+                        closeDropdown();
+                    }
+                };
+                
+                item.appendChild(itemText);
+                item.appendChild(deleteBtn);
+                
+                item.onclick = () => {
+                    selectedHabitId = habit.id;
+                    button.textContent = habit.name;
+                    updateHabitButtonColor();
+                    updateHabitToggleUI();
+                    closeDropdown();
+                    updateSelectedItem();
+                    // Re-render current view
+                    if (currentView === 'year') {
+                        renderYearView();
+                    } else if (currentView === 'month') {
+                        renderMonthView(currentMonth);
+                    }
+                };
+                menu.appendChild(item);
+            });
+            
+            // Restore selection if it still exists
+            if (currentValue) {
+                const habit = habits.find(h => h.id === currentValue);
+                if (habit) {
+                    button.textContent = habit.name;
+                    updateHabitButtonColor();
+                    updateHabitToggleUI();
+                } else {
+                    button.textContent = 'Select Habit';
+                    selectedHabitId = null;
+                    updateHabitButtonColor();
+                    updateHabitToggleUI();
+                }
+            } else {
+                button.textContent = 'Select Habit';
+                updateHabitButtonColor();
+                updateHabitToggleUI();
+            }
+            
+            // Update selected item highlighting
+            updateSelectedItem();
+        }
+        
+        // Update habit button color based on selected habit (removed - keeping default styling)
+        function updateHabitButtonColor() {
+            // Keep dropdown button at default styling regardless of selected habit
+            const button = document.getElementById('habitSelectButton');
+            button.style.borderColor = '';
+            button.style.color = '';
+        }
+
+        function updateSelectedItem() {
+            const items = document.querySelectorAll('.custom-dropdown-item');
+            items.forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.value === selectedHabitId) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        function toggleDropdown() {
+            const menu = document.getElementById('habitDropdownMenu');
+            const button = document.getElementById('habitSelectButton');
+            const isActive = menu.classList.contains('active');
+            
+            if (isActive) {
+                closeDropdown();
+            } else {
+                openDropdown();
+            }
+        }
+
+        function openDropdown() {
+            const menu = document.getElementById('habitDropdownMenu');
+            const button = document.getElementById('habitSelectButton');
+            menu.classList.add('active');
+            button.classList.add('active');
+        }
+
+        function closeDropdown() {
+            const menu = document.getElementById('habitDropdownMenu');
+            const button = document.getElementById('habitSelectButton');
+            menu.classList.remove('active');
+            button.classList.remove('active');
+        }
+
+        function createHabit(name) {
+            if (!name || name.trim() === '') return;
+            
+            // Assign color based on current habit count
+            const colorIndex = habits.length % habitColors.length;
+            
+            const newHabit = {
+                id: Date.now().toString(),
+                name: name.trim(),
+                color: habitColors[colorIndex]
+            };
+            
+            habits.push(newHabit);
+            saveHabits();
+            
+            // Select the newly created habit
+            selectedHabitId = newHabit.id;
+            const button = document.getElementById('habitSelectButton');
+            button.textContent = newHabit.name;
+            updateHabitButtonColor();
+            updateHabitToggleUI();
+            updateSelectedItem();
+            
+            // Re-render current view to update marked dates
+            if (currentView === 'year') {
+                renderYearView();
+            } else if (currentView === 'month') {
+                renderMonthView(currentMonth);
+            }
+        }
+
+        function openCreateHabitModal() {
+            const modal = document.getElementById('createHabitModal');
+            const input = document.getElementById('habitNameInput');
+            modal.classList.add('active');
+            input.value = '';
+            input.focus();
+        }
+
+        function closeCreateHabitModal() {
+            const modal = document.getElementById('createHabitModal');
+            modal.classList.remove('active');
+        }
+
+        // Get date key for localStorage (now includes habit ID)
+        function getDateKey(year, month, day, habitId) {
+            if (habitId) {
+                return `habit-${habitId}-${year}-${month + 1}-${day}`;
+            }
+            return `habit-${year}-${month + 1}-${day}`;
+        }
+
+        // Check if a date is marked as green (for any habit or specific habit)
+        function isDateMarked(year, month, day, habitId = null) {
+            if (habitId) {
+                const dateKey = getDateKey(year, month, day, habitId);
+                return localStorage.getItem(dateKey) === 'true';
+            }
+            // Check all habits for this date
+            return habits.some(habit => {
+                const dateKey = getDateKey(year, month, day, habit.id);
+                return localStorage.getItem(dateKey) === 'true';
+            });
+        }
+
+        // Toggle date marked state
+        function toggleDateMarked(year, month, day, habitId) {
+            if (!habitId) return;
+            const dateKey = getDateKey(year, month, day, habitId);
+            const currentlyMarked = isDateMarked(year, month, day, habitId);
+            localStorage.setItem(dateKey, (!currentlyMarked).toString());
+        }
+
+        // Set date marked state (for drag operations)
+        function setDateMarked(year, month, day, habitId, marked) {
+            if (!habitId) return;
+            const dateKey = getDateKey(year, month, day, habitId);
+            localStorage.setItem(dateKey, marked.toString());
+        }
+
+        // Get cell element for a specific date
+        function getCellElement(year, month, day) {
+            if (currentView === 'year') {
+                const monthCols = document.querySelectorAll('.month-column');
+                if (monthCols[month]) {
+                    const dayRows = monthCols[month].querySelectorAll('.day-row');
+                    // Day rows are 1-indexed, array is 0-indexed
+                    if (dayRows[day - 1]) {
+                        return dayRows[day - 1];
+                    }
+                }
+            } else if (currentView === 'month' && month === currentMonth) {
+                const dayDivs = document.querySelectorAll('.month-view .day:not(.empty)');
+                const daysInMonth = getDaysInMonth(year, month);
+                if (day >= 1 && day <= daysInMonth && dayDivs[day - 1]) {
+                    return dayDivs[day - 1];
+                }
+            }
+            return null;
+        }
+
+        // Handle drag over a cell
+        function handleCellDragOver(year, month, day) {
+            if (!isDragging || !dragStartCell || !habitTrackerEnabled || !selectedHabitId) return;
+            
+            const currentCell = getCellElement(year, month, day);
+            if (!currentCell) return;
+            
+            // Get all cells between start and current
+            const startMonth = dragStartCell.month;
+            const startDay = dragStartCell.day;
+            
+            // Determine range
+            let startM = startMonth;
+            let startD = startDay;
+            let endM = month;
+            let endD = day;
+            
+            // Swap if needed to ensure start < end
+            if (startM > month || (startM === month && startD > day)) {
+                [startM, startD, endM, endD] = [month, day, startMonth, startDay];
+            }
+            
+            // Mark/unmark all cells in range based on starting state
+            let currentM = startM;
+            let currentD = startD;
+            
+            while (currentM < endM || (currentM === endM && currentD <= endD)) {
+                const cellKey = `${currentM}-${currentD}`;
+                
+                // Only process if not already processed
+                if (!dragProcessedCells.has(cellKey)) {
+                    const cell = getCellElement(2026, currentM, currentD);
+                    if (cell) {
+                        // Set to match the starting cell's state (after it was toggled)
+                        setDateMarked(2026, currentM, currentD, selectedHabitId, dragStartState);
+                        
+                        if (dragStartState) {
+                            applyHabitColorToCell(cell);
+                        } else {
+                            removeHabitColorFromCell(cell);
+                        }
+                        
+                        dragProcessedCells.add(cellKey);
+                    }
+                }
+                
+                // Move to next day
+                currentD++;
+                const daysInMonth = getDaysInMonth(2026, currentM);
+                if (currentD > daysInMonth) {
+                    currentD = 1;
+                    currentM++;
+                }
+                
+                // Safety check
+                if (currentM > 11) break;
+            }
+        }
+
+        // Clear all marked dates for selected habit
+        async function clearAllMarkedDates() {
+            if (!selectedHabitId) {
+                await showCustomAlert('Please select a habit first', 'Notification');
+                return;
+            }
+            
+            // Get habit name for confirmation
+            const habit = habits.find(h => h.id === selectedHabitId);
+            const habitName = habit ? habit.name : 'this habit';
+            
+            // Confirmation dialog
+            const confirmed = await showCustomConfirm(
+                `Are you sure you want to clear all marked dates for <strong>"${habitName}"</strong>? This action cannot be undone.`,
+                'Clear All Dates'
+            );
+            if (!confirmed) {
+                return;
+            }
+            
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith(`habit-${selectedHabitId}-`)) {
+                    localStorage.removeItem(key);
+                }
+            });
+            // Re-render current view to update display
+            if (currentView === 'year') {
+                renderYearView();
+            } else if (currentView === 'month') {
+                renderMonthView(currentMonth);
+            }
+        }
+
+        // Update clear all button visibility based on edit tracker
+        function updateClearAllButton() {
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            if (!habitTrackerEnabled) {
+                clearAllBtn.style.visibility = 'hidden';
+                clearAllBtn.style.pointerEvents = 'none';
+            } else {
+                clearAllBtn.style.visibility = 'visible';
+                clearAllBtn.style.pointerEvents = 'auto';
+            }
+        }
+
+        // Initialize habit tracker toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHabits();
+            loadHabitTrackerState();
+            
+            const toggle = document.getElementById('habitToggle');
+            toggle.addEventListener('click', toggleHabitTracker);
+            
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            clearAllBtn.addEventListener('click', clearAllMarkedDates);
+            
+            const habitSelectButton = document.getElementById('habitSelectButton');
+            habitSelectButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleDropdown();
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const wrapper = document.querySelector('.habit-select-wrapper');
+                if (!wrapper.contains(e.target)) {
+                    closeDropdown();
+                }
+            });
+            
+            const createHabitBtn = document.getElementById('createHabitBtn');
+            createHabitBtn.addEventListener('click', openCreateHabitModal);
+            
+            const cancelHabitBtn = document.getElementById('cancelHabitBtn');
+            cancelHabitBtn.addEventListener('click', closeCreateHabitModal);
+            
+            const saveHabitBtn = document.getElementById('saveHabitBtn');
+            saveHabitBtn.addEventListener('click', () => {
+                const input = document.getElementById('habitNameInput');
+                const name = input.value.trim();
+                if (name) {
+                    createHabit(name);
+                    closeCreateHabitModal();
+                }
+            });
+            
+            const habitNameInput = document.getElementById('habitNameInput');
+            habitNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveHabitBtn.click();
+                }
+            });
+            
+            // Close modal when clicking outside
+            const createHabitModal = document.getElementById('createHabitModal');
+            createHabitModal.addEventListener('click', (e) => {
+                if (e.target === createHabitModal) {
+                    closeCreateHabitModal();
+                }
+            });
+            
+            // Global mouseup handler to stop dragging
+            document.addEventListener('mouseup', () => {
+                if (isDragging || mouseDownPos) {
+                    isDragging = false;
+                    dragStartCell = null;
+                    dragStartState = null;
+                    dragProcessedCells.clear();
+                    mouseDownPos = null;
+                    hasMoved = false;
+                }
+            });
+            
+            // Prevent text selection while dragging
+            document.addEventListener('selectstart', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                }
+            });
+            
+            // Prevent text selection on drag
+            document.addEventListener('dragstart', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                }
+            });
+        });
 
         function getDaysInMonth(year, month) {
             return new Date(year, month + 1, 0).getDate();
@@ -499,8 +1755,6 @@
                 const header = document.createElement('div');
                 header.className = 'month-header';
                 header.textContent = monthAbbr[month];
-                header.onclick = () => renderMonthView(month);
-                header.style.cursor = 'pointer';
                 monthCol.appendChild(header);
 
                 const daysInMonth = getDaysInMonth(2026, month);
@@ -511,9 +1765,68 @@
                     const dayRow = document.createElement('div');
                     dayRow.className = 'day-row';
                     dayRow.style.cursor = 'pointer';
-                    dayRow.onclick = (e) => {
+                    
+                    // Check if date is marked for selected habit and apply styling
+                    if (selectedHabitId && isDateMarked(2026, month, day, selectedHabitId)) {
+                        applyHabitColorToCell(dayRow);
+                    } else if (!selectedHabitId && isDateMarked(2026, month, day)) {
+                        // Show marked if any habit has this date marked (use default green)
+                        dayRow.classList.add('marked');
+                    }
+                    
+                    // Store date info on element for drag operations
+                    dayRow.dataset.year = '2026';
+                    dayRow.dataset.month = month;
+                    dayRow.dataset.day = day;
+                    
+                    dayRow.onmousedown = (e) => {
                         e.stopPropagation();
-                        renderDayView(month, day);
+                        if (habitTrackerEnabled && selectedHabitId) {
+                            mouseDownPos = { x: e.clientX, y: e.clientY };
+                            hasMoved = false;
+                            dragStartCell = { month, day };
+                            dragStartState = isDateMarked(2026, month, day, selectedHabitId);
+                        }
+                    };
+                    
+                    dayRow.onmousemove = (e) => {
+                        if (mouseDownPos && habitTrackerEnabled && selectedHabitId) {
+                            const distance = Math.abs(e.clientX - mouseDownPos.x) + Math.abs(e.clientY - mouseDownPos.y);
+                            if (distance > 5) { // Threshold to start dragging
+                                if (!hasMoved) {
+                                    hasMoved = true;
+                                    isDragging = true;
+                                    dragProcessedCells.clear();
+                                    // Toggle starting cell
+                                    toggleDateMarked(2026, month, day, selectedHabitId);
+                                    toggleCellWithHabitColor(dayRow);
+                                    dragStartState = !dragStartState; // Update after toggle
+                                    dragProcessedCells.add(`${month}-${day}`);
+                                }
+                            }
+                        }
+                    };
+                    
+                    dayRow.onmouseenter = (e) => {
+                        if (isDragging && habitTrackerEnabled && selectedHabitId) {
+                            handleCellDragOver(2026, month, day);
+                        }
+                    };
+                    
+                    dayRow.onclick = async (e) => {
+                        e.stopPropagation();
+                        if (!hasMoved && !isDragging) {
+                            if (habitTrackerEnabled && selectedHabitId) {
+                                // Toggle state for selected habit
+                                toggleDateMarked(2026, month, day, selectedHabitId);
+                                toggleCellWithHabitColor(dayRow);
+                            } else if (habitTrackerEnabled && !selectedHabitId) {
+                                await showCustomAlert('Please select a habit first', 'Notification');
+                            } else {
+                                // Normal behavior - open day view
+                                renderDayView(month, day);
+                            }
+                        }
                     };
 
                     const dayNum = document.createElement('div');
@@ -583,10 +1896,70 @@
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day';
                 dayDiv.textContent = day;
+                
+                // Check if date is marked for selected habit and apply styling
+                if (selectedHabitId && isDateMarked(2026, month, day, selectedHabitId)) {
+                    applyHabitColorToCell(dayDiv);
+                } else if (!selectedHabitId && isDateMarked(2026, month, day)) {
+                    // Show marked if any habit has this date marked (use default green)
+                    dayDiv.classList.add('marked');
+                }
+                
                 const currentDayNum = day;
-                dayDiv.onclick = (e) => {
+                
+                // Store date info on element for drag operations
+                dayDiv.dataset.year = '2026';
+                dayDiv.dataset.month = month;
+                dayDiv.dataset.day = currentDayNum;
+                
+                dayDiv.onmousedown = (e) => {
                     e.stopPropagation();
-                    renderDayView(month, currentDayNum);
+                    if (habitTrackerEnabled && selectedHabitId) {
+                        mouseDownPos = { x: e.clientX, y: e.clientY };
+                        hasMoved = false;
+                        dragStartCell = { month, day: currentDayNum };
+                        dragStartState = isDateMarked(2026, month, currentDayNum, selectedHabitId);
+                    }
+                };
+                
+                dayDiv.onmousemove = (e) => {
+                    if (mouseDownPos && habitTrackerEnabled && selectedHabitId) {
+                        const distance = Math.abs(e.clientX - mouseDownPos.x) + Math.abs(e.clientY - mouseDownPos.y);
+                        if (distance > 5) { // Threshold to start dragging
+                            if (!hasMoved) {
+                                hasMoved = true;
+                                isDragging = true;
+                                dragProcessedCells.clear();
+                                // Toggle starting cell
+                                toggleDateMarked(2026, month, currentDayNum, selectedHabitId);
+                                toggleCellWithHabitColor(dayDiv);
+                                dragStartState = !dragStartState; // Update after toggle
+                                dragProcessedCells.add(`${month}-${currentDayNum}`);
+                            }
+                        }
+                    }
+                };
+                
+                dayDiv.onmouseenter = (e) => {
+                    if (isDragging && habitTrackerEnabled && selectedHabitId) {
+                        handleCellDragOver(2026, month, currentDayNum);
+                    }
+                };
+                
+                dayDiv.onclick = async (e) => {
+                    e.stopPropagation();
+                    if (!hasMoved && !isDragging) {
+                        if (habitTrackerEnabled && selectedHabitId) {
+                            // Toggle state for selected habit
+                            toggleDateMarked(2026, month, currentDayNum, selectedHabitId);
+                            toggleCellWithHabitColor(dayDiv);
+                        } else if (habitTrackerEnabled && !selectedHabitId) {
+                            await showCustomAlert('Please select a habit first', 'Notification');
+                        } else {
+                            // Normal behavior - open day view
+                            renderDayView(month, currentDayNum);
+                        }
+                    }
                 };
                 grid.appendChild(dayDiv);
                 lastDayDiv = dayDiv;
@@ -631,7 +2004,7 @@
                     <textarea 
                         class="notes-input" 
                         id="dayNotes"
-                        placeholder="Write your notes here..."
+                        placeholder="What did you do today? What did you learn?"
                         data-date="${dateKey}"
                     >${savedNotes}</textarea>
                 </div>
