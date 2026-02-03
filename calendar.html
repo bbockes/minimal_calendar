@@ -29,12 +29,52 @@
         #title {
             font-size: 36px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 50px;
             margin-top: -10px;
             position: relative;
             z-index: 10;
-            text-align: center;
-            display: block;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .title-circle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            background: #E8E0F0;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .title-circle-btn:hover {
+            background: #D4C4E8;
+        }
+
+        .title-circle-btn svg {
+            width: 20px;
+            height: 20px;
+            color: #333;
+        }
+
+        .title-circle-btn.profile {
+            background: #E0E8F0;
+        }
+
+        .title-circle-btn.profile:hover {
+            background: #C4D4E8;
         }
 
         .slider {
@@ -94,7 +134,7 @@
         .year-view-container {
             display: flex;
             flex-direction: column;
-            margin-top: 65px;
+            margin-top: 102px;
         }
 
         .year-view {
@@ -438,7 +478,7 @@
         /* Habit Tracker Controls */
         .habit-toggle-container {
             position: absolute;
-            top: 70px;
+            top: 100px;
             left: 30px;
             z-index: 200;
             display: flex;
@@ -449,7 +489,7 @@
 
         .habit-controls-right {
             position: absolute;
-            top: 70px;
+            top: 100px;
             right: 30px;
             z-index: 200;
             display: flex;
@@ -678,12 +718,12 @@
         }
 
         .custom-dropdown-item.selected {
-            background: #639A88;
+            background: #555;
             color: #fff;
         }
 
         .custom-dropdown-item.selected:hover {
-            background: #558A78 !important;
+            background: #444 !important;
         }
 
         .custom-dropdown-item-color {
@@ -1115,7 +1155,24 @@
         </div>
     </div>
 
-    <div id="title">2026</div>
+    <div id="title">
+        <span>2026</span>
+        <div class="title-buttons">
+            <button class="title-circle-btn profile" title="Profile">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20.59 22C20.59 18.13 16.74 15 12 15C7.26 15 3.41 18.13 3.41 22" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <button class="title-circle-btn" title="More options">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="5" r="1.5" fill="#333"/>
+                    <circle cx="12" cy="12" r="1.5" fill="#333"/>
+                    <circle cx="12" cy="19" r="1.5" fill="#333"/>
+                </svg>
+            </button>
+        </div>
+    </div>
     
     <div class="header">
         <div class="slider" id="slider"></div>
@@ -1164,7 +1221,7 @@
             '#2D5A4A', // Green (default) - darker green for AAA contrast
             '#053A4A', // Dark Teal/Blue - darker for AAA contrast
             '#B84A3A', // Orange - darker orange for AAA contrast
-            '#2D2343', // Purple - darker purple for AAA contrast
+            '#5D4A7A', // Purple - lighter purple for AAA contrast
             '#A01022', // Red - darker red for AAA contrast
             '#7A5D3D', // Brown - darker brown for AAA contrast
             '#B84AA8', // Pink/Magenta - darker pink for AAA contrast
@@ -1370,14 +1427,21 @@
             const saved = localStorage.getItem('habits');
             habits = saved ? JSON.parse(saved) : [];
             
+            // Migrate old purple color to new lighter purple
+            const oldPurple = '#2D2343';
+            const newPurple = '#5D4A7A';
+            
             // Assign colors to existing habits that don't have them
             habits.forEach((habit, index) => {
                 if (!habit.color) {
                     habit.color = habitColors[index % habitColors.length];
+                } else if (habit.color === oldPurple) {
+                    // Migrate old purple to new lighter purple
+                    habit.color = newPurple;
                 }
             });
             if (habits.length > 0) {
-                saveHabits(); // Save colors if any were assigned
+                saveHabits(); // Save colors if any were assigned or migrated
             }
             
             populateHabitDropdown();
@@ -1489,13 +1553,8 @@
                     updateMarkTodayButton();
                     closeDropdown();
                     updateSelectedItem();
-                    // Re-render current view
-                    if (currentView === 'year') {
-                        renderYearView();
-                    } else if (currentView === 'month') {
-                        renderMonthView(currentMonth);
-                    }
-                    updateMarkTodayButton();
+                    // Re-render year view
+                    renderYearView();
                     updateMarkTodayButton();
                 };
                 menu.appendChild(item);
@@ -2184,7 +2243,7 @@
                     monthItem.className = 'slider-item selected';
                 } else {
                     monthItem.className = 'slider-item greyed';
-                    monthItem.onclick = () => renderMonthView(m);
+                    monthItem.onclick = () => renderYearView();
                 }
                 monthItem.textContent = monthNames[m];
                 slider.appendChild(monthItem);
@@ -2228,7 +2287,14 @@
 
         function renderYearView() {
             currentView = 'year';
-            document.getElementById('title').textContent = '2026';
+            const titleElement = document.getElementById('title');
+            const titleSpan = titleElement.querySelector('span');
+            if (titleSpan) {
+                titleSpan.textContent = '2026';
+            } else {
+                // Fallback if structure is different
+                titleElement.innerHTML = '<span>2026</span><div class="title-buttons"><button class="title-circle-btn profile" title="Profile"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.59 22C20.59 18.13 16.74 15 12 15C7.26 15 3.41 18.13 3.41 22" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="title-circle-btn" title="More options"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="5" r="1.5" fill="#333"/><circle cx="12" cy="12" r="1.5" fill="#333"/><circle cx="12" cy="19" r="1.5" fill="#333"/></svg></button></div>';
+            }
             renderYearSlider();
             document.getElementById('navigation').style.display = 'none';
             
@@ -2360,12 +2426,9 @@
         }
 
         function renderMonthView(month) {
-            currentView = 'month';
-            currentMonth = month;
-            document.getElementById('title').textContent = monthNames[month] + ' 2026';
-            renderMonthSlider(month);
-            document.getElementById('navigation').style.display = 'block';
-            updateNavButtons();
+            // Always render year view instead of month view
+            renderYearView();
+            return;
 
             const calendar = document.getElementById('calendar');
             calendar.className = 'month-view';
@@ -2552,10 +2615,7 @@
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
 
-            if (currentView === 'month') {
-                prevBtn.disabled = currentMonth === 0;
-                nextBtn.disabled = currentMonth === 11;
-            } else if (currentView === 'day') {
+            if (currentView === 'day') {
                 const daysInMonth = getDaysInMonth(2026, currentMonth);
                 prevBtn.disabled = currentDay === 1 && currentMonth === 0;
                 nextBtn.disabled = currentDay === daysInMonth && currentMonth === 11;
@@ -2563,9 +2623,7 @@
         }
 
         document.getElementById('prevBtn').onclick = () => {
-            if (currentView === 'month') {
-                if (currentMonth > 0) renderMonthView(currentMonth - 1);
-            } else if (currentView === 'day') {
+            if (currentView === 'day') {
                 if (currentDay > 1) {
                     renderDayView(currentMonth, currentDay - 1);
                 } else if (currentMonth > 0) {
@@ -2576,9 +2634,7 @@
         };
 
         document.getElementById('nextBtn').onclick = () => {
-            if (currentView === 'month') {
-                if (currentMonth < 11) renderMonthView(currentMonth + 1);
-            } else if (currentView === 'day') {
+            if (currentView === 'day') {
                 const daysInMonth = getDaysInMonth(2026, currentMonth);
                 if (currentDay < daysInMonth) {
                     renderDayView(currentMonth, currentDay + 1);
