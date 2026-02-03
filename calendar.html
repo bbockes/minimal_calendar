@@ -488,6 +488,33 @@
             position: relative;
         }
 
+        .habit-streak-display {
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            padding: 10px 16px;
+            border-radius: 24px;
+            border: 2px solid #ccc;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .habit-streak-display.hidden {
+            display: none;
+        }
+
+        .streak-icon {
+            font-size: 16px;
+        }
+
+        .streak-text {
+            font-size: 14px;
+        }
+
         .habit-select {
             padding: 10px 16px;
             padding-right: 40px;
@@ -905,7 +932,11 @@
                     <!-- Options will be populated by JavaScript -->
                 </div>
             </div>
-            <button class="create-habit-btn" id="createHabitBtn">+ New</button>
+                        <button class="create-habit-btn" id="createHabitBtn">+ New</button>
+        </div>
+        <div class="habit-streak-display hidden" id="habitStreakDisplay">
+            <span class="streak-icon">🔥</span>
+            <span class="streak-text" id="streakText">0 day streak</span>
         </div>
     </div>
 
@@ -1218,6 +1249,7 @@
             
             // Re-render year view to update marked dates
             renderYearView();
+            updateStreakDisplay();
         }
 
         function populateHabitDropdown() {
@@ -1237,12 +1269,14 @@
                 selectedHabitId = null;
                 button.textContent = 'Select Habit';
                 updateHabitButtonColor();
-                updateHabitToggleUI();
+                    updateStreakDisplay();
+                    updateHabitToggleUI();
                 closeDropdown();
                 updateSelectedItem();
                 // Re-render year view
                 renderYearView();
-            };
+            }
+            updateStreakDisplay();
             menu.appendChild(defaultItem);
             
             // Add habits
@@ -1287,6 +1321,7 @@
                     selectedHabitId = habit.id;
                     button.textContent = habit.name;
                     updateHabitButtonColor();
+                    updateStreakDisplay();
                     updateHabitToggleUI();
                     closeDropdown();
                     updateSelectedItem();
@@ -1296,6 +1331,7 @@
                     } else if (currentView === 'month') {
                         renderMonthView(currentMonth);
                     }
+                    updateStreakDisplay();
                 };
                 menu.appendChild(item);
             });
@@ -1306,17 +1342,20 @@
                 if (habit) {
                     button.textContent = habit.name;
                     updateHabitButtonColor();
+                    updateStreakDisplay();
                     updateHabitToggleUI();
                 } else {
                     button.textContent = 'Select Habit';
                     selectedHabitId = null;
                     updateHabitButtonColor();
+                    updateStreakDisplay();
                     updateHabitToggleUI();
                 }
             } else {
                 button.textContent = 'Select Habit';
                 updateHabitButtonColor();
-                updateHabitToggleUI();
+                    updateStreakDisplay();
+                    updateHabitToggleUI();
             }
             
             // Update selected item highlighting
@@ -1387,11 +1426,13 @@
             const button = document.getElementById('habitSelectButton');
             button.textContent = newHabit.name;
             updateHabitButtonColor();
-            updateHabitToggleUI();
+                    updateStreakDisplay();
+                    updateHabitToggleUI();
             updateSelectedItem();
             
             // Re-render year view to update marked dates
             renderYearView();
+            updateStreakDisplay();
         }
 
         function openCreateHabitModal() {
@@ -1426,6 +1467,89 @@
                 const dateKey = getDateKey(year, month, day, habit.id);
                 return localStorage.getItem(dateKey) === 'true';
             });
+        }
+
+        // Calculate current streak for a habit (consecutive days from today backwards)
+        function calculateCurrentStreak(habitId) {
+            if (!habitId) return 0;
+            
+            // Get today's date, but use Feb 2, 2026 if we're not in 2026
+            const now = new Date();
+            const today = (now.getFullYear() === 2026) 
+                ? new Date(2026, now.getMonth(), now.getDate())
+                : new Date(2026, 1, 2); // Feb 2, 2026 as reference
+            let currentDate = new Date(today);
+            let streak = 0;
+            
+            // Check if today is marked
+            if (!isDateMarked(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), habitId)) {
+                // If today isn't marked, check yesterday
+                currentDate.setDate(currentDate.getDate() - 1);
+            }
+            
+            // Count consecutive days backwards
+            while (currentDate >= new Date(2026, 0, 1)) { // Don't go before Jan 1, 2026
+                if (isDateMarked(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), habitId)) {
+                    streak++;
+                    currentDate.setDate(currentDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+        
+        // Calculate longest streak for a habit
+        function calculateLongestStreak(habitId) {
+            if (!habitId) return 0;
+            
+            let longestStreak = 0;
+            let currentStreak = 0;
+            const startDate = new Date(2026, 0, 1); // Jan 1, 2026
+            const endDate = new Date(2026, 11, 31); // Dec 31, 2026
+            const currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                if (isDateMarked(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), habitId)) {
+                    currentStreak++;
+                    longestStreak = Math.max(longestStreak, currentStreak);
+                } else {
+                    currentStreak = 0;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            return longestStreak;
+        }
+        
+        // Update streak display
+        function updateStreakDisplay() {
+            const streakDisplay = document.getElementById('habitStreakDisplay');
+            const streakText = document.getElementById('streakText');
+            
+            // Safety check - return if elements don't exist yet
+            if (!streakDisplay || !streakText) {
+                return;
+            }
+            
+            if (!selectedHabitId) {
+                streakDisplay.classList.add('hidden');
+                return;
+            }
+            
+            const currentStreak = calculateCurrentStreak(selectedHabitId);
+            const longestStreak = calculateLongestStreak(selectedHabitId);
+            
+            streakDisplay.classList.remove('hidden');
+            
+            if (currentStreak === 0) {
+                streakText.textContent = 'No streak yet';
+            } else if (currentStreak === 1) {
+                streakText.textContent = '1 day streak';
+            } else {
+                streakText.textContent = `${currentStreak} day streak`;
+            }
         }
 
         // Toggle date marked state
@@ -1549,12 +1673,9 @@
                     localStorage.removeItem(key);
                 }
             });
-            // Re-render current view to update display
-            if (currentView === 'year') {
-                renderYearView();
-            } else if (currentView === 'month') {
-                renderMonthView(currentMonth);
-            }
+            // Re-render year view to update marked dates
+            renderYearView();
+            updateStreakDisplay();
         }
 
         // Update clear all button visibility based on edit tracker
@@ -1573,6 +1694,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadHabits();
             loadHabitTrackerState();
+            updateStreakDisplay();
             
             const toggle = document.getElementById('habitToggle');
             toggle.addEventListener('click', toggleHabitTracker);
@@ -1634,6 +1756,7 @@
                     dragProcessedCells.clear();
                     mouseDownPos = null;
                     hasMoved = false;
+                    updateStreakDisplay();
                 }
             });
             
@@ -1787,6 +1910,7 @@
                                     // Toggle starting cell
                                     toggleDateMarked(2026, month, day, selectedHabitId);
                                     toggleCellWithHabitColor(dayRow);
+                                    updateStreakDisplay();
                                     dragStartState = !dragStartState; // Update after toggle
                                     dragProcessedCells.add(`${month}-${day}`);
                                 }
@@ -1807,6 +1931,7 @@
                                 // Toggle state for selected habit
                                 toggleDateMarked(2026, month, day, selectedHabitId);
                                 toggleCellWithHabitColor(dayRow);
+                                updateStreakDisplay();
                             } else if (habitTrackerEnabled && !selectedHabitId) {
                                 await showCustomAlert('Please select a habit first', 'Notification');
                             } else {
@@ -1920,6 +2045,7 @@
                                 // Toggle starting cell
                                 toggleDateMarked(2026, month, currentDayNum, selectedHabitId);
                                 toggleCellWithHabitColor(dayDiv);
+                                updateStreakDisplay();
                                 dragStartState = !dragStartState; // Update after toggle
                                 dragProcessedCells.add(`${month}-${currentDayNum}`);
                             }
@@ -1940,6 +2066,7 @@
                             // Toggle state for selected habit
                             toggleDateMarked(2026, month, currentDayNum, selectedHabitId);
                             toggleCellWithHabitColor(dayDiv);
+                            updateStreakDisplay();
                         } else if (habitTrackerEnabled && !selectedHabitId) {
                             await showCustomAlert('Please select a habit first', 'Notification');
                         } else {
@@ -2081,7 +2208,17 @@
             }
         });
 
-        renderYearView();
+        // Initialize calendar view
+        try {
+            renderYearView();
+        } catch (error) {
+            console.error('Error rendering calendar:', error);
+            // Still try to show something
+            const calendar = document.getElementById('calendar');
+            if (calendar) {
+                calendar.innerHTML = '<p>Error loading calendar. Please check the console.</p>';
+            }
+        }
     </script>
 </body>
 </html>
