@@ -22,6 +22,10 @@
             font-size: 16px;
         }
 
+        body.modal-open {
+            overflow: hidden;
+        }
+
         .header {
             text-align: center;
         }
@@ -451,6 +455,236 @@
             border-color: #999;
         }
 
+        /* Event View Modal */
+        .event-view {
+            width: 95vw;
+            height: 85vh;
+            max-width: 1400px;
+            min-height: 700px;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+        }
+
+        .event-view .event-header {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .event-view .event-date {
+            font-size: 22px;
+            color: #000;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .event-view .event-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            gap: 30px;
+            overflow: hidden;
+        }
+
+        .event-view .event-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .event-view .events-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            padding-right: 10px;
+            align-items: flex-start;
+        }
+
+        .event-view .event-form-container {
+            width: 550px;
+            flex-shrink: 0;
+            border-left: 1px solid #e0e0e0;
+            padding-left: 30px;
+            padding-right: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+
+        .event-form-section {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 0;
+        }
+
+        .event-form-section.active {
+            display: flex;
+            margin-top: 0;
+        }
+
+        .event-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fff;
+            transition: all 0.2s ease;
+            cursor: default;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .event-card:hover {
+            border-color: #ddd;
+            box-shadow: none;
+        }
+
+        .event-card.editing {
+            border-color: #639A88;
+            background: #f0f7f5;
+            box-shadow: 0 0 0 3px rgba(99, 154, 136, 0.15);
+        }
+
+        .event-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .event-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 12px;
+        }
+
+        .event-card-detail {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .event-card-notes {
+            font-size: 14px;
+            color: #333;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .add-event-btn-side {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 2px dashed #639A88;
+            background: #fff;
+            color: #639A88;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .add-event-btn-side:hover {
+            background: #f0f7f5;
+            border-color: #558A78;
+            color: #558A78;
+        }
+
+
+        .event-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .event-field label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .event-field input,
+        .event-field textarea {
+            width: 100%;
+            padding: 12px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .event-field input:focus,
+        .event-field textarea:focus {
+            border-color: #639A88;
+        }
+
+        .event-field textarea {
+            resize: vertical;
+            min-height: 140px;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .event-btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: 2px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #000;
+        }
+
+        .event-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        .event-btn.primary {
+            background: #639A88;
+            color: #fff;
+            border-color: #639A88;
+        }
+
+        .event-btn.primary:hover {
+            background: #558A78;
+            border-color: #558A78;
+        }
+
+        .event-btn.danger {
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+
+        .event-btn.danger:hover {
+            background-color: #ffebee;
+        }
+
         .modal-close {
             position: absolute;
             top: 15px;
@@ -492,6 +726,20 @@
             top: 100px;
             right: 30px;
             z-index: 200;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .button-separator {
+            width: 1px;
+            height: 24px;
+            background-color: #ddd;
+            margin: 0 4px;
+        }
+
+        .mode-ui {
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -601,7 +849,7 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 16px center;
-            min-width: 180px;
+            min-width: 120px;
         }
 
         .habit-select:hover {
@@ -617,7 +865,11 @@
         /* Custom dropdown */
         .custom-dropdown {
             position: relative;
-            min-width: 250px;
+            min-width: 140px;
+        }
+
+        .custom-dropdown.habit-calendar-dropdown {
+            min-width: 280px;
         }
 
         .custom-dropdown-button {
@@ -1011,11 +1263,20 @@
             transition: all 0.3s ease;
             user-select: none;
             color: #000;
+            position: relative;
         }
 
         .mark-today-btn:hover {
             border-color: #2D5A4A;
             background-color: #e8f0ed;
+        }
+
+        .mark-today-btn::after {
+            content: '(M)';
+            font-size: 10px;
+            opacity: 0.5;
+            margin-left: 6px;
+            font-weight: normal;
         }
 
         /* Custom Alert/Confirm Modal */
@@ -1108,27 +1369,52 @@
     <div class="habit-toggle-container">
         <div class="habit-select-wrapper">
             <div class="custom-dropdown">
-                <button class="custom-dropdown-button" id="habitSelectButton">
-                    Select Habit
+                <button class="custom-dropdown-button" id="modeSelectButton">
+                    Habits
                 </button>
-                <div class="custom-dropdown-menu" id="habitDropdownMenu">
-                    <!-- Options will be populated by JavaScript -->
+                <div class="custom-dropdown-menu" id="modeDropdownMenu">
+                    <button class="custom-dropdown-item" data-mode="events">Events</button>
+                    <button class="custom-dropdown-item" data-mode="habits">Habits</button>
                 </div>
             </div>
-                        <button class="create-habit-btn" id="createHabitBtn">+ New</button>
-                        <button class="create-habit-btn" id="statsBtn">Stats</button>
+            <!-- Habits Mode UI -->
+            <div id="habitsModeUI" class="mode-ui">
+                <button class="create-habit-btn" id="createHabitBtn">+ New</button>
+                <div class="custom-dropdown habit-calendar-dropdown">
+                    <button class="custom-dropdown-button" id="habitSelectButton">
+                        Select Habit
+                    </button>
+                    <div class="custom-dropdown-menu" id="habitDropdownMenu">
+                        <!-- Options will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="habit-toggle-wrapper">
+                    <div class="habit-toggle" id="habitToggle" title="Toggle Habit Tracker">
+                        <div class="habit-toggle-slider"></div>
+                    </div>
+                    <span class="habit-toggle-text">Edit Tracker</span>
+                </div>
+                <div class="button-separator"></div>
+                <button class="mark-today-btn" id="markTodayBtn">Mark Today</button>
+            </div>
+            <!-- Events Mode UI -->
+            <div id="eventsModeUI" class="mode-ui" style="display: none;">
+                <button class="create-habit-btn" id="createCalendarBtn">+ New</button>
+                <div class="custom-dropdown habit-calendar-dropdown">
+                    <button class="custom-dropdown-button" id="calendarSelectButton">
+                        Select Calendar
+                    </button>
+                    <div class="custom-dropdown-menu" id="calendarDropdownMenu">
+                        <!-- Options will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="habit-controls-right">
         <button class="clear-all-btn" id="clearAllBtn">Clear All</button>
-        <button class="mark-today-btn" id="markTodayBtn">Mark Today</button>
-        <div class="habit-toggle-wrapper">
-            <div class="habit-toggle" id="habitToggle" title="Toggle Habit Tracker">
-                <div class="habit-toggle-slider"></div>
-            </div>
-            <span class="habit-toggle-text">Edit Tracker</span>
-        </div>
+        <button class="create-habit-btn" id="statsBtn">Stats</button>
     </div>
 
     <div class="create-habit-modal" id="createHabitModal">
@@ -1191,6 +1477,13 @@
         </div>
     </div>
 
+    <!-- Event Creation Modal -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="event-view" id="eventViewContent">
+            <!-- Event content will be inserted here -->
+        </div>
+    </div>
+
     <div class="custom-modal-overlay" id="customModalOverlay">
         <div class="custom-modal" id="customModal">
             <div class="custom-modal-title" id="customModalTitle"></div>
@@ -1214,6 +1507,10 @@
         let selectedHabitId = null;
         let habits = [];
         let showLongestStreak = false;
+        let currentMode = 'habits'; // 'habits' or 'events'
+        let selectedCalendarId = null;
+        let calendars = [];
+        let events = []; // Array to store events
         
         // Habit colors - default green first, then cycle through others
         // All colors meet WCAG AAA contrast (7:1) with white text
@@ -1331,16 +1628,19 @@
                 okBtn.textContent = 'OK';
                 okBtn.onclick = () => {
                     overlay.classList.remove('active');
+                    document.body.classList.remove('modal-open');
                     resolve(true);
                 };
                 modalButtons.appendChild(okBtn);
                 
                 overlay.classList.add('active');
+                document.body.classList.add('modal-open');
                 
                 // Close on overlay click
                 overlay.onclick = (e) => {
                     if (e.target === overlay) {
                         overlay.classList.remove('active');
+                        document.body.classList.remove('modal-open');
                         resolve(true);
                     }
                 };
@@ -1363,6 +1663,7 @@
                 cancelBtn.textContent = 'Cancel';
                 cancelBtn.onclick = () => {
                     overlay.classList.remove('active');
+                    document.body.classList.remove('modal-open');
                     resolve(false);
                 };
                 
@@ -1371,6 +1672,7 @@
                 confirmBtn.textContent = 'OK';
                 confirmBtn.onclick = () => {
                     overlay.classList.remove('active');
+                    document.body.classList.remove('modal-open');
                     resolve(true);
                 };
                 
@@ -1378,11 +1680,13 @@
                 modalButtons.appendChild(confirmBtn);
                 
                 overlay.classList.add('active');
+                document.body.classList.add('modal-open');
                 
                 // Close on overlay click (treats as cancel)
                 overlay.onclick = (e) => {
                     if (e.target === overlay) {
                         overlay.classList.remove('active');
+                        document.body.classList.remove('modal-open');
                         resolve(false);
                     }
                 };
@@ -1483,6 +1787,15 @@
             const menu = document.getElementById('habitDropdownMenu');
             const button = document.getElementById('habitSelectButton');
             const currentValue = selectedHabitId;
+            
+            // Auto-select first habit if only one exists and none is selected
+            if (habits.length === 1 && !selectedHabitId) {
+                selectedHabitId = habits[0].id;
+                button.textContent = habits[0].name;
+                updateHabitButtonColor();
+                updateMarkTodayButton();
+                updateHabitToggleUI();
+            }
             
             // Clear existing options
             menu.innerHTML = '';
@@ -1595,7 +1908,7 @@
         }
 
         function updateSelectedItem() {
-            const items = document.querySelectorAll('.custom-dropdown-item');
+            const items = document.querySelectorAll('#habitDropdownMenu .custom-dropdown-item');
             items.forEach(item => {
                 item.classList.remove('selected');
                 if (item.dataset.value === selectedHabitId) {
@@ -1662,14 +1975,19 @@
         function openCreateHabitModal() {
             const modal = document.getElementById('createHabitModal');
             const input = document.getElementById('habitNameInput');
+            const title = modal.querySelector('h3');
             modal.classList.add('active');
+            document.body.classList.add('modal-open');
             input.value = '';
+            input.placeholder = 'Enter habit name...';
+            if (title) title.textContent = 'Create a New Habit';
             input.focus();
         }
 
         function closeCreateHabitModal() {
             const modal = document.getElementById('createHabitModal');
             modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
         }
 
         // Get date key for localStorage (now includes habit ID)
@@ -1754,6 +2072,7 @@
             
             populateStatsModal();
             modal.classList.add('active');
+            document.body.classList.add('modal-open');
         }
 
         // Close stats modal
@@ -1761,6 +2080,7 @@
             const modal = document.getElementById('statsModal');
             if (modal) {
                 modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
             }
         }
 
@@ -2084,36 +2404,393 @@
 
         // Mark today's date
         function markToday() {
-            if (!habitTrackerEnabled || !selectedHabitId) {
-                return;
+            if (currentMode === 'habits') {
+                if (!habitTrackerEnabled || !selectedHabitId) {
+                    return;
+                }
+                
+                const now = new Date();
+                const today = (now.getFullYear() === 2026) 
+                    ? new Date(2026, now.getMonth(), now.getDate())
+                    : new Date(2026, 1, 2); // Feb 2, 2026 as reference
+                
+                const year = today.getFullYear();
+                const month = today.getMonth();
+                const day = today.getDate();
+                
+                // Mark today's date
+                toggleDateMarked(year, month, day, selectedHabitId);
+                
+                // Re-render to update display
+                renderYearView();
+                updateMarkTodayButton();
+            } else {
+                // Events mode - similar logic for calendars
+                if (!selectedCalendarId) {
+                    return;
+                }
+                
+                const now = new Date();
+                const today = (now.getFullYear() === 2026) 
+                    ? new Date(2026, now.getMonth(), now.getDate())
+                    : new Date(2026, 1, 2);
+                
+                const year = today.getFullYear();
+                const month = today.getMonth();
+                const day = today.getDate();
+                
+                // Mark today's date for calendar
+                const dateKey = `calendar-${selectedCalendarId}-${year}-${month + 1}-${day}`;
+                const currentlyMarked = localStorage.getItem(dateKey) === 'true';
+                localStorage.setItem(dateKey, (!currentlyMarked).toString());
+                
+                renderYearView();
+            }
+        }
+
+        // Mode management
+        function loadMode() {
+            const saved = localStorage.getItem('currentMode');
+            currentMode = saved || 'habits';
+            updateModeUI();
+        }
+
+        function saveMode() {
+            localStorage.setItem('currentMode', currentMode);
+        }
+
+        function updateModeUI() {
+            const habitsUI = document.getElementById('habitsModeUI');
+            const eventsUI = document.getElementById('eventsModeUI');
+            const modeButton = document.getElementById('modeSelectButton');
+            const statsBtn = document.getElementById('statsBtn');
+            
+            if (currentMode === 'habits') {
+                habitsUI.style.display = 'flex';
+                eventsUI.style.display = 'none';
+                modeButton.textContent = 'Habits';
+                if (statsBtn) statsBtn.style.display = '';
+            } else {
+                habitsUI.style.display = 'none';
+                eventsUI.style.display = 'flex';
+                modeButton.textContent = 'Events';
+                if (statsBtn) statsBtn.style.display = 'none';
             }
             
-            const now = new Date();
-            const today = (now.getFullYear() === 2026) 
-                ? new Date(2026, now.getMonth(), now.getDate())
-                : new Date(2026, 1, 2); // Feb 2, 2026 as reference
+            // Update selected item in mode dropdown
+            const modeItems = document.querySelectorAll('#modeDropdownMenu .custom-dropdown-item');
+            modeItems.forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.mode === currentMode) {
+                    item.classList.add('selected');
+                }
+            });
             
-            const year = today.getFullYear();
-            const month = today.getMonth();
-            const day = today.getDate();
-            
-            // Mark today's date
-            toggleDateMarked(year, month, day, selectedHabitId);
-            
-            // Re-render to update display
+            // Re-render calendar view
             renderYearView();
-            updateMarkTodayButton();
-            updateMarkTodayButton();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            saveMode();
+            updateModeUI();
+        }
+
+        // Calendar management (similar to habits)
+        function loadCalendars() {
+            const saved = localStorage.getItem('calendars');
+            calendars = saved ? JSON.parse(saved) : [];
+            populateCalendarDropdown();
+        }
+
+        function saveCalendars() {
+            localStorage.setItem('calendars', JSON.stringify(calendars));
+            populateCalendarDropdown();
+        }
+
+        function createCalendar(name) {
+            if (!name || name.trim() === '') return;
+            
+            const colorIndex = calendars.length % habitColors.length;
+            
+            const newCalendar = {
+                id: Date.now().toString(),
+                name: name.trim(),
+                color: habitColors[colorIndex]
+            };
+            
+            calendars.push(newCalendar);
+            saveCalendars();
+            
+            // Select the newly created calendar
+            selectedCalendarId = newCalendar.id;
+            const button = document.getElementById('calendarSelectButton');
+            button.textContent = newCalendar.name;
+            updateCalendarButtonColor();
+            updateSelectedCalendarItem();
+            
+            // Re-render year view
+            renderYearView();
+        }
+
+        function deleteCalendar(calendarId) {
+            calendars = calendars.filter(c => c.id !== calendarId);
+            
+            // Clear all marked dates for this calendar
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith(`calendar-${calendarId}-`)) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            // If this calendar was selected, clear selection
+            if (selectedCalendarId === calendarId) {
+                selectedCalendarId = null;
+                const button = document.getElementById('calendarSelectButton');
+                button.textContent = 'Select Calendar';
+            }
+            
+            saveCalendars();
+            renderYearView();
+        }
+
+        function populateCalendarDropdown() {
+            const menu = document.getElementById('calendarDropdownMenu');
+            const button = document.getElementById('calendarSelectButton');
+            const currentValue = selectedCalendarId;
+            
+            // Auto-select first calendar if only one exists
+            if (calendars.length === 1 && !selectedCalendarId) {
+                selectedCalendarId = calendars[0].id;
+                button.textContent = calendars[0].name;
+                updateCalendarButtonColor();
+            }
+            
+            menu.innerHTML = '';
+            
+            // Add "Select Calendar" option
+            const defaultItem = document.createElement('button');
+            defaultItem.className = 'custom-dropdown-item';
+            defaultItem.textContent = 'Select Calendar';
+            defaultItem.dataset.value = '';
+            defaultItem.onclick = () => {
+                selectedCalendarId = null;
+                button.textContent = 'Select Calendar';
+                updateCalendarButtonColor();
+                closeCalendarDropdown();
+                updateSelectedCalendarItem();
+                renderYearView();
+            };
+            menu.appendChild(defaultItem);
+            
+            // Add calendars
+            calendars.forEach(calendar => {
+                const item = document.createElement('button');
+                item.className = 'custom-dropdown-item';
+                item.dataset.value = calendar.id;
+                
+                const itemText = document.createElement('span');
+                itemText.className = 'custom-dropdown-item-text';
+                
+                const colorDot = document.createElement('span');
+                colorDot.className = 'custom-dropdown-item-color';
+                colorDot.style.backgroundColor = calendar.color || habitColors[0];
+                
+                const calendarNameSpan = document.createElement('span');
+                calendarNameSpan.textContent = calendar.name;
+                
+                itemText.appendChild(colorDot);
+                itemText.appendChild(calendarNameSpan);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'custom-dropdown-item-delete';
+                deleteBtn.textContent = '×';
+                deleteBtn.title = 'Delete calendar';
+                deleteBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    const confirmed = await showCustomConfirm(
+                        `Are you sure you want to delete <strong>"${calendar.name}"</strong>?`,
+                        'Delete Calendar'
+                    );
+                    if (confirmed) {
+                        deleteCalendar(calendar.id);
+                        closeCalendarDropdown();
+                    }
+                };
+                
+                item.appendChild(itemText);
+                item.appendChild(deleteBtn);
+                
+                item.onclick = () => {
+                    selectedCalendarId = calendar.id;
+                    button.textContent = calendar.name;
+                    updateCalendarButtonColor();
+                    closeCalendarDropdown();
+                    updateSelectedCalendarItem();
+                    renderYearView();
+                };
+                menu.appendChild(item);
+            });
+            
+            // Restore selection if it still exists
+            if (currentValue) {
+                const calendar = calendars.find(c => c.id === currentValue);
+                if (calendar) {
+                    button.textContent = calendar.name;
+                    updateCalendarButtonColor();
+                } else {
+                    button.textContent = 'Select Calendar';
+                    selectedCalendarId = null;
+                    updateCalendarButtonColor();
+                }
+            } else {
+                button.textContent = 'Select Calendar';
+                updateCalendarButtonColor();
+            }
+            
+            updateSelectedCalendarItem();
+        }
+
+        function updateCalendarButtonColor() {
+            const button = document.getElementById('calendarSelectButton');
+            button.style.borderColor = '';
+            button.style.color = '';
+        }
+
+        function updateSelectedCalendarItem() {
+            const items = document.querySelectorAll('#calendarDropdownMenu .custom-dropdown-item');
+            items.forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.value === selectedCalendarId) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        function toggleCalendarDropdown() {
+            const menu = document.getElementById('calendarDropdownMenu');
+            const button = document.getElementById('calendarSelectButton');
+            const isActive = menu.classList.contains('active');
+            
+            if (isActive) {
+                closeCalendarDropdown();
+            } else {
+                openCalendarDropdown();
+            }
+        }
+
+        function openCalendarDropdown() {
+            const menu = document.getElementById('calendarDropdownMenu');
+            const button = document.getElementById('calendarSelectButton');
+            menu.classList.add('active');
+            button.classList.add('active');
+        }
+
+        function closeCalendarDropdown() {
+            const menu = document.getElementById('calendarDropdownMenu');
+            const button = document.getElementById('calendarSelectButton');
+            menu.classList.remove('active');
+            button.classList.remove('active');
+        }
+
+        function getCalendarColor(calendar) {
+            if (!calendar.color) {
+                const index = calendars.indexOf(calendar);
+                calendar.color = habitColors[index % habitColors.length];
+                saveCalendars();
+            }
+            return calendar.color;
+        }
+
+        function getSelectedCalendarColor() {
+            if (!selectedCalendarId) return null;
+            const calendar = calendars.find(c => c.id === selectedCalendarId);
+            return calendar ? getCalendarColor(calendar) : null;
+        }
+
+
+        function openCreateCalendarModal() {
+            const modal = document.getElementById('createHabitModal');
+            const input = document.getElementById('habitNameInput');
+            const title = modal.querySelector('h3');
+            const habitButtons = document.querySelector('.create-habit-buttons');
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+            input.value = '';
+            input.placeholder = 'Enter calendar name...';
+            if (title) title.textContent = 'Create a New Calendar';
+            input.focus();
         }
 
         // Initialize habit tracker toggle
         document.addEventListener('DOMContentLoaded', () => {
+            loadMode();
             loadHabits();
             loadHabitTrackerState();
+            loadCalendars();
+            loadEvents();
             updateMarkTodayButton();
             
             const toggle = document.getElementById('habitToggle');
             toggle.addEventListener('click', toggleHabitTracker);
+            
+            // Mode selector
+            const modeSelectButton = document.getElementById('modeSelectButton');
+            modeSelectButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const menu = document.getElementById('modeDropdownMenu');
+                const isActive = menu.classList.contains('active');
+                if (isActive) {
+                    menu.classList.remove('active');
+                    modeSelectButton.classList.remove('active');
+                } else {
+                    menu.classList.add('active');
+                    modeSelectButton.classList.add('active');
+                }
+            });
+            
+            // Mode dropdown items
+            document.querySelectorAll('#modeDropdownMenu .custom-dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const mode = item.dataset.mode;
+                    switchMode(mode);
+                    closeModeDropdown();
+                });
+            });
+            
+            function closeModeDropdown() {
+                const menu = document.getElementById('modeDropdownMenu');
+                const button = document.getElementById('modeSelectButton');
+                menu.classList.remove('active');
+                button.classList.remove('active');
+            }
+            
+            // Close mode dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const wrapper = document.querySelector('.habit-select-wrapper');
+                if (!wrapper.contains(e.target)) {
+                    closeModeDropdown();
+                }
+            });
+            
+            // Calendar dropdown
+            const calendarSelectButton = document.getElementById('calendarSelectButton');
+            calendarSelectButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleCalendarDropdown();
+            });
+            
+            document.addEventListener('click', (e) => {
+                const wrapper = document.querySelector('#eventsModeUI .custom-dropdown');
+                if (wrapper && !wrapper.contains(e.target)) {
+                    closeCalendarDropdown();
+                }
+            });
+            
+            // Create calendar button
+            const createCalendarBtn = document.getElementById('createCalendarBtn');
+            createCalendarBtn.addEventListener('click', openCreateCalendarModal);
             
             
             const clearAllBtn = document.getElementById('clearAllBtn');
@@ -2139,7 +2816,11 @@
             });
             
             const createHabitBtn = document.getElementById('createHabitBtn');
-            createHabitBtn.addEventListener('click', openCreateHabitModal);
+            createHabitBtn.addEventListener('click', () => {
+                if (currentMode === 'habits') {
+                    openCreateHabitModal();
+                }
+            });
             
             const statsBtn = document.getElementById('statsBtn');
             if (statsBtn) {
@@ -2168,8 +2849,13 @@
                 const input = document.getElementById('habitNameInput');
                 const name = input.value.trim();
                 if (name) {
-                    createHabit(name);
+                    if (currentMode === 'habits') {
+                        createHabit(name);
+                    } else {
+                        createCalendar(name);
+                    }
                     closeCreateHabitModal();
+                    input.placeholder = 'Enter habit name...';
                 }
             });
             
@@ -2271,7 +2957,9 @@
                     dayItem.className = 'slider-item selected';
                 } else {
                     dayItem.className = 'slider-item greyed';
-                    dayItem.onclick = () => renderDayView(month, d);
+                    if (currentMode === 'habits') {
+                        dayItem.onclick = () => renderDayView(month, d);
+                    }
                 }
                 dayItem.textContent = d;
                 slider.appendChild(dayItem);
@@ -2331,21 +3019,45 @@
                         : new Date(2026, 1, 2); // Feb 2, 2026 as reference
                     if (2026 === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
                         dayRow.classList.add('today');
-                        // Apply habit color to the border if a habit is selected
-                        if (selectedHabitId) {
+                        // Apply color to the border based on current mode
+                        if (currentMode === 'habits' && selectedHabitId) {
                             const habitColor = getSelectedHabitColor();
                             if (habitColor) {
                                 dayRow.style.setProperty('--today-border-color', habitColor);
                             }
+                        } else if (currentMode === 'events' && selectedCalendarId) {
+                            const calendarColor = getSelectedCalendarColor();
+                            if (calendarColor) {
+                                dayRow.style.setProperty('--today-border-color', calendarColor);
+                            }
                         }
                     }
                     
-                    // Check if date is marked for selected habit and apply styling
-                    if (selectedHabitId && isDateMarked(2026, month, day, selectedHabitId)) {
-                        applyHabitColorToCell(dayRow);
-                    } else if (!selectedHabitId && isDateMarked(2026, month, day)) {
-                        // Show marked if any habit has this date marked (use default green)
-                        dayRow.classList.add('marked');
+                    // Check if date is marked based on current mode
+                    if (currentMode === 'habits') {
+                        if (selectedHabitId && isDateMarked(2026, month, day, selectedHabitId)) {
+                            applyHabitColorToCell(dayRow);
+                        } else if (!selectedHabitId && isDateMarked(2026, month, day)) {
+                            // Show marked if any habit has this date marked (use default green)
+                            dayRow.classList.add('marked');
+                        }
+                    } else {
+                        // Events mode
+                        if (selectedCalendarId) {
+                            const dateKey = `calendar-${selectedCalendarId}-2026-${month + 1}-${day}`;
+                            const eventKey = getEventKey(selectedCalendarId, 2026, month, day);
+                            const hasEvents = events.some(e => e.key === eventKey);
+                            
+                            if (localStorage.getItem(dateKey) === 'true' || hasEvents) {
+                                const calendar = calendars.find(c => c.id === selectedCalendarId);
+                                if (calendar) {
+                                    const color = getCalendarColor(calendar);
+                                    dayRow.style.backgroundColor = color;
+                                    dayRow.style.color = '#fff';
+                                    dayRow.classList.add('marked');
+                                }
+                            }
+                        }
                     }
                     
                     // Store date info on element for drag operations
@@ -2355,27 +3067,59 @@
                     
                     dayRow.onmousedown = (e) => {
                         e.stopPropagation();
-                        if (habitTrackerEnabled && selectedHabitId) {
+                        if (currentMode === 'habits' && habitTrackerEnabled && selectedHabitId) {
                             mouseDownPos = { x: e.clientX, y: e.clientY };
                             hasMoved = false;
                             dragStartCell = { month, day };
                             dragStartState = isDateMarked(2026, month, day, selectedHabitId);
+                        } else if (currentMode === 'events' && selectedCalendarId) {
+                            mouseDownPos = { x: e.clientX, y: e.clientY };
+                            hasMoved = false;
+                            dragStartCell = { month, day };
+                            const dateKey = `calendar-${selectedCalendarId}-2026-${month + 1}-${day}`;
+                            dragStartState = localStorage.getItem(dateKey) === 'true';
                         }
                     };
                     
                     dayRow.onmousemove = (e) => {
-                        if (mouseDownPos && habitTrackerEnabled && selectedHabitId) {
+                        if (currentMode === 'habits' && mouseDownPos && habitTrackerEnabled && selectedHabitId) {
                             const distance = Math.abs(e.clientX - mouseDownPos.x) + Math.abs(e.clientY - mouseDownPos.y);
-                            if (distance > 5) { // Threshold to start dragging
+                            if (distance > 5) {
                                 if (!hasMoved) {
                                     hasMoved = true;
                                     isDragging = true;
                                     dragProcessedCells.clear();
-                                    // Toggle starting cell
                                     toggleDateMarked(2026, month, day, selectedHabitId);
                                     toggleCellWithHabitColor(dayRow);
                                     updateMarkTodayButton();
-                                    dragStartState = !dragStartState; // Update after toggle
+                                    dragStartState = !dragStartState;
+                                    dragProcessedCells.add(`${month}-${day}`);
+                                }
+                            }
+                        } else if (currentMode === 'events' && mouseDownPos && selectedCalendarId) {
+                            const distance = Math.abs(e.clientX - mouseDownPos.x) + Math.abs(e.clientY - mouseDownPos.y);
+                            if (distance > 5) {
+                                if (!hasMoved) {
+                                    hasMoved = true;
+                                    isDragging = true;
+                                    dragProcessedCells.clear();
+                                    const dateKey = `calendar-${selectedCalendarId}-2026-${month + 1}-${day}`;
+                                    const currentlyMarked = localStorage.getItem(dateKey) === 'true';
+                                    localStorage.setItem(dateKey, (!currentlyMarked).toString());
+                                    const calendar = calendars.find(c => c.id === selectedCalendarId);
+                                    if (calendar) {
+                                        const color = getCalendarColor(calendar);
+                                        if (!currentlyMarked) {
+                                            dayRow.style.backgroundColor = color;
+                                            dayRow.style.color = '#fff';
+                                            dayRow.classList.add('marked');
+                                        } else {
+                                            dayRow.style.backgroundColor = '';
+                                            dayRow.style.color = '';
+                                            dayRow.classList.remove('marked');
+                                        }
+                                    }
+                                    dragStartState = !dragStartState;
                                     dragProcessedCells.add(`${month}-${day}`);
                                 }
                             }
@@ -2383,24 +3127,33 @@
                     };
                     
                     dayRow.onmouseenter = (e) => {
-                        if (isDragging && habitTrackerEnabled && selectedHabitId) {
+                        if (isDragging && currentMode === 'habits' && habitTrackerEnabled && selectedHabitId) {
                             handleCellDragOver(2026, month, day);
                         }
+                        // Drag handling for events mode can be added here if needed
                     };
                     
                     dayRow.onclick = async (e) => {
                         e.stopPropagation();
                         if (!hasMoved && !isDragging) {
-                            if (habitTrackerEnabled && selectedHabitId) {
-                                // Toggle state for selected habit
-                                toggleDateMarked(2026, month, day, selectedHabitId);
-                                toggleCellWithHabitColor(dayRow);
-                                updateMarkTodayButton();
-                            } else if (habitTrackerEnabled && !selectedHabitId) {
-                                await showCustomAlert('Please select a habit first', 'Notification');
+                            if (currentMode === 'habits') {
+                                if (habitTrackerEnabled && selectedHabitId) {
+                                    toggleDateMarked(2026, month, day, selectedHabitId);
+                                    toggleCellWithHabitColor(dayRow);
+                                    updateMarkTodayButton();
+                                } else if (habitTrackerEnabled && !selectedHabitId) {
+                                    await showCustomAlert('Please select a habit first', 'Notification');
+                                } else {
+                                    renderDayView(month, day);
+                                }
                             } else {
-                                // Normal behavior - open day view
-                                renderDayView(month, day);
+                                // Events mode
+                                if (selectedCalendarId) {
+                                    // Open event creation modal
+                                    openEventModal(month, day);
+                                } else {
+                                    await showCustomAlert('Please select a calendar first', 'Notification');
+                                }
                             }
                         }
                     };
@@ -2530,10 +3283,11 @@
                             updateMarkTodayButton();
                         } else if (habitTrackerEnabled && !selectedHabitId) {
                             await showCustomAlert('Please select a habit first', 'Notification');
-                        } else {
-                            // Normal behavior - open day view
+                        } else if (currentMode === 'habits') {
+                            // Normal behavior - open day view (only in habits mode)
                             renderDayView(month, currentDayNum);
                         }
+                        // In events mode, do nothing if edit tracker is off
                     }
                 };
                 grid.appendChild(dayDiv);
@@ -2593,13 +3347,323 @@
             });
             
             modal.classList.add('active');
+            document.body.classList.add('modal-open');
         }
 
         function closeDayModal() {
             const modal = document.getElementById('dayModal');
             modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
             currentView = currentView === 'year' ? 'year' : 'month';
         }
+
+        // Event management functions
+        function loadEvents() {
+            const saved = localStorage.getItem('events');
+            events = saved ? JSON.parse(saved) : [];
+        }
+
+        function saveEvents() {
+            localStorage.setItem('events', JSON.stringify(events));
+        }
+
+        function getEventKey(calendarId, year, month, day) {
+            return `event-${calendarId}-${year}-${month + 1}-${day}`;
+        }
+
+        function getEventsForDate(calendarId, year, month, day) {
+            const eventKey = getEventKey(calendarId, year, month, day);
+            return events.filter(e => e.key === eventKey);
+        }
+
+        function saveEvent(event) {
+            // Remove existing event with same ID if updating
+            events = events.filter(e => e.id !== event.id);
+            events.push(event);
+            saveEvents();
+            
+            // Mark the date as having events
+            const dateKey = `calendar-${event.calendarId}-${event.year}-${event.month + 1}-${event.day}`;
+            localStorage.setItem(dateKey, 'true');
+            
+            renderYearView();
+        }
+
+        function deleteEvent(eventId) {
+            const event = events.find(e => e.id === eventId);
+            if (event) {
+                events = events.filter(e => e.id !== eventId);
+                saveEvents();
+                
+                // Check if there are other events on this date
+                const dateKey = getEventKey(event.calendarId, event.year, event.month, event.day);
+                const remainingEvents = events.filter(e => e.key === dateKey);
+                if (remainingEvents.length === 0) {
+                    // No more events, unmark the date
+                    const calendarDateKey = `calendar-${event.calendarId}-${event.year}-${event.month + 1}-${event.day}`;
+                    localStorage.removeItem(calendarDateKey);
+                }
+                
+                renderYearView();
+            }
+        }
+
+        let selectedEventId = null;
+
+        function openEventModal(month, day) {
+            if (!selectedCalendarId) return;
+            
+            const year = 2026;
+            const date = new Date(year, month, day);
+            const eventKey = getEventKey(selectedCalendarId, year, month, day);
+            const existingEvents = events.filter(e => e.key === eventKey);
+            selectedEventId = null;
+            
+            const modal = document.getElementById('eventModal');
+            const eventViewContent = document.getElementById('eventViewContent');
+            
+            let eventsHTML = '';
+            if (existingEvents.length > 0) {
+                existingEvents.forEach(event => {
+                    eventsHTML += `
+                        <div class="event-card" data-event-id="${event.id}">
+                            <div class="event-card-title">${event.name || 'Untitled Event'}</div>
+                            ${event.time ? `<div class="event-card-detail">⏰ ${event.time}</div>` : ''}
+                            ${event.location && event.location !== 'n/a' ? `<div class="event-card-detail">📍 ${event.location}</div>` : ''}
+                            ${event.notes ? `<div class="event-card-notes">${event.notes}</div>` : ''}
+                            <div class="event-card-actions">
+                                <button class="event-btn" style="padding: 6px 12px; font-size: 12px; border-color: #639A88; color: #639A88;" onclick="editEvent('${event.id}')">Edit</button>
+                                <button class="event-btn danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteEventById('${event.id}')">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                eventsHTML = '<div style="padding: 40px; color: #999;">No events for this date</div>';
+            }
+            
+            eventViewContent.innerHTML = `
+                <button class="modal-close" onclick="closeEventModal()">×</button>
+                <div class="event-header">
+                    <div class="event-date">${monthNames[month]} ${day}, 2026</div>
+                </div>
+                <div class="event-content-wrapper">
+                    <div class="event-content">
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #333;">Events</div>
+                        <div class="events-list">
+                            ${eventsHTML}
+                        </div>
+                    </div>
+                    <div class="event-form-container">
+                        <button class="add-event-btn-side" id="addEventBtn" onclick="showEventForm()">+ Add New Event</button>
+                        <div class="event-form-section" id="eventFormSection">
+                            <div id="eventFormTitle" style="font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #333;">New Event</div>
+                            <div class="event-field">
+                                <label for="eventName">Event Name</label>
+                                <input type="text" id="eventName" placeholder="Enter event name..." />
+                            </div>
+                            <div class="event-field">
+                                <label for="eventTime">Time</label>
+                                <input type="text" id="eventTime" placeholder="e.g., 2:00 PM, all day, etc." />
+                            </div>
+                            <div class="event-field">
+                                <label for="eventLocation">Location</label>
+                                <input type="text" id="eventLocation" placeholder="Enter location..." />
+                            </div>
+                            <div class="event-field">
+                                <label for="eventNotes">Notes</label>
+                                <textarea id="eventNotes" placeholder="Additional notes..."></textarea>
+                            </div>
+                            <div class="event-actions" style="margin-top: auto;">
+                                <button class="event-btn" onclick="hideEventForm()">Cancel</button>
+                                <button class="event-btn primary" id="saveEventBtn" onclick="saveEventFromModal(${year}, ${month}, ${day})">Save Event</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function editEvent(eventId) {
+            const event = events.find(e => e.id === eventId);
+            if (!event) return;
+            
+            // Remove editing class from all event cards
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.classList.remove('editing');
+            });
+            
+            // Add editing class to the selected event card
+            const eventCard = document.querySelector(`[data-event-id="${eventId}"]`);
+            if (eventCard) {
+                eventCard.classList.add('editing');
+            }
+            
+            // Populate the form with event data
+            document.getElementById('eventName').value = event.name || '';
+            document.getElementById('eventTime').value = event.time || '';
+            document.getElementById('eventLocation').value = event.location || '';
+            document.getElementById('eventNotes').value = event.notes || '';
+            
+            // Hide the "Add New Event" button
+            const addBtn = document.querySelector('.add-event-btn-side');
+            if (addBtn) {
+                addBtn.style.display = 'none';
+            }
+            
+            // Show the form
+            showEventForm();
+            
+            // Store the event ID being edited
+            window.editingEventId = eventId;
+            
+            // Update the form title and save button
+            const formTitle = document.getElementById('eventFormTitle');
+            if (formTitle) {
+                formTitle.textContent = 'Edit Event';
+            }
+            const saveBtn = document.getElementById('saveEventBtn');
+            if (saveBtn) {
+                saveBtn.textContent = 'Update Event';
+            }
+        }
+
+        function showEventForm() {
+            const formSection = document.getElementById('eventFormSection');
+            if (formSection) {
+                formSection.classList.add('active');
+                const eventNameInput = document.getElementById('eventName');
+                if (eventNameInput) {
+                    eventNameInput.focus();
+                }
+            }
+        }
+
+        function hideEventForm() {
+            const formSection = document.getElementById('eventFormSection');
+            if (formSection) {
+                formSection.classList.remove('active');
+                // Clear form
+                document.getElementById('eventName').value = '';
+                document.getElementById('eventTime').value = '';
+                document.getElementById('eventLocation').value = '';
+                document.getElementById('eventNotes').value = '';
+                // Remove editing class from all event cards
+                document.querySelectorAll('.event-card').forEach(card => {
+                    card.classList.remove('editing');
+                });
+                // Reset editing state
+                window.editingEventId = null;
+                // Show the "Add New Event" button again
+                const addBtn = document.querySelector('.add-event-btn-side');
+                if (addBtn) {
+                    addBtn.style.display = '';
+                }
+                // Reset form title and save button text
+                const formTitle = document.getElementById('eventFormTitle');
+                if (formTitle) {
+                    formTitle.textContent = 'New Event';
+                }
+                const saveBtn = document.getElementById('saveEventBtn');
+                if (saveBtn) {
+                    saveBtn.textContent = 'Save Event';
+                }
+            }
+        }
+
+        // Make functions available globally
+        window.editEvent = editEvent;
+        window.showEventForm = showEventForm;
+        window.hideEventForm = hideEventForm;
+
+        function closeEventModal() {
+            const modal = document.getElementById('eventModal');
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        function saveEventFromModal(year, month, day) {
+            if (!selectedCalendarId) return;
+            
+            const name = document.getElementById('eventName').value.trim();
+            const time = document.getElementById('eventTime').value.trim();
+            const location = document.getElementById('eventLocation').value.trim();
+            const notes = document.getElementById('eventNotes').value.trim();
+            
+            if (!name) {
+                showCustomAlert('Please enter an event name', 'Notification');
+                return;
+            }
+            
+            const eventKey = getEventKey(selectedCalendarId, year, month, day);
+            
+            // Check if we're editing an existing event
+            if (window.editingEventId) {
+                const existingEvent = events.find(e => e.id === window.editingEventId);
+                if (existingEvent) {
+                    // Update existing event
+                    existingEvent.name = name;
+                    existingEvent.time = time;
+                    existingEvent.location = location;
+                    existingEvent.notes = notes;
+                    saveEvents();
+                    renderYearView();
+                    window.editingEventId = null;
+                }
+            } else {
+                // Create new event
+                const newEvent = {
+                    id: Date.now().toString(),
+                    key: eventKey,
+                    calendarId: selectedCalendarId,
+                    year: year,
+                    month: month,
+                    day: day,
+                    name: name,
+                    time: time,
+                    location: location,
+                    notes: notes
+                };
+                saveEvent(newEvent);
+            }
+            
+            // Remove editing class from all event cards before closing
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.classList.remove('editing');
+            });
+            
+            // Clear form and hide it
+            hideEventForm();
+            // Reset button text
+            const saveBtn = document.getElementById('saveEventBtn');
+            if (saveBtn) {
+                saveBtn.textContent = 'Save Event';
+            }
+            // Show the "Add New Event" button again
+            const addBtn = document.querySelector('.add-event-btn-side');
+            if (addBtn) {
+                addBtn.style.display = '';
+            }
+            // Reopen modal to refresh the list
+            openEventModal(month, day);
+        }
+
+        function deleteEventById(eventId) {
+            const event = events.find(e => e.id === eventId);
+            if (event) {
+                deleteEvent(eventId);
+                // Reopen modal to refresh the list
+                openEventModal(event.month, event.day);
+            }
+        }
+
+        // Make functions available globally for onclick handlers
+        window.deleteEventById = deleteEventById;
+        window.saveEventFromModal = saveEventFromModal;
+        window.closeEventModal = closeEventModal;
 
         // Close modal when clicking outside
         document.addEventListener('DOMContentLoaded', () => {
@@ -2607,6 +3671,13 @@
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     closeDayModal();
+                }
+            });
+            
+            const eventModal = document.getElementById('eventModal');
+            eventModal.addEventListener('click', (e) => {
+                if (e.target === eventModal) {
+                    closeEventModal();
                 }
             });
         });
@@ -2646,6 +3717,24 @@
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
+            // Handle "Mark Today" shortcut (M key) when in year view
+            if (currentView === 'year') {
+                // Don't trigger if user is typing in an input field
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                if (e.key === 'm' || e.key === 'M') {
+                    const canMark = (currentMode === 'habits' && habitTrackerEnabled && selectedHabitId) ||
+                                   (currentMode === 'events' && selectedCalendarId);
+                    if (canMark) {
+                        e.preventDefault();
+                        markToday();
+                        return;
+                    }
+                }
+            }
+            
             // Only handle arrow keys if we're not in year view
             if (currentView === 'year') return;
             
