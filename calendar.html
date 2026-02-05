@@ -408,9 +408,10 @@
         }
 
         .day-view {
-            width: 55vw;
-            height: 60vh;
-            max-width: 770px;
+            width: 70vw;
+            height: 75vh;
+            max-width: 900px;
+            min-height: 500px;
             background: #fff;
             border: 1px solid #ddd;
             padding: 40px;
@@ -436,8 +437,8 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            gap: 15px;
         }
-
 
         .day-view .notes-input {
             flex: 1;
@@ -449,6 +450,50 @@
             border-radius: 4px;
             resize: none;
             outline: none;
+        }
+
+        .day-view .day-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .day-view-btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: 2px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #000;
+        }
+
+        .day-view-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        .day-view-btn.primary {
+            background: #639A88;
+            color: #fff;
+            border-color: #639A88;
+        }
+
+        .day-view-btn.primary:hover {
+            background: #558A78;
+            border-color: #558A78;
+        }
+
+        .day-view-btn.danger {
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+
+        .day-view-btn.danger:hover {
+            background-color: #ffebee;
         }
 
         .day-view .notes-input:focus {
@@ -1375,6 +1420,7 @@
                 <div class="custom-dropdown-menu" id="modeDropdownMenu">
                     <button class="custom-dropdown-item" data-mode="events">Events</button>
                     <button class="custom-dropdown-item" data-mode="habits">Habits</button>
+                    <button class="custom-dropdown-item" data-mode="journal">Journal</button>
                 </div>
             </div>
             <!-- Habits Mode UI -->
@@ -1408,6 +1454,10 @@
                         <!-- Options will be populated by JavaScript -->
                     </div>
                 </div>
+            </div>
+            <!-- Journal Mode UI -->
+            <div id="journalModeUI" class="mode-ui" style="display: none;">
+                <!-- No controls needed - just click on days to journal -->
             </div>
         </div>
     </div>
@@ -2452,6 +2502,10 @@
         function loadMode() {
             const saved = localStorage.getItem('currentMode');
             currentMode = saved || 'habits';
+            // Validate mode
+            if (currentMode !== 'habits' && currentMode !== 'events' && currentMode !== 'journal') {
+                currentMode = 'habits';
+            }
             updateModeUI();
         }
 
@@ -2462,18 +2516,26 @@
         function updateModeUI() {
             const habitsUI = document.getElementById('habitsModeUI');
             const eventsUI = document.getElementById('eventsModeUI');
+            const journalUI = document.getElementById('journalModeUI');
             const modeButton = document.getElementById('modeSelectButton');
             const statsBtn = document.getElementById('statsBtn');
             
+            // Hide all mode UIs first
+            habitsUI.style.display = 'none';
+            eventsUI.style.display = 'none';
+            journalUI.style.display = 'none';
+            
             if (currentMode === 'habits') {
                 habitsUI.style.display = 'flex';
-                eventsUI.style.display = 'none';
                 modeButton.textContent = 'Habits';
                 if (statsBtn) statsBtn.style.display = '';
-            } else {
-                habitsUI.style.display = 'none';
+            } else if (currentMode === 'events') {
                 eventsUI.style.display = 'flex';
                 modeButton.textContent = 'Events';
+                if (statsBtn) statsBtn.style.display = 'none';
+            } else if (currentMode === 'journal') {
+                journalUI.style.display = 'flex';
+                modeButton.textContent = 'Journal';
                 if (statsBtn) statsBtn.style.display = 'none';
             }
             
@@ -2957,7 +3019,7 @@
                     dayItem.className = 'slider-item selected';
                 } else {
                     dayItem.className = 'slider-item greyed';
-                    if (currentMode === 'habits') {
+                    if (currentMode === 'habits' || currentMode === 'journal') {
                         dayItem.onclick = () => renderDayView(month, d);
                     }
                 }
@@ -3041,7 +3103,7 @@
                             // Show marked if any habit has this date marked (use default green)
                             dayRow.classList.add('marked');
                         }
-                    } else {
+                    } else if (currentMode === 'events') {
                         // Events mode
                         if (selectedCalendarId) {
                             const dateKey = `calendar-${selectedCalendarId}-2026-${month + 1}-${day}`;
@@ -3057,6 +3119,16 @@
                                     dayRow.classList.add('marked');
                                 }
                             }
+                        }
+                    } else if (currentMode === 'journal') {
+                        // Journal mode - highlight days with journal entries
+                        const dateKey = `2026-${month + 1}-${day}`;
+                        const journalEntry = localStorage.getItem(dateKey);
+                        if (journalEntry && journalEntry.trim() !== '') {
+                            // Use the same dark green color as habits mode
+                            dayRow.style.backgroundColor = '#2D5A4A';
+                            dayRow.style.color = '#fff';
+                            dayRow.classList.add('marked');
                         }
                     }
                     
@@ -3146,7 +3218,7 @@
                                 } else {
                                     renderDayView(month, day);
                                 }
-                            } else {
+                            } else if (currentMode === 'events') {
                                 // Events mode
                                 if (selectedCalendarId) {
                                     // Open event creation modal
@@ -3154,6 +3226,9 @@
                                 } else {
                                     await showCustomAlert('Please select a calendar first', 'Notification');
                                 }
+                            } else if (currentMode === 'journal') {
+                                // Journal mode - always open day view modal
+                                renderDayView(month, day);
                             }
                         }
                     };
@@ -3286,6 +3361,9 @@
                         } else if (currentMode === 'habits') {
                             // Normal behavior - open day view (only in habits mode)
                             renderDayView(month, currentDayNum);
+                        } else if (currentMode === 'journal') {
+                            // Journal mode - always open day view
+                            renderDayView(month, currentDayNum);
                         }
                         // In events mode, do nothing if edit tracker is off
                     }
@@ -3333,9 +3411,13 @@
                     <textarea 
                         class="notes-input" 
                         id="dayNotes"
-                        placeholder="What did you do today? Learn anything new?"
+                        placeholder="${currentMode === 'journal' ? 'What did you do today? What did you learn?' : 'What did you do today? Learn anything new?'}"
                         data-date="${dateKey}"
                     >${savedNotes}</textarea>
+                    <div class="day-actions">
+                        <button class="day-view-btn danger" onclick="clearDayNotes()">Clear All</button>
+                        <button class="day-view-btn primary" onclick="closeDayModal()">Done</button>
+                    </div>
                 </div>
             `;
             
@@ -3344,10 +3426,35 @@
             notesInput.addEventListener('input', (e) => {
                 const dateKey = e.target.getAttribute('data-date');
                 localStorage.setItem(dateKey, e.target.value);
+                // If in journal mode, re-render to update highlighting
+                if (currentMode === 'journal') {
+                    renderYearView();
+                }
+            });
+            
+            // Add Enter key handler (Ctrl+Enter or Cmd+Enter to save)
+            notesInput.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    closeDayModal();
+                }
             });
             
             modal.classList.add('active');
             document.body.classList.add('modal-open');
+        }
+
+        function clearDayNotes() {
+            const notesInput = document.getElementById('dayNotes');
+            if (notesInput) {
+                const dateKey = notesInput.getAttribute('data-date');
+                notesInput.value = '';
+                localStorage.setItem(dateKey, '');
+                // If in journal mode, re-render to update highlighting
+                if (currentMode === 'journal') {
+                    renderYearView();
+                }
+            }
         }
 
         function closeDayModal() {
@@ -3355,7 +3462,14 @@
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
             currentView = currentView === 'year' ? 'year' : 'month';
+            // If in journal mode, re-render to update highlighting
+            if (currentMode === 'journal') {
+                renderYearView();
+            }
         }
+
+        // Make clearDayNotes available globally
+        window.clearDayNotes = clearDayNotes;
 
         // Event management functions
         function loadEvents() {
