@@ -36,7 +36,7 @@
             margin-bottom: 50px;
             margin-top: -10px;
             position: relative;
-            z-index: 10;
+            z-index: 110;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -51,18 +51,14 @@
 
         .calendar-page {
             width: 100%;
+            max-width: 100%;
+            position: relative;
         }
 
-        /* 3-dot icon: aligned with year (vertical) and calendar right edge (horizontal) */
+        /* 3-dot icon: inside #title so it scrolls with content, aligned with year via flex */
         .title-options-dropdown {
-            position: fixed !important;
-            /* Same vertical position as #title: body padding 30px + margin-top -10px, center with 36px text */
-            top: 28px !important;
-            /* Align with calendar right edge (body padding is 30px) */
-            right: 30px !important;
-            left: auto !important;
-            width: auto !important;
-            min-width: 0 !important;
+            position: relative;
+            flex-shrink: 0;
             z-index: 300;
             display: flex;
             flex-direction: column;
@@ -152,12 +148,14 @@
             display: flex;
             flex-direction: column;
             margin-top: 102px;
+            min-width: 0;
         }
 
         .year-view {
             display: flex;
             overflow-x: auto;
             padding-bottom: 15px;
+            min-width: 0;
         }
 
         .year-view .month-column {
@@ -767,12 +765,12 @@
             color: #000;
         }
 
-        /* Habit Tracker Controls */
+        /* Habit Tracker Controls - inside calendar-page so 3-dot (in #title) stacks above */
         .habit-toggle-container {
             position: absolute;
-            top: 100px;
-            left: 30px;
-            z-index: 200;
+            top: 70px;
+            left: 0;
+            z-index: 100;
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -781,9 +779,9 @@
 
         .habit-controls-right {
             position: absolute;
-            top: 100px;
-            right: 30px;
-            z-index: 200;
+            top: 70px;
+            right: 0;
+            z-index: 100;
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -1100,6 +1098,7 @@
             transition: all 0.3s ease;
             user-select: none;
             color: #000;
+            white-space: nowrap;
         }
 
         .create-habit-btn:hover {
@@ -1426,79 +1425,119 @@
             border-color: #558A78;
         }
 
+        /* Responsive: full-width stacked controls on narrow viewports */
+        @media (max-width: 700px) {
+            body {
+                padding: 20px 24px;
+                overflow-x: hidden;
+            }
+
+            .habit-toggle-container {
+                left: 0;
+                right: 0;
+                top: 65px;
+                gap: 10px;
+                flex-direction: column;
+            }
+
+            .habit-controls-right {
+                right: 0;
+                top: 65px;
+                display: none;
+            }
+
+            #title {
+                margin-bottom: 35px;
+                margin-top: 0;
+            }
+
+            .habit-select-wrapper {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .mode-ui {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .habit-select-wrapper .custom-dropdown,
+            .habit-select-wrapper .custom-dropdown.habit-calendar-dropdown {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .habit-select-wrapper .create-habit-btn {
+                width: 100%;
+                padding: 12px 16px;
+                font-size: 14px;
+                white-space: nowrap;
+            }
+
+            .habit-toggle-wrapper {
+                display: none;
+            }
+
+            .button-separator {
+                display: none;
+            }
+
+            /* Extra margin for stacked controls so they don't overlap the calendar */
+            .year-view-container {
+                margin-top: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px 20px;
+                overflow-x: hidden;
+            }
+
+            .habit-toggle-container {
+                left: 0;
+                right: 0;
+                top: 55px;
+                gap: 8px;
+            }
+
+            .habit-controls-right {
+                right: 0;
+                top: 55px;
+            }
+
+            #title {
+                font-size: 28px;
+                margin-bottom: 25px;
+                margin-top: 5px;
+            }
+
+            .habit-select-wrapper {
+                gap: 8px;
+            }
+
+            .mode-ui {
+                gap: 8px;
+            }
+
+            .habit-select-wrapper .create-habit-btn {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            /* Extra margin for stacked controls so they don't overlap the calendar */
+            .year-view-container {
+                margin-top: 200px;
+            }
+        }
 
     </style>
 </head>
 <body>
-    <div class="custom-dropdown title-options-dropdown" id="titleOptionsDropdown">
-        <button class="title-circle-btn" id="optionsMenuButton" title="Data &amp; backup">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="5" r="1.5" fill="#333"/>
-                <circle cx="12" cy="12" r="1.5" fill="#333"/>
-                <circle cx="12" cy="19" r="1.5" fill="#333"/>
-            </svg>
-        </button>
-        <div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu">
-            <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button>
-            <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button>
-        </div>
-    </div>
     <input type="file" id="importDataInput" accept=".json,application/json" style="display: none;" />
-    <div class="habit-toggle-container">
-        <div class="habit-select-wrapper">
-            <div class="custom-dropdown">
-                <button class="custom-dropdown-button" id="modeSelectButton">
-                    Habits
-                </button>
-                <div class="custom-dropdown-menu" id="modeDropdownMenu">
-                    <button class="custom-dropdown-item" data-mode="events">Events</button>
-                    <button class="custom-dropdown-item" data-mode="habits">Habits</button>
-                    <button class="custom-dropdown-item" data-mode="journal">Journal</button>
-                </div>
-            </div>
-            <!-- Habits Mode UI -->
-            <div id="habitsModeUI" class="mode-ui">
-                <button class="create-habit-btn" id="createHabitBtn">+ New</button>
-                <div class="custom-dropdown habit-calendar-dropdown">
-                    <button class="custom-dropdown-button" id="habitSelectButton">
-                        Select Habit
-                    </button>
-                    <div class="custom-dropdown-menu" id="habitDropdownMenu">
-                        <!-- Options will be populated by JavaScript -->
-                    </div>
-                </div>
-                <div class="habit-toggle-wrapper">
-                    <div class="habit-toggle" id="habitToggle" title="Toggle Habit Tracker">
-                        <div class="habit-toggle-slider"></div>
-                    </div>
-                    <span class="habit-toggle-text">Edit Tracker</span>
-                </div>
-                <div class="button-separator"></div>
-                <button class="mark-today-btn" id="markTodayBtn">Mark Today</button>
-            </div>
-            <!-- Events Mode UI -->
-            <div id="eventsModeUI" class="mode-ui" style="display: none;">
-                <button class="create-habit-btn" id="createCalendarBtn">+ New</button>
-                <div class="custom-dropdown habit-calendar-dropdown">
-                    <button class="custom-dropdown-button" id="calendarSelectButton">
-                        Select Calendar
-                    </button>
-                    <div class="custom-dropdown-menu" id="calendarDropdownMenu">
-                        <!-- Options will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-            <!-- Journal Mode UI -->
-            <div id="journalModeUI" class="mode-ui" style="display: none;">
-                <!-- No controls needed - just click on days to journal -->
-            </div>
-        </div>
-    </div>
-
-    <div class="habit-controls-right">
-        <button class="clear-all-btn" id="clearAllBtn">Clear All</button>
-        <button class="create-habit-btn" id="statsBtn">Stats</button>
-    </div>
 
     <div class="create-habit-modal" id="createHabitModal">
         <div class="create-habit-content">
@@ -1527,6 +1566,73 @@
     <div class="calendar-page">
         <div id="title">
             <span>2026</span>
+            <div class="custom-dropdown title-options-dropdown" id="titleOptionsDropdown">
+                <button class="title-circle-btn" id="optionsMenuButton" title="Data &amp; backup">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="5" r="1.5" fill="#333"/>
+                        <circle cx="12" cy="12" r="1.5" fill="#333"/>
+                        <circle cx="12" cy="19" r="1.5" fill="#333"/>
+                    </svg>
+                </button>
+                <div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu">
+                    <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button>
+                    <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button>
+                </div>
+            </div>
+        </div>
+        <div class="habit-toggle-container">
+            <div class="habit-select-wrapper">
+                <div class="custom-dropdown">
+                    <button class="custom-dropdown-button" id="modeSelectButton">
+                        Habits
+                    </button>
+                    <div class="custom-dropdown-menu" id="modeDropdownMenu">
+                        <button class="custom-dropdown-item" data-mode="events">Events</button>
+                        <button class="custom-dropdown-item" data-mode="habits">Habits</button>
+                        <button class="custom-dropdown-item" data-mode="journal">Journal</button>
+                    </div>
+                </div>
+                <!-- Habits Mode UI -->
+                <div id="habitsModeUI" class="mode-ui">
+                    <button class="create-habit-btn" id="createHabitBtn">+ New</button>
+                    <div class="custom-dropdown habit-calendar-dropdown">
+                        <button class="custom-dropdown-button" id="habitSelectButton">
+                            Select Habit
+                        </button>
+                        <div class="custom-dropdown-menu" id="habitDropdownMenu">
+                            <!-- Options will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="habit-toggle-wrapper">
+                        <div class="habit-toggle" id="habitToggle" title="Toggle Habit Tracker">
+                            <div class="habit-toggle-slider"></div>
+                        </div>
+                        <span class="habit-toggle-text">Edit Tracker</span>
+                    </div>
+                    <div class="button-separator"></div>
+                    <button class="mark-today-btn" id="markTodayBtn">Mark Today</button>
+                </div>
+                <!-- Events Mode UI -->
+                <div id="eventsModeUI" class="mode-ui" style="display: none;">
+                    <button class="create-habit-btn" id="createCalendarBtn">+ New</button>
+                    <div class="custom-dropdown habit-calendar-dropdown">
+                        <button class="custom-dropdown-button" id="calendarSelectButton">
+                            Select Calendar
+                        </button>
+                        <div class="custom-dropdown-menu" id="calendarDropdownMenu">
+                            <!-- Options will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Journal Mode UI -->
+                <div id="journalModeUI" class="mode-ui" style="display: none;">
+                    <!-- No controls needed - just click on days to journal -->
+                </div>
+            </div>
+        </div>
+        <div class="habit-controls-right">
+            <button class="clear-all-btn" id="clearAllBtn">Clear All</button>
+            <button class="create-habit-btn" id="statsBtn">Stats</button>
         </div>
         <div class="header">
             <div class="slider" id="slider"></div>
