@@ -985,6 +985,15 @@
             display: block;
         }
 
+        .title-options-dropdown {
+            position: relative;
+        }
+        .title-options-dropdown .title-options-menu {
+            left: auto;
+            right: 0;
+            min-width: 160px;
+        }
+
         .custom-dropdown-item {
             padding: 10px 16px;
             font-size: 14px;
@@ -1500,15 +1509,22 @@
                     <path d="M20.59 22C20.59 18.13 16.74 15 12 15C7.26 15 3.41 18.13 3.41 22" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
-            <button class="title-circle-btn" title="More options">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="5" r="1.5" fill="#333"/>
-                    <circle cx="12" cy="12" r="1.5" fill="#333"/>
-                    <circle cx="12" cy="19" r="1.5" fill="#333"/>
-                </svg>
-            </button>
+            <div class="custom-dropdown title-options-dropdown">
+                <button class="title-circle-btn" id="optionsMenuButton" title="Data &amp; backup">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="5" r="1.5" fill="#333"/>
+                        <circle cx="12" cy="12" r="1.5" fill="#333"/>
+                        <circle cx="12" cy="19" r="1.5" fill="#333"/>
+                    </svg>
+                </button>
+                <div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu">
+                    <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button>
+                    <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button>
+                </div>
+            </div>
         </div>
     </div>
+    <input type="file" id="importDataInput" accept=".json,application/json" style="display: none;" />
     
     <div class="header">
         <div class="slider" id="slider"></div>
@@ -2893,6 +2909,31 @@
             if (closeStatsModalBtn) {
                 closeStatsModalBtn.addEventListener('click', closeStatsModal);
             }
+
+            // Data / backup options menu (Export / Import)
+            const optionsMenuButton = document.getElementById('optionsMenuButton');
+            const optionsDropdownMenu = document.getElementById('optionsDropdownMenu');
+            if (optionsMenuButton && optionsDropdownMenu) {
+                optionsMenuButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    optionsDropdownMenu.classList.toggle('active');
+                });
+                document.getElementById('exportDataBtn').addEventListener('click', () => {
+                    exportData();
+                    optionsDropdownMenu.classList.remove('active');
+                });
+                document.getElementById('importDataBtn').addEventListener('click', () => {
+                    importData();
+                    optionsDropdownMenu.classList.remove('active');
+                });
+                document.getElementById('importDataInput').addEventListener('change', handleImportFile);
+            }
+            document.addEventListener('click', (e) => {
+                const opts = document.querySelector('.title-options-dropdown');
+                if (opts && !opts.contains(e.target)) {
+                    if (optionsDropdownMenu) optionsDropdownMenu.classList.remove('active');
+                }
+            });
             
             const statsModal = document.getElementById('statsModal');
             if (statsModal) {
@@ -3043,7 +3084,7 @@
                 titleSpan.textContent = '2026';
             } else {
                 // Fallback if structure is different
-                titleElement.innerHTML = '<span>2026</span><div class="title-buttons"><button class="title-circle-btn profile" title="Profile"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.59 22C20.59 18.13 16.74 15 12 15C7.26 15 3.41 18.13 3.41 22" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="title-circle-btn" title="More options"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="5" r="1.5" fill="#333"/><circle cx="12" cy="12" r="1.5" fill="#333"/><circle cx="12" cy="19" r="1.5" fill="#333"/></svg></button></div>';
+                titleElement.innerHTML = '<span>2026</span><div class="title-buttons"><button class="title-circle-btn profile" title="Profile"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.59 22C20.59 18.13 16.74 15 12 15C7.26 15 3.41 18.13 3.41 22" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="custom-dropdown title-options-dropdown"><button class="title-circle-btn" id="optionsMenuButton" title="Data &amp; backup"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="5" r="1.5" fill="#333"/><circle cx="12" cy="12" r="1.5" fill="#333"/><circle cx="12" cy="19" r="1.5" fill="#333"/></svg></button><div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu"><button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button><button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button></div></div></div>';
             }
             renderYearSlider();
             document.getElementById('navigation').style.display = 'none';
@@ -3479,6 +3520,49 @@
 
         function saveEvents() {
             localStorage.setItem('events', JSON.stringify(events));
+        }
+
+        // Export all calendar data to a JSON file (habits, events, calendars, journal, marked dates)
+        function exportData() {
+            const data = {};
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key === 'habits' || key === 'habitTrackerEnabled' || key === 'currentMode' || key === 'calendars' || key === 'events' ||
+                    key.startsWith('habit-') || key.startsWith('calendar-') || /^2026-\d{1,2}-\d{1,2}$/.test(key)) {
+                    data[key] = localStorage.getItem(key);
+                }
+            });
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'minimal-calendar-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function importData() {
+            document.getElementById('importDataInput').click();
+        }
+
+        function handleImportFile(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (typeof data !== 'object' || data === null) throw new Error('Invalid format');
+                    const keys = Object.keys(data);
+                    keys.forEach(key => {
+                        if (typeof data[key] === 'string') localStorage.setItem(key, data[key]);
+                    });
+                    location.reload();
+                } catch (err) {
+                    showCustomAlert('Could not import: ' + (err.message || 'invalid file'), 'Import failed');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
         }
 
         function getEventKey(calendarId, year, month, day) {

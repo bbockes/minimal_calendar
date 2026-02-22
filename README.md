@@ -59,14 +59,35 @@ All colors meet WCAG AAA contrast requirements (7:1 ratio) for accessibility wit
 
 ## Usage
 
-Simply open `calendar.html` in any modern web browser. No installation or dependencies required.
+### Desktop app (recommended — data saved automatically)
+
+Run the app as a native desktop window. Your habits, events, journal entries, and marked dates are saved automatically to your machine and persist between launches.
+
+```bash
+# Install dependencies once
+npm install
+
+# Run the app
+npm start
+```
+
+To build a standalone app (e.g. for macOS):
+
+```bash
+npm run build
+# Output in the dist/ folder — e.g. dist/Minimal Calendar.app on macOS
+```
+
+### Browser
+
+You can also open `calendar.html` in any modern web browser. Data is stored in the browser’s localStorage (see [Data storage](#data-storage) and [Saving and backing up data](#saving-and-backing-up-data)).
 
 ```bash
 # Open the file directly in your browser
 open calendar.html
 ```
 
-Or serve it with a simple HTTP server:
+Or serve it with a simple HTTP server (helps avoid localStorage quirks with `file://`):
 
 ```bash
 # Using Python 3
@@ -80,21 +101,22 @@ php -S localhost:8000
 
 ## Technical Details
 
-- **Pure HTML/CSS/JavaScript**: No frameworks or libraries required
-- **Local Storage**: All data is stored locally in your browser using localStorage
-- **Single File**: Everything in one HTML file for easy deployment
-- **Browser Compatibility**: Works in all modern browsers (Chrome, Firefox, Safari, Edge)
+- **Pure HTML/CSS/JavaScript** for the calendar UI; **Electron** for the desktop app
+- **Local Storage**: All data is stored locally (browser localStorage or Electron’s persisted storage)
+- **Single HTML file**: The app logic lives in `calendar.html`; the desktop app loads it in a window
+- **Browser compatibility**: Works in all modern browsers (Chrome, Firefox, Safari, Edge)
 - **Accessibility**: WCAG AAA compliant color contrast for all habit colors
 
 ## Data Storage
 
-All your data is stored locally in your browser:
-- **Habits**: Stored with unique IDs, names, and assigned colors
-- **Marked Dates**: Each date is stored per habit (e.g., `habit-{habitId}-2026-2-15`)
-- **Day Notes**: Stored per date (e.g., `2026-2-15`)
-- **Settings**: Edit Tracker toggle state is saved
+All your data is stored locally:
+- **Desktop app**: Saved automatically to your computer (Electron user data folder). No extra steps.
+- **Browser**: Stored in the browser’s localStorage (habits, events, calendars, journal notes, marked dates, settings). Data persists across sessions but is tied to the browser and device.
 
-Your data persists across browser sessions but is specific to the browser and device you're using.
+### Saving and backing up data
+
+- **Export**: Use the **⋮** (three dots) menu next to the year title → **Export data…** to download a JSON backup of all habits, events, calendars, journal entries, and marked dates. Save this file anywhere (e.g. Desktop, cloud).
+- **Import**: Same menu → **Import data…** to choose a previously exported JSON file. It will replace current data and reload the app.
 
 ## Keyboard Shortcuts
 
@@ -104,7 +126,6 @@ Your data persists across browser sessions but is specific to the browser and de
 
 Potential features for future versions:
 - User authentication and cloud sync
-- Export/import data
 - Habit statistics and streaks
 - Multiple years support
 - Custom habit colors
