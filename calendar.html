@@ -46,6 +46,27 @@
             display: flex;
             gap: 12px;
             align-items: center;
+            margin-left: auto;
+        }
+
+        .calendar-page {
+            width: 100%;
+        }
+
+        /* 3-dot icon: aligned with year (vertical) and calendar right edge (horizontal) */
+        .title-options-dropdown {
+            position: fixed !important;
+            /* Same vertical position as #title: body padding 30px + margin-top -10px, center with 36px text */
+            top: 28px !important;
+            /* Align with calendar right edge (body padding is 30px) */
+            right: 30px !important;
+            left: auto !important;
+            width: auto !important;
+            min-width: 0 !important;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
         }
 
         .title-circle-btn {
@@ -71,14 +92,6 @@
             width: 20px;
             height: 20px;
             color: #333;
-        }
-
-        .title-circle-btn.profile {
-            background: #E0E8F0;
-        }
-
-        .title-circle-btn.profile:hover {
-            background: #C4D4E8;
         }
 
         .slider {
@@ -985,9 +998,6 @@
             display: block;
         }
 
-        .title-options-dropdown {
-            position: relative;
-        }
         .title-options-dropdown .title-options-menu {
             left: auto;
             right: 0;
@@ -1420,6 +1430,20 @@
     </style>
 </head>
 <body>
+    <div class="custom-dropdown title-options-dropdown" id="titleOptionsDropdown">
+        <button class="title-circle-btn" id="optionsMenuButton" title="Data &amp; backup">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="5" r="1.5" fill="#333"/>
+                <circle cx="12" cy="12" r="1.5" fill="#333"/>
+                <circle cx="12" cy="19" r="1.5" fill="#333"/>
+            </svg>
+        </button>
+        <div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu">
+            <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button>
+            <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button>
+        </div>
+    </div>
+    <input type="file" id="importDataInput" accept=".json,application/json" style="display: none;" />
     <div class="habit-toggle-container">
         <div class="habit-select-wrapper">
             <div class="custom-dropdown">
@@ -1500,38 +1524,15 @@
         </div>
     </div>
 
-    <div id="title">
-        <span>2026</span>
-        <div class="title-buttons">
-            <button class="title-circle-btn profile" title="Profile">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M20.59 22C20.59 18.13 16.74 15 12 15C7.26 15 3.41 18.13 3.41 22" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <div class="custom-dropdown title-options-dropdown">
-                <button class="title-circle-btn" id="optionsMenuButton" title="Data &amp; backup">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="5" r="1.5" fill="#333"/>
-                        <circle cx="12" cy="12" r="1.5" fill="#333"/>
-                        <circle cx="12" cy="19" r="1.5" fill="#333"/>
-                    </svg>
-                </button>
-                <div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu">
-                    <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button>
-                    <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button>
-                </div>
-            </div>
+    <div class="calendar-page">
+        <div id="title">
+            <span>2026</span>
         </div>
+        <div class="header">
+            <div class="slider" id="slider"></div>
+        </div>
+        <div id="calendar"></div>
     </div>
-    <input type="file" id="importDataInput" accept=".json,application/json" style="display: none;" />
-    
-    <div class="header">
-        <div class="slider" id="slider"></div>
-    </div>
-    
-    <div id="calendar"></div>
-    
     <div class="navigation" id="navigation" style="display: none;">
         <button class="nav-btn" id="prevBtn">← Previous Month</button>
         <button class="nav-btn" id="nextBtn">Next Month →</button>
@@ -3084,7 +3085,7 @@
                 titleSpan.textContent = '2026';
             } else {
                 // Fallback if structure is different
-                titleElement.innerHTML = '<span>2026</span><div class="title-buttons"><button class="title-circle-btn profile" title="Profile"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.59 22C20.59 18.13 16.74 15 12 15C7.26 15 3.41 18.13 3.41 22" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="custom-dropdown title-options-dropdown"><button class="title-circle-btn" id="optionsMenuButton" title="Data &amp; backup"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="5" r="1.5" fill="#333"/><circle cx="12" cy="12" r="1.5" fill="#333"/><circle cx="12" cy="19" r="1.5" fill="#333"/></svg></button><div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu"><button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button><button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button></div></div></div>';
+                titleElement.innerHTML = '<span>2026</span>';
             }
             renderYearSlider();
             document.getElementById('navigation').style.display = 'none';
