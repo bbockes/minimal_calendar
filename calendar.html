@@ -228,7 +228,7 @@
             top: 0;
             bottom: 0;
             width: 3px;
-            background-color: var(--today-border-color, #2D5A4A);
+            background-color: var(--today-border-color, #3E7A5E);
         }
 
         .year-view .day-row.today .day-number {
@@ -488,14 +488,14 @@
         }
 
         .day-view-btn.primary {
-            background: #639A88;
+            background: #4C9A74;
             color: #fff;
-            border-color: #639A88;
+            border-color: #4C9A74;
         }
 
         .day-view-btn.primary:hover {
-            background: #558A78;
-            border-color: #558A78;
+            background: #3E7A5E;
+            border-color: #3E7A5E;
         }
 
         .day-view-btn.danger {
@@ -606,7 +606,7 @@
         }
 
         .event-card.editing {
-            border-color: #639A88;
+            border-color: #4C9A74;
             background: #f0f7f5;
             box-shadow: 0 0 0 3px rgba(99, 154, 136, 0.15);
         }
@@ -645,9 +645,9 @@
             width: 100%;
             padding: 12px 20px;
             border-radius: 8px;
-            border: 2px dashed #639A88;
+            border: 2px dashed #4C9A74;
             background: #fff;
-            color: #639A88;
+            color: #4C9A74;
             cursor: pointer;
             font-family: 'Work Sans', sans-serif;
             font-size: 16px;
@@ -658,8 +658,8 @@
 
         .add-event-btn-side:hover {
             background: #f0f7f5;
-            border-color: #558A78;
-            color: #558A78;
+            border-color: #3E7A5E;
+            color: #3E7A5E;
         }
 
 
@@ -689,7 +689,7 @@
 
         .event-field input:focus,
         .event-field textarea:focus {
-            border-color: #639A88;
+            border-color: #4C9A74;
         }
 
         .event-field textarea {
@@ -722,14 +722,14 @@
         }
 
         .event-btn.primary {
-            background: #639A88;
+            background: #4C9A74;
             color: #fff;
-            border-color: #639A88;
+            border-color: #4C9A74;
         }
 
         .event-btn.primary:hover {
-            background: #558A78;
-            border-color: #558A78;
+            background: #3E7A5E;
+            border-color: #3E7A5E;
         }
 
         .event-btn.danger {
@@ -820,7 +820,7 @@
         }
 
         .habit-toggle.active {
-            background-color: #639A88; /* Default, can be overridden by inline style */
+            background-color: #4C9A74; /* Default, can be overridden by inline style */
         }
 
         .habit-toggle-slider {
@@ -914,7 +914,7 @@
         }
 
         .habit-select:focus {
-            border-color: #639A88;
+            border-color: #4C9A74;
             background-color: #fff;
         }
 
@@ -955,7 +955,7 @@
         }
 
         .custom-dropdown-button.active {
-            border-color: #639A88;
+            border-color: #4C9A74;
             background-color: #fff;
         }
 
@@ -1181,7 +1181,7 @@
             font-family: 'Work Sans', sans-serif;
             font-size: 32px;
             font-weight: 700;
-            color: #2D5A4A;
+            color: #3E7A5E;
             margin-bottom: 5px;
         }
 
@@ -1259,7 +1259,7 @@
         }
 
         .create-habit-input:focus {
-            border-color: #639A88;
+            border-color: #4C9A74;
         }
 
         .create-habit-buttons {
@@ -1285,14 +1285,14 @@
         }
 
         .create-habit-btn-modal.primary {
-            background: #639A88;
+            background: #4C9A74;
             color: #fff;
-            border-color: #639A88;
+            border-color: #4C9A74;
         }
 
         .create-habit-btn-modal.primary:hover {
-            background: #558A78;
-            border-color: #558A78;
+            background: #3E7A5E;
+            border-color: #3E7A5E;
         }
 
         .clear-all-btn {
@@ -1330,7 +1330,7 @@
         }
 
         .mark-today-btn:hover {
-            border-color: #2D5A4A;
+            border-color: #3E7A5E;
             background-color: #e8f0ed;
         }
 
@@ -1415,14 +1415,25 @@
         }
 
         .custom-modal-btn.primary {
-            background: #639A88;
+            background: #4C9A74;
             color: #fff;
-            border-color: #639A88;
+            border-color: #4C9A74;
         }
 
         .custom-modal-btn.primary:hover {
-            background: #558A78;
-            border-color: #558A78;
+            background: #3E7A5E;
+            border-color: #3E7A5E;
+        }
+
+        .custom-modal-btn.danger {
+            background: #B84A3A;
+            color: #fff;
+            border-color: #B84A3A;
+        }
+
+        .custom-modal-btn.danger:hover {
+            background: #A03A2A;
+            border-color: #A03A2A;
         }
 
         /* Responsive: full-width stacked controls on narrow viewports */
@@ -1577,6 +1588,7 @@
                 <div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu">
                     <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button>
                     <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button>
+                    <button type="button" class="custom-dropdown-item" id="deleteAllDataBtn">Delete all data…</button>
                 </div>
             </div>
         </div>
@@ -1680,23 +1692,23 @@
         let selectedHabitId = null;
         let habits = [];
         let showLongestStreak = false;
-        let currentMode = 'habits'; // 'habits' or 'events'
+        let currentMode = 'events'; // 'habits', 'events', or 'journal'
         let selectedCalendarId = null;
         let calendars = [];
         let events = []; // Array to store events
         
         // Habit colors - default green first, then cycle through others
-        // All colors meet WCAG AAA contrast (7:1) with white text
+        // All colors meet WCAG AA contrast (4.5:1) with white text - bright shades
         const habitColors = [
-            '#2D5A4A', // Green (default) - darker green for AAA contrast
-            '#053A4A', // Dark Teal/Blue - darker for AAA contrast
-            '#B84A3A', // Orange - darker orange for AAA contrast
-            '#5D4A7A', // Purple - lighter purple for AAA contrast
-            '#A01022', // Red - darker red for AAA contrast
-            '#7A5D3D', // Brown - darker brown for AAA contrast
-            '#B84AA8', // Pink/Magenta - darker pink for AAA contrast
-            '#2A3A52', // Dark Blue - darker for AAA contrast
-            '#CC8B6B'  // Peach - darker peach for AAA contrast
+            '#3E7A5E', // Green (default)
+            '#1A6B7E', // Teal
+            '#C75040', // Orange
+            '#7558A0', // Purple
+            '#C71E33', // Red
+            '#8A6D45', // Brown
+            '#B84AA8', // Pink/Magenta
+            '#4A5E8F', // Blue
+            '#7D7800'  // Gold
         ];
         
         // Get color for a habit (assign if doesn't have one)
@@ -1765,6 +1777,8 @@
             if (selectedHabitId && cell) {
                 applyHabitColorToCell(cell);
             } else if (cell) {
+                cell.style.backgroundColor = '#3E7A5E';
+                cell.style.color = '#fff';
                 cell.classList.add('marked');
             }
         }
@@ -2624,10 +2638,10 @@
         // Mode management
         function loadMode() {
             const saved = localStorage.getItem('currentMode');
-            currentMode = saved || 'habits';
+            currentMode = saved || 'events';
             // Validate mode
             if (currentMode !== 'habits' && currentMode !== 'events' && currentMode !== 'journal') {
-                currentMode = 'habits';
+                currentMode = 'events';
             }
             updateModeUI();
         }
@@ -3033,6 +3047,10 @@
                     importData();
                     optionsDropdownMenu.classList.remove('active');
                 });
+                document.getElementById('deleteAllDataBtn').addEventListener('click', async () => {
+                    optionsDropdownMenu.classList.remove('active');
+                    await deleteAllData();
+                });
                 document.getElementById('importDataInput').addEventListener('change', handleImportFile);
             }
             document.addEventListener('click', (e) => {
@@ -3167,7 +3185,7 @@
                     dayItem.className = 'slider-item selected';
                 } else {
                     dayItem.className = 'slider-item greyed';
-                    if (currentMode === 'habits' || currentMode === 'journal') {
+                    if (currentMode === 'journal') {
                         dayItem.onclick = () => renderDayView(month, d);
                     }
                 }
@@ -3249,6 +3267,8 @@
                             applyHabitColorToCell(dayRow);
                         } else if (!selectedHabitId && isDateMarked(2026, month, day)) {
                             // Show marked if any habit has this date marked (use default green)
+                            dayRow.style.backgroundColor = '#3E7A5E';
+                            dayRow.style.color = '#fff';
                             dayRow.classList.add('marked');
                         }
                     } else if (currentMode === 'events') {
@@ -3273,8 +3293,8 @@
                         const dateKey = `2026-${month + 1}-${day}`;
                         const journalEntry = localStorage.getItem(dateKey);
                         if (journalEntry && journalEntry.trim() !== '') {
-                            // Use the same dark green color as habits mode
-                            dayRow.style.backgroundColor = '#2D5A4A';
+                            // Use the same green as habits mode
+                            dayRow.style.backgroundColor = '#3E7A5E';
                             dayRow.style.color = '#fff';
                             dayRow.classList.add('marked');
                         }
@@ -3363,9 +3383,8 @@
                                     updateMarkTodayButton();
                                 } else if (habitTrackerEnabled && !selectedHabitId) {
                                     await showCustomAlert('Please select a habit first', 'Notification');
-                                } else {
-                                    renderDayView(month, day);
                                 }
+                                // When edit tracker is off, do nothing (no journal modal on habit screen)
                             } else if (currentMode === 'events') {
                                 // Events mode
                                 if (selectedCalendarId) {
@@ -3451,6 +3470,8 @@
                     applyHabitColorToCell(dayDiv);
                 } else if (!selectedHabitId && isDateMarked(2026, month, day)) {
                     // Show marked if any habit has this date marked (use default green)
+                    dayDiv.style.backgroundColor = '#3E7A5E';
+                    dayDiv.style.color = '#fff';
                     dayDiv.classList.add('marked');
                 }
                 
@@ -3499,21 +3520,19 @@
                 dayDiv.onclick = async (e) => {
                     e.stopPropagation();
                     if (!hasMoved && !isDragging) {
-                        if (habitTrackerEnabled && selectedHabitId) {
-                            // Toggle state for selected habit
-                            toggleDateMarked(2026, month, currentDayNum, selectedHabitId);
-                            toggleCellWithHabitColor(dayDiv);
-                            updateMarkTodayButton();
-                        } else if (habitTrackerEnabled && !selectedHabitId) {
-                            await showCustomAlert('Please select a habit first', 'Notification');
-                        } else if (currentMode === 'habits') {
-                            // Normal behavior - open day view (only in habits mode)
-                            renderDayView(month, currentDayNum);
+                        if (currentMode === 'habits') {
+                            if (habitTrackerEnabled && selectedHabitId) {
+                                toggleDateMarked(2026, month, currentDayNum, selectedHabitId);
+                                toggleCellWithHabitColor(dayDiv);
+                                updateMarkTodayButton();
+                            } else if (habitTrackerEnabled && !selectedHabitId) {
+                                await showCustomAlert('Please select a habit first', 'Notification');
+                            }
+                            // When edit tracker is off, do nothing
                         } else if (currentMode === 'journal') {
-                            // Journal mode - always open day view
                             renderDayView(month, currentDayNum);
                         }
-                        // In events mode, do nothing if edit tracker is off
+                        // In events mode, do nothing
                     }
                 };
                 grid.appendChild(dayDiv);
@@ -3663,6 +3682,7 @@
                     keys.forEach(key => {
                         if (typeof data[key] === 'string') localStorage.setItem(key, data[key]);
                     });
+                    localStorage.setItem('currentMode', 'events');
                     location.reload();
                 } catch (err) {
                     showCustomAlert('Could not import: ' + (err.message || 'invalid file'), 'Import failed');
@@ -3670,6 +3690,66 @@
             };
             reader.readAsText(file);
             e.target.value = '';
+        }
+
+        async function deleteAllData() {
+            const confirmed = await new Promise((resolve) => {
+                const overlay = document.getElementById('customModalOverlay');
+                const modalTitle = document.getElementById('customModalTitle');
+                const modalMessage = document.getElementById('customModalMessage');
+                const modalButtons = document.getElementById('customModalButtons');
+
+                modalTitle.textContent = 'Delete all data';
+                modalMessage.innerHTML = 'This will permanently delete all your data from every view:<br><br>' +
+                    '• <strong>Habits</strong> – all habits and their marked dates<br>' +
+                    '• <strong>Events</strong> – all calendars and events<br>' +
+                    '• <strong>Journal</strong> – all journal entries<br><br>' +
+                    'This cannot be undone. Consider exporting your data first if you want to keep a backup.';
+                modalButtons.innerHTML = '';
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'custom-modal-btn';
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.onclick = () => {
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('modal-open');
+                    resolve(false);
+                };
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'custom-modal-btn danger';
+                deleteBtn.textContent = 'Delete all';
+                deleteBtn.onclick = () => {
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('modal-open');
+                    resolve(true);
+                };
+
+                modalButtons.appendChild(cancelBtn);
+                modalButtons.appendChild(deleteBtn);
+
+                overlay.classList.add('active');
+                document.body.classList.add('modal-open');
+
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('active');
+                        document.body.classList.remove('modal-open');
+                        resolve(false);
+                    }
+                };
+            });
+
+            if (confirmed) {
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key === 'habits' || key === 'habitTrackerEnabled' || key === 'currentMode' || key === 'calendars' || key === 'events' ||
+                        key.startsWith('habit-') || key.startsWith('calendar-') || /^2026-\d{1,2}-\d{1,2}$/.test(key)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                location.reload();
+            }
         }
 
         function getEventKey(calendarId, year, month, day) {
@@ -3737,7 +3817,7 @@
                             ${event.location && event.location !== 'n/a' ? `<div class="event-card-detail">📍 ${event.location}</div>` : ''}
                             ${event.notes ? `<div class="event-card-notes">${event.notes}</div>` : ''}
                             <div class="event-card-actions">
-                                <button class="event-btn" style="padding: 6px 12px; font-size: 12px; border-color: #639A88; color: #639A88;" onclick="editEvent('${event.id}')">Edit</button>
+                                <button class="event-btn" style="padding: 6px 12px; font-size: 12px; border-color: #4C9A74; color: #4C9A74;" onclick="editEvent('${event.id}')">Edit</button>
                                 <button class="event-btn danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteEventById('${event.id}')">Delete</button>
                             </div>
                         </div>
