@@ -1554,7 +1554,7 @@
         <div class="create-habit-content">
             <h3>Create a New Habit</h3>
             <div class="create-habit-input-wrapper">
-                <input type="text" class="create-habit-input" id="habitNameInput" placeholder="Enter habit name..." />
+                <input type="text" class="create-habit-input" id="habitNameInput" placeholder="Enter habit name... (meditate for 2 minutes, do 5 pushups, read a page, etc.)" />
             </div>
             <div class="create-habit-buttons">
                 <button class="create-habit-btn-modal" id="cancelHabitBtn">Cancel</button>
@@ -1934,8 +1934,8 @@
             const button = document.getElementById('habitSelectButton');
             const currentValue = selectedHabitId;
             
-            // Auto-select first habit if only one exists and none is selected
-            if (habits.length === 1 && !selectedHabitId) {
+            // Auto-select first habit when any exist and none is selected
+            if (habits.length > 0 && !selectedHabitId) {
                 selectedHabitId = habits[0].id;
                 button.textContent = habits[0].name;
                 updateHabitButtonColor();
@@ -1946,21 +1946,28 @@
             // Clear existing options
             menu.innerHTML = '';
             
-            // Add "Select Habit" option
+            // Add default option: "Add your first habit" when empty, "Select Habit" when habits exist
             const defaultItem = document.createElement('button');
             defaultItem.className = 'custom-dropdown-item';
-            defaultItem.textContent = 'Select Habit';
             defaultItem.dataset.value = '';
-            defaultItem.onclick = () => {
-                selectedHabitId = null;
-                button.textContent = 'Select Habit';
-                updateHabitButtonColor();
+            if (habits.length === 0) {
+                defaultItem.textContent = 'Add your first habit';
+                defaultItem.onclick = () => {
+                    closeDropdown();
+                    openCreateHabitModal();
+                };
+            } else {
+                defaultItem.textContent = 'Select Habit';
+                defaultItem.onclick = () => {
+                    selectedHabitId = null;
+                    button.textContent = 'Select Habit';
+                    updateHabitButtonColor();
                     updateMarkTodayButton();
                     updateClearAllButton();
-                closeDropdown();
-                updateSelectedItem();
-                // Re-render year view
-                renderYearView();
+                    closeDropdown();
+                    updateSelectedItem();
+                    renderYearView();
+                };
             }
             updateMarkTodayButton();
             menu.appendChild(defaultItem);
@@ -2028,17 +2035,27 @@
                     updateMarkTodayButton();
                     updateClearAllButton();
                 } else {
-                    button.textContent = 'Select Habit';
-                    selectedHabitId = null;
+                    // Selected habit was deleted; auto-select first if any remain
+                    if (habits.length > 0) {
+                        selectedHabitId = habits[0].id;
+                        button.textContent = habits[0].name;
+                    } else {
+                        selectedHabitId = null;
+                        button.textContent = 'Add a new Habit';
+                    }
                     updateHabitButtonColor();
                     updateMarkTodayButton();
                     updateClearAllButton();
                 }
             } else {
-                button.textContent = 'Select Habit';
+                if (habits.length === 0) {
+                    button.textContent = 'Add a new Habit';
+                    selectedHabitId = null;
+                }
+                // If habits exist, first block above already selected the first
                 updateHabitButtonColor();
-                    updateMarkTodayButton();
-                    updateClearAllButton();
+                updateMarkTodayButton();
+                updateClearAllButton();
             }
             
             // Update selected item highlighting
@@ -2125,7 +2142,7 @@
             modal.classList.add('active');
             document.body.classList.add('modal-open');
             input.value = '';
-            input.placeholder = 'Enter habit name...';
+            input.placeholder = 'Enter habit name... (meditate for 2 minutes, do 5 pushups, read a page, etc.)';
             if (title) title.textContent = 'Create a New Habit';
             input.focus();
         }
@@ -2746,8 +2763,8 @@
             const button = document.getElementById('calendarSelectButton');
             const currentValue = selectedCalendarId;
             
-            // Auto-select first calendar if only one exists
-            if (calendars.length === 1 && !selectedCalendarId) {
+            // Auto-select first calendar when any exist and none is selected
+            if (calendars.length > 0 && !selectedCalendarId) {
                 selectedCalendarId = calendars[0].id;
                 button.textContent = calendars[0].name;
                 updateCalendarButtonColor();
@@ -2755,20 +2772,28 @@
             
             menu.innerHTML = '';
             
-            // Add "Select Calendar" option
+            // Add default option: "Add your first calendar" when empty, "Select Calendar" when calendars exist
             const defaultItem = document.createElement('button');
             defaultItem.className = 'custom-dropdown-item';
-            defaultItem.textContent = 'Select Calendar';
             defaultItem.dataset.value = '';
-            defaultItem.onclick = () => {
-                selectedCalendarId = null;
-                button.textContent = 'Select Calendar';
-                updateCalendarButtonColor();
-                closeCalendarDropdown();
-                updateSelectedCalendarItem();
-                renderYearView();
-                updateClearAllButton();
-            };
+            if (calendars.length === 0) {
+                defaultItem.textContent = 'Add your first calendar';
+                defaultItem.onclick = () => {
+                    closeCalendarDropdown();
+                    openCreateCalendarModal();
+                };
+            } else {
+                defaultItem.textContent = 'Select Calendar';
+                defaultItem.onclick = () => {
+                    selectedCalendarId = null;
+                    button.textContent = 'Select Calendar';
+                    updateCalendarButtonColor();
+                    closeCalendarDropdown();
+                    updateSelectedCalendarItem();
+                    renderYearView();
+                    updateClearAllButton();
+                };
+            }
             menu.appendChild(defaultItem);
             
             // Add calendars
@@ -2828,12 +2853,22 @@
                     button.textContent = calendar.name;
                     updateCalendarButtonColor();
                 } else {
-                    button.textContent = 'Select Calendar';
-                    selectedCalendarId = null;
+                    // Selected calendar was deleted; auto-select first if any remain
+                    if (calendars.length > 0) {
+                        selectedCalendarId = calendars[0].id;
+                        button.textContent = calendars[0].name;
+                    } else {
+                        selectedCalendarId = null;
+                        button.textContent = 'Add a new Calendar';
+                    }
                     updateCalendarButtonColor();
                 }
             } else {
-                button.textContent = 'Select Calendar';
+                if (calendars.length === 0) {
+                    button.textContent = 'Add a new Calendar';
+                    selectedCalendarId = null;
+                }
+                // If calendars exist, first block above already selected the first
                 updateCalendarButtonColor();
             }
             
@@ -2907,8 +2942,8 @@
             modal.classList.add('active');
             document.body.classList.add('modal-open');
             input.value = '';
-            input.placeholder = 'Enter calendar name...';
-            if (title) title.textContent = 'Create a New Calendar';
+            input.placeholder = 'Enter calendar name... (birthdays, holidays, travel, plans, etc.)';
+            if (title) title.textContent = 'Create a new Calendar';
             input.focus();
         }
 
@@ -3069,7 +3104,7 @@
                         createCalendar(name);
                     }
                     closeCreateHabitModal();
-                    input.placeholder = 'Enter habit name...';
+                    input.placeholder = 'Enter habit name... (meditate for 2 minutes, do 5 pushups, read a page, etc.)';
                 }
             });
             
