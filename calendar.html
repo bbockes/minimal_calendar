@@ -1615,13 +1615,6 @@
                             <!-- Options will be populated by JavaScript -->
                         </div>
                     </div>
-                    <div class="habit-toggle-wrapper">
-                        <div class="habit-toggle" id="habitToggle" title="Toggle Habit Tracker">
-                            <div class="habit-toggle-slider"></div>
-                        </div>
-                        <span class="habit-toggle-text">Edit Tracker</span>
-                    </div>
-                    <div class="button-separator"></div>
                     <button class="mark-today-btn" id="markTodayBtn">Mark Today</button>
                 </div>
                 <!-- Events Mode UI -->
@@ -1688,7 +1681,6 @@
         let currentView = 'year';
         let currentMonth = 0;
         let currentDay = null;
-        let habitTrackerEnabled = false;
         let selectedHabitId = null;
         let habits = [];
         let showLongestStreak = false;
@@ -1880,39 +1872,6 @@
             });
         }
 
-        // Load habit tracker state from localStorage
-        function loadHabitTrackerState() {
-            const saved = localStorage.getItem('habitTrackerEnabled');
-            habitTrackerEnabled = saved === 'true';
-            updateHabitToggleUI();
-        }
-
-        // Update habit toggle UI
-        function updateHabitToggleUI() {
-            const toggle = document.getElementById('habitToggle');
-            if (habitTrackerEnabled) {
-                toggle.classList.add('active');
-                // Use selected habit's color if available
-                const habitColor = getSelectedHabitColor();
-                if (habitColor) {
-                    toggle.style.backgroundColor = habitColor;
-                    toggle.style.borderColor = habitColor;
-                }
-            } else {
-                toggle.classList.remove('active');
-                toggle.style.backgroundColor = '';
-                toggle.style.borderColor = '';
-            }
-            updateClearAllButton();
-        }
-
-        // Toggle habit tracker
-        function toggleHabitTracker() {
-            habitTrackerEnabled = !habitTrackerEnabled;
-            localStorage.setItem('habitTrackerEnabled', habitTrackerEnabled.toString());
-            updateHabitToggleUI();
-        }
-
         // Habit management functions
         function loadHabits() {
             const saved = localStorage.getItem('habits');
@@ -1981,7 +1940,7 @@
                 button.textContent = habits[0].name;
                 updateHabitButtonColor();
                 updateMarkTodayButton();
-                updateHabitToggleUI();
+                updateClearAllButton();
             }
             
             // Clear existing options
@@ -1997,7 +1956,7 @@
                 button.textContent = 'Select Habit';
                 updateHabitButtonColor();
                     updateMarkTodayButton();
-                    updateHabitToggleUI();
+                    updateClearAllButton();
                 closeDropdown();
                 updateSelectedItem();
                 // Re-render year view
@@ -2049,7 +2008,7 @@
                     button.textContent = habit.name;
                     updateHabitButtonColor();
                     updateMarkTodayButton();
-                    updateHabitToggleUI();
+                    updateClearAllButton();
                     updateMarkTodayButton();
                     closeDropdown();
                     updateSelectedItem();
@@ -2067,19 +2026,19 @@
                     button.textContent = habit.name;
                     updateHabitButtonColor();
                     updateMarkTodayButton();
-                    updateHabitToggleUI();
+                    updateClearAllButton();
                 } else {
                     button.textContent = 'Select Habit';
                     selectedHabitId = null;
                     updateHabitButtonColor();
                     updateMarkTodayButton();
-                    updateHabitToggleUI();
+                    updateClearAllButton();
                 }
             } else {
                 button.textContent = 'Select Habit';
                 updateHabitButtonColor();
                     updateMarkTodayButton();
-                    updateHabitToggleUI();
+                    updateClearAllButton();
             }
             
             // Update selected item highlighting
@@ -2151,7 +2110,7 @@
             button.textContent = newHabit.name;
             updateHabitButtonColor();
                     updateMarkTodayButton();
-                    updateHabitToggleUI();
+                    updateClearAllButton();
             updateSelectedItem();
             
             // Re-render year view to update marked dates
@@ -2398,7 +2357,7 @@
 
         // Handle drag over a cell
         function handleCellDragOver(year, month, day) {
-            if (!isDragging || !dragStartCell || !habitTrackerEnabled || !selectedHabitId) return;
+            if (!isDragging || !dragStartCell || !selectedHabitId) return;
             
             const currentCell = getCellElement(year, month, day);
             if (!currentCell) return;
@@ -2455,56 +2414,83 @@
             }
         }
 
-        // Clear all marked dates for selected habit
-        async function clearAllMarkedDates() {
-            if (!selectedHabitId) {
-                await showCustomAlert('Please select a habit first', 'Notification');
-                return;
-            }
-            
-            // Get habit name for confirmation
-            const habit = habits.find(h => h.id === selectedHabitId);
-            const habitName = habit ? habit.name : 'this habit';
-            
-            // Confirmation dialog
-            const confirmed = await showCustomConfirm(
-                `Are you sure you want to clear all marked dates for <strong>"${habitName}"</strong>? This action cannot be undone.`,
-                'Clear All Dates'
-            );
-            if (!confirmed) {
-                return;
-            }
-            
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.startsWith(`habit-${selectedHabitId}-`)) {
-                    localStorage.removeItem(key);
+        // Clear all dates for the current view (events/habit/journal) and selected item
+        async function clearAllForCurrentView() {
+            let itemName = '';
+            let confirmed = false;
+
+            if (currentMode === 'habits') {
+                if (!selectedHabitId) {
+                    await showCustomAlert('Please select a habit first', 'Notification');
+                    return;
                 }
-            });
-            // Re-render year view to update marked dates
+                const habit = habits.find(h => h.id === selectedHabitId);
+                itemName = habit ? habit.name : 'this habit';
+                confirmed = await showCustomConfirm(
+                    `Are you sure you want to clear all marked dates for <strong>"${itemName}"</strong>? This action cannot be undone.`,
+                    'Clear All Dates'
+                );
+                if (!confirmed) return;
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith(`habit-${selectedHabitId}-`)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+            } else if (currentMode === 'events') {
+                if (!selectedCalendarId) {
+                    await showCustomAlert('Please select a calendar first', 'Notification');
+                    return;
+                }
+                const calendar = calendars.find(c => c.id === selectedCalendarId);
+                itemName = calendar ? calendar.name : 'this calendar';
+                confirmed = await showCustomConfirm(
+                    `Are you sure you want to clear all marked dates and events for <strong>"${itemName}"</strong>? This action cannot be undone.`,
+                    'Clear All Dates'
+                );
+                if (!confirmed) return;
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith(`calendar-${selectedCalendarId}-`)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                events = events.filter(e => e.calendarId !== selectedCalendarId);
+                saveEvents();
+            } else if (currentMode === 'journal') {
+                confirmed = await showCustomConfirm(
+                    'Are you sure you want to clear all journal entries? This action cannot be undone.',
+                    'Clear All Journal'
+                );
+                if (!confirmed) return;
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (/^2026-\d{1,2}-\d{1,2}$/.test(key)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+            }
+
             renderYearView();
             updateMarkTodayButton();
-            updateMarkTodayButton();
+            updateClearAllButton();
         }
 
-        // Update clear all button visibility based on edit tracker
+        // Update clear all button visibility based on mode and selection
         function updateClearAllButton() {
             const clearAllBtn = document.getElementById('clearAllBtn');
             const markTodayBtn = document.getElementById('markTodayBtn');
-            if (!habitTrackerEnabled) {
-                clearAllBtn.style.visibility = 'hidden';
-                clearAllBtn.style.pointerEvents = 'none';
-                if (markTodayBtn) {
-                    markTodayBtn.style.visibility = 'hidden';
-                    markTodayBtn.style.pointerEvents = 'none';
-                }
-            } else {
-                clearAllBtn.style.visibility = 'visible';
-                clearAllBtn.style.pointerEvents = 'auto';
-                if (markTodayBtn) {
-                    markTodayBtn.style.visibility = 'visible';
-                    markTodayBtn.style.pointerEvents = 'auto';
-                }
+            const canClear = (currentMode === 'habits' && selectedHabitId) ||
+                (currentMode === 'events' && selectedCalendarId) ||
+                (currentMode === 'journal');
+            if (clearAllBtn) {
+                clearAllBtn.style.visibility = canClear ? 'visible' : 'hidden';
+                clearAllBtn.style.pointerEvents = canClear ? 'auto' : 'none';
+            }
+            if (markTodayBtn) {
+                const showMarkToday = currentMode === 'habits' && selectedHabitId;
+                markTodayBtn.style.visibility = showMarkToday ? 'visible' : 'hidden';
+                markTodayBtn.style.pointerEvents = showMarkToday ? 'auto' : 'none';
             }
             updateMarkTodayButton();
         }
@@ -2516,7 +2502,7 @@
             const habitColor = getSelectedHabitColor();
             
             // Update Mark Today button
-            if (!markTodayBtn || !habitTrackerEnabled || !selectedHabitId) {
+            if (!markTodayBtn || !selectedHabitId) {
                 if (markTodayBtn) {
                     markTodayBtn.style.backgroundColor = '#fff';
                     markTodayBtn.style.borderColor = '#ccc';
@@ -2592,7 +2578,7 @@
         // Mark today's date
         function markToday() {
             if (currentMode === 'habits') {
-                if (!habitTrackerEnabled || !selectedHabitId) {
+                if (!selectedHabitId) {
                     return;
                 }
                 
@@ -2687,6 +2673,7 @@
             
             // Re-render calendar view
             renderYearView();
+            updateClearAllButton();
         }
 
         function switchMode(mode) {
@@ -2780,6 +2767,7 @@
                 closeCalendarDropdown();
                 updateSelectedCalendarItem();
                 renderYearView();
+                updateClearAllButton();
             };
             menu.appendChild(defaultItem);
             
@@ -2828,6 +2816,7 @@
                     closeCalendarDropdown();
                     updateSelectedCalendarItem();
                     renderYearView();
+                    updateClearAllButton();
                 };
                 menu.appendChild(item);
             });
@@ -2849,6 +2838,7 @@
             }
             
             updateSelectedCalendarItem();
+            updateClearAllButton();
         }
 
         function updateCalendarButtonColor() {
@@ -2922,17 +2912,13 @@
             input.focus();
         }
 
-        // Initialize habit tracker toggle
         document.addEventListener('DOMContentLoaded', () => {
             loadMode();
             loadHabits();
-            loadHabitTrackerState();
             loadCalendars();
             loadEvents();
             updateMarkTodayButton();
-            
-            const toggle = document.getElementById('habitToggle');
-            toggle.addEventListener('click', toggleHabitTracker);
+            updateClearAllButton();
             
             // Mode selector
             const modeSelectButton = document.getElementById('modeSelectButton');
@@ -2993,7 +2979,7 @@
             
             
             const clearAllBtn = document.getElementById('clearAllBtn');
-            clearAllBtn.addEventListener('click', clearAllMarkedDates);
+            clearAllBtn.addEventListener('click', clearAllForCurrentView);
             
             const markTodayBtn = document.getElementById('markTodayBtn');
             if (markTodayBtn) {
@@ -3265,12 +3251,8 @@
                     if (currentMode === 'habits') {
                         if (selectedHabitId && isDateMarked(2026, month, day, selectedHabitId)) {
                             applyHabitColorToCell(dayRow);
-                        } else if (!selectedHabitId && isDateMarked(2026, month, day)) {
-                            // Show marked if any habit has this date marked (use default green)
-                            dayRow.style.backgroundColor = '#3E7A5E';
-                            dayRow.style.color = '#fff';
-                            dayRow.classList.add('marked');
                         }
+                        // When no habit selected, don't show any marked days
                     } else if (currentMode === 'events') {
                         // Events mode
                         if (selectedCalendarId) {
@@ -3307,7 +3289,7 @@
                     
                     dayRow.onmousedown = (e) => {
                         e.stopPropagation();
-                        if (currentMode === 'habits' && habitTrackerEnabled && selectedHabitId) {
+                        if (currentMode === 'habits' && selectedHabitId) {
                             mouseDownPos = { x: e.clientX, y: e.clientY };
                             hasMoved = false;
                             dragStartCell = { month, day };
@@ -3322,7 +3304,7 @@
                     };
                     
                     dayRow.onmousemove = (e) => {
-                        if (currentMode === 'habits' && mouseDownPos && habitTrackerEnabled && selectedHabitId) {
+                        if (currentMode === 'habits' && mouseDownPos && selectedHabitId) {
                             const distance = Math.abs(e.clientX - mouseDownPos.x) + Math.abs(e.clientY - mouseDownPos.y);
                             if (distance > 5) {
                                 if (!hasMoved) {
@@ -3367,7 +3349,7 @@
                     };
                     
                     dayRow.onmouseenter = (e) => {
-                        if (isDragging && currentMode === 'habits' && habitTrackerEnabled && selectedHabitId) {
+                        if (isDragging && currentMode === 'habits' && selectedHabitId) {
                             handleCellDragOver(2026, month, day);
                         }
                         // Drag handling for events mode can be added here if needed
@@ -3377,14 +3359,13 @@
                         e.stopPropagation();
                         if (!hasMoved && !isDragging) {
                             if (currentMode === 'habits') {
-                                if (habitTrackerEnabled && selectedHabitId) {
+                                if (selectedHabitId) {
                                     toggleDateMarked(2026, month, day, selectedHabitId);
                                     toggleCellWithHabitColor(dayRow);
                                     updateMarkTodayButton();
-                                } else if (habitTrackerEnabled && !selectedHabitId) {
+                                } else {
                                     await showCustomAlert('Please select a habit first', 'Notification');
                                 }
-                                // When edit tracker is off, do nothing (no journal modal on habit screen)
                             } else if (currentMode === 'events') {
                                 // Events mode
                                 if (selectedCalendarId) {
@@ -3468,12 +3449,8 @@
                 // Check if date is marked for selected habit and apply styling
                 if (selectedHabitId && isDateMarked(2026, month, day, selectedHabitId)) {
                     applyHabitColorToCell(dayDiv);
-                } else if (!selectedHabitId && isDateMarked(2026, month, day)) {
-                    // Show marked if any habit has this date marked (use default green)
-                    dayDiv.style.backgroundColor = '#3E7A5E';
-                    dayDiv.style.color = '#fff';
-                    dayDiv.classList.add('marked');
                 }
+                // When no habit selected, don't show any marked days
                 
                 const currentDayNum = day;
                 
@@ -3484,7 +3461,7 @@
                 
                 dayDiv.onmousedown = (e) => {
                     e.stopPropagation();
-                    if (habitTrackerEnabled && selectedHabitId) {
+                    if (selectedHabitId) {
                         mouseDownPos = { x: e.clientX, y: e.clientY };
                         hasMoved = false;
                         dragStartCell = { month, day: currentDayNum };
@@ -3493,7 +3470,7 @@
                 };
                 
                 dayDiv.onmousemove = (e) => {
-                    if (mouseDownPos && habitTrackerEnabled && selectedHabitId) {
+                    if (mouseDownPos && selectedHabitId) {
                         const distance = Math.abs(e.clientX - mouseDownPos.x) + Math.abs(e.clientY - mouseDownPos.y);
                         if (distance > 5) { // Threshold to start dragging
                             if (!hasMoved) {
@@ -3512,7 +3489,7 @@
                 };
                 
                 dayDiv.onmouseenter = (e) => {
-                    if (isDragging && habitTrackerEnabled && selectedHabitId) {
+                    if (isDragging && selectedHabitId) {
                         handleCellDragOver(2026, month, currentDayNum);
                     }
                 };
@@ -3521,14 +3498,13 @@
                     e.stopPropagation();
                     if (!hasMoved && !isDragging) {
                         if (currentMode === 'habits') {
-                            if (habitTrackerEnabled && selectedHabitId) {
+                            if (selectedHabitId) {
                                 toggleDateMarked(2026, month, currentDayNum, selectedHabitId);
                                 toggleCellWithHabitColor(dayDiv);
                                 updateMarkTodayButton();
-                            } else if (habitTrackerEnabled && !selectedHabitId) {
+                            } else {
                                 await showCustomAlert('Please select a habit first', 'Notification');
                             }
-                            // When edit tracker is off, do nothing
                         } else if (currentMode === 'journal') {
                             renderDayView(month, currentDayNum);
                         }
@@ -3653,7 +3629,7 @@
             const data = {};
             const keys = Object.keys(localStorage);
             keys.forEach(key => {
-                if (key === 'habits' || key === 'habitTrackerEnabled' || key === 'currentMode' || key === 'calendars' || key === 'events' ||
+                if (key === 'habits' || key === 'currentMode' || key === 'calendars' || key === 'events' ||
                     key.startsWith('habit-') || key.startsWith('calendar-') || /^2026-\d{1,2}-\d{1,2}$/.test(key)) {
                     data[key] = localStorage.getItem(key);
                 }
@@ -3743,7 +3719,7 @@
             if (confirmed) {
                 const keys = Object.keys(localStorage);
                 keys.forEach(key => {
-                    if (key === 'habits' || key === 'habitTrackerEnabled' || key === 'currentMode' || key === 'calendars' || key === 'events' ||
+                    if (key === 'habits' || key === 'currentMode' || key === 'calendars' || key === 'events' ||
                         key.startsWith('habit-') || key.startsWith('calendar-') || /^2026-\d{1,2}-\d{1,2}$/.test(key)) {
                         localStorage.removeItem(key);
                     }
@@ -4110,7 +4086,7 @@
                 }
                 
                 if (e.key === 'm' || e.key === 'M') {
-                    const canMark = (currentMode === 'habits' && habitTrackerEnabled && selectedHabitId) ||
+                    const canMark = (currentMode === 'habits' && selectedHabitId) ||
                                    (currentMode === 'events' && selectedCalendarId);
                     if (canMark) {
                         e.preventDefault();
