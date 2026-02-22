@@ -1493,6 +1493,26 @@
             border-color: #A03A2A;
         }
 
+        /* Hide Mark Today, Clear All, and Stats buttons on mobile and tablet */
+        @media (max-width: 900px) {
+            .mark-today-btn,
+            .clear-all-btn,
+            #statsBtn {
+                display: none !important;
+            }
+
+            .create-habit-content {
+                width: 92vw;
+                max-width: 92vw;
+                padding: 24px 20px;
+            }
+
+            .create-habit-input {
+                padding: 20px;
+                min-height: 52px;
+            }
+        }
+
         /* Responsive: full-width stacked controls on narrow viewports */
         @media (max-width: 700px) {
             body {
