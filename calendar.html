@@ -212,6 +212,12 @@
             opacity: 0.85;
         }
 
+        .year-view .day-row.event-drag-range {
+            outline: 2px dashed color-mix(in srgb, var(--event-drag-range-color, #4C9A74) 70%, transparent);
+            outline-offset: -2px;
+            background-color: color-mix(in srgb, var(--event-drag-range-color, #4C9A74) 15%, transparent) !important;
+        }
+
         .year-view .day-row.marked .day-number,
         .year-view .day-row.marked .day-name {
             color: #fff !important;
@@ -606,9 +612,9 @@
         }
 
         .event-card.editing {
-            border-color: #4C9A74;
-            background: #f0f7f5;
-            box-shadow: 0 0 0 3px rgba(99, 154, 136, 0.15);
+            border-color: var(--event-accent-color, #4C9A74);
+            background: color-mix(in srgb, var(--event-accent-color, #4C9A74) 10%, white);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--event-accent-color, #4C9A74) 15%, transparent);
         }
 
         .event-card-actions {
@@ -645,9 +651,9 @@
             width: 100%;
             padding: 12px 20px;
             border-radius: 8px;
-            border: 2px dashed #4C9A74;
+            border: 2px dashed var(--event-accent-color, #4C9A74);
             background: #fff;
-            color: #4C9A74;
+            color: var(--event-accent-color, #4C9A74);
             cursor: pointer;
             font-family: 'Work Sans', sans-serif;
             font-size: 16px;
@@ -657,9 +663,9 @@
         }
 
         .add-event-btn-side:hover {
-            background: #f0f7f5;
-            border-color: #3E7A5E;
-            color: #3E7A5E;
+            background: color-mix(in srgb, var(--event-accent-color, #4C9A74) 10%, white);
+            border-color: var(--event-accent-color, #4C9A74);
+            color: var(--event-accent-color, #4C9A74);
         }
 
 
@@ -689,12 +695,12 @@
 
         .event-field input:focus,
         .event-field textarea:focus {
-            border-color: #4C9A74;
+            border-color: var(--event-accent-color, #4C9A74);
         }
 
         .event-field textarea {
             resize: vertical;
-            min-height: 140px;
+            min-height: 60px;
         }
 
         .event-actions {
@@ -722,14 +728,25 @@
         }
 
         .event-btn.primary {
-            background: #4C9A74;
+            background: var(--event-accent-color, #4C9A74);
             color: #fff;
-            border-color: #4C9A74;
+            border-color: var(--event-accent-color, #4C9A74);
         }
 
         .event-btn.primary:hover {
-            background: #3E7A5E;
-            border-color: #3E7A5E;
+            background: color-mix(in srgb, var(--event-accent-color, #4C9A74) 85%, black);
+            border-color: color-mix(in srgb, var(--event-accent-color, #4C9A74) 85%, black);
+        }
+
+        .event-btn.edit {
+            border-color: #4C9A74;
+            color: #4C9A74;
+        }
+
+        .event-btn.edit:hover {
+            background-color: #f0f7f5;
+            border-color: #4C9A74;
+            color: #4C9A74;
         }
 
         .event-btn.danger {
@@ -1086,6 +1103,11 @@
             color: #d32f2f !important;
         }
 
+        /* Keep delete × white on hover when item has colored background (avoids red-on-red) */
+        .custom-dropdown-item.selected .custom-dropdown-item-delete:hover {
+            color: #fff !important;
+        }
+
         .create-habit-btn {
             padding: 10px 16px;
             border-radius: 24px;
@@ -1163,6 +1185,41 @@
             font-weight: 700;
             color: #000;
             margin-bottom: 30px;
+        }
+
+        .shortcuts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        .shortcuts-table th,
+        .shortcuts-table td {
+            padding: 10px 16px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .shortcuts-table th {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .shortcuts-table kbd {
+            display: inline-block;
+            padding: 4px 8px;
+            font-family: inherit;
+            font-size: 13px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+        }
+
+        #shortcutsModal .stats-modal-content {
+            max-width: 950px;
+            width: 92%;
+            max-height: 88vh;
         }
 
         .stats-section {
@@ -1563,6 +1620,39 @@
         </div>
     </div>
 
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="stats-modal" id="shortcutsModal">
+        <div class="stats-modal-content">
+            <button class="stats-modal-close" id="closeShortcutsModal">×</button>
+            <div class="stats-modal-title">Keyboard Shortcuts</div>
+            <div id="shortcutsContent">
+                <table class="shortcuts-table">
+                    <thead>
+                        <tr><th>Shortcut</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><kbd>?</kbd></td><td>Show this shortcuts list</td></tr>
+                        <tr><td><kbd>Escape</kbd></td><td>Close modal</td></tr>
+                        <tr><td><kbd>1</kbd> or <kbd>E</kbd></td><td>Switch to Events</td></tr>
+                        <tr><td><kbd>2</kbd> or <kbd>H</kbd></td><td>Switch to Habits</td></tr>
+                        <tr><td><kbd>3</kbd> or <kbd>J</kbd></td><td>Switch to Journal</td></tr>
+                        <tr><td><kbd>N</kbd></td><td>Create new (habit or calendar)</td></tr>
+                        <tr><td><kbd>M</kbd></td><td>Mark today (Habits or Events)</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>Enter</kbd> <span style="color:#888;">(⌘ + Enter on Mac)</span></td><td>Save and close (journal entry)</td></tr>
+                    </tbody>
+                </table>
+                <div class="shortcuts-tips" style="margin-top: 8px; padding-top: 12px;">
+                    <div style="font-weight: 600; color: #333; margin-bottom: 8px;">Tips</div>
+                    <ol style="margin: 0; padding-left: 20px; font-size: 16px; color: #666; line-height: 1.6;">
+                        <li style="margin-bottom: 12px;">Drag across days on the calendar to select multiple days at once — for <strong>Events</strong>, this creates an event spanning the range; for <strong>Habits</strong>, it marks or unmarks all days in the range.</li>
+                        <li style="margin-bottom: 12px;">Create multiple habits or calendars to organize different types of tracking.</li>
+                        <li>Export your data from the menu to back up your habits, events, and journal entries. You can import your export later to restore your data.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Stats Modal -->
     <div class="stats-modal" id="statsModal">
         <div class="stats-modal-content">
@@ -1586,9 +1676,10 @@
                     </svg>
                 </button>
                 <div class="custom-dropdown-menu title-options-menu" id="optionsDropdownMenu">
-                    <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data…</button>
-                    <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data…</button>
-                    <button type="button" class="custom-dropdown-item" id="deleteAllDataBtn">Delete all data…</button>
+                    <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data</button>
+                    <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data</button>
+                    <button type="button" class="custom-dropdown-item" id="deleteAllDataBtn">Delete all data</button>
+                    <button type="button" class="custom-dropdown-item" id="keyboardShortcutsBtn">Keyboard shortcuts</button>
                 </div>
             </div>
         </div>
@@ -1606,7 +1697,7 @@
                 </div>
                 <!-- Habits Mode UI -->
                 <div id="habitsModeUI" class="mode-ui">
-                    <button class="create-habit-btn" id="createHabitBtn">+ New</button>
+                    <button class="create-habit-btn" id="createHabitBtn" title="Create new habit">+ New</button>
                     <div class="custom-dropdown habit-calendar-dropdown">
                         <button class="custom-dropdown-button" id="habitSelectButton">
                             Select Habit
@@ -1615,11 +1706,11 @@
                             <!-- Options will be populated by JavaScript -->
                         </div>
                     </div>
-                    <button class="mark-today-btn" id="markTodayBtn">Mark Today</button>
+                    <button class="mark-today-btn" id="markTodayBtn" title="Mark today (or press M)">Mark Today</button>
                 </div>
                 <!-- Events Mode UI -->
                 <div id="eventsModeUI" class="mode-ui" style="display: none;">
-                    <button class="create-habit-btn" id="createCalendarBtn">+ New</button>
+                    <button class="create-habit-btn" id="createCalendarBtn" title="Create new calendar">+ New</button>
                     <div class="custom-dropdown habit-calendar-dropdown">
                         <button class="custom-dropdown-button" id="calendarSelectButton">
                             Select Calendar
@@ -1636,7 +1727,7 @@
             </div>
         </div>
         <div class="habit-controls-right">
-            <button class="clear-all-btn" id="clearAllBtn">Clear All</button>
+            <button class="clear-all-btn" id="clearAllBtn" title="Clear all marked dates">Clear All</button>
             <button class="create-habit-btn" id="statsBtn">Stats</button>
         </div>
         <div class="header">
@@ -1688,6 +1779,8 @@
         let selectedCalendarId = null;
         let calendars = [];
         let events = []; // Array to store events
+        let eventDragEndCell = null; // End cell when dragging to select range in events mode
+        let eventDragJustEnded = false; // Prevents click from firing after drag
         
         // Habit colors - default green first, then cycle through others
         // All colors meet WCAG AA contrast (4.5:1) with white text - bright shades
@@ -2241,6 +2334,22 @@
         // Close stats modal
         function closeStatsModal() {
             const modal = document.getElementById('statsModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        function openShortcutsModal() {
+            const modal = document.getElementById('shortcutsModal');
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function closeShortcutsModal() {
+            const modal = document.getElementById('shortcutsModal');
             if (modal) {
                 modal.classList.remove('active');
                 document.body.classList.remove('modal-open');
@@ -3052,6 +3161,17 @@
                 closeStatsModalBtn.addEventListener('click', closeStatsModal);
             }
 
+            const closeShortcutsModalBtn = document.getElementById('closeShortcutsModal');
+            if (closeShortcutsModalBtn) {
+                closeShortcutsModalBtn.addEventListener('click', closeShortcutsModal);
+            }
+            const shortcutsModalEl = document.getElementById('shortcutsModal');
+            if (shortcutsModalEl) {
+                shortcutsModalEl.addEventListener('click', (e) => {
+                    if (e.target === shortcutsModalEl) closeShortcutsModal();
+                });
+            }
+
             // Data / backup options menu (Export / Import)
             const optionsMenuButton = document.getElementById('optionsMenuButton');
             const optionsDropdownMenu = document.getElementById('optionsDropdownMenu');
@@ -3071,6 +3191,10 @@
                 document.getElementById('deleteAllDataBtn').addEventListener('click', async () => {
                     optionsDropdownMenu.classList.remove('active');
                     await deleteAllData();
+                });
+                document.getElementById('keyboardShortcutsBtn').addEventListener('click', () => {
+                    optionsDropdownMenu.classList.remove('active');
+                    openShortcutsModal();
                 });
                 document.getElementById('importDataInput').addEventListener('change', handleImportFile);
             }
@@ -3125,14 +3249,23 @@
             
             // Global mouseup handler to stop dragging
             document.addEventListener('mouseup', () => {
+                if (isDragging && currentMode === 'events' && selectedCalendarId && dragStartCell) {
+                    const end = eventDragEndCell || dragStartCell;
+                    openEventModal(dragStartCell.month, dragStartCell.day, end.month, end.day);
+                    clearEventDragRangePreview();
+                    eventDragJustEnded = true;
+                    setTimeout(() => { eventDragJustEnded = false; }, 0);
+                }
                 if (isDragging || mouseDownPos) {
                     isDragging = false;
                     dragStartCell = null;
                     dragStartState = null;
+                    eventDragEndCell = null;
                     dragProcessedCells.clear();
                     mouseDownPos = null;
                     hasMoved = false;
                     updateMarkTodayButton();
+                    if (currentMode === 'events') clearEventDragRangePreview();
                 }
             });
             
@@ -3237,6 +3370,12 @@
             
             const calendar = document.getElementById('calendar');
             calendar.className = 'year-view-container';
+            if (currentMode === 'events' && selectedCalendarId) {
+                const color = getSelectedCalendarColor();
+                calendar.style.setProperty('--event-drag-range-color', color || '#4C9A74');
+            } else {
+                calendar.style.removeProperty('--event-drag-range-color');
+            }
             calendar.innerHTML = '';
             
             const yearView = document.createElement('div');
@@ -3291,11 +3430,10 @@
                     } else if (currentMode === 'events') {
                         // Events mode
                         if (selectedCalendarId) {
-                            const dateKey = `calendar-${selectedCalendarId}-2026-${month + 1}-${day}`;
                             const eventKey = getEventKey(selectedCalendarId, 2026, month, day);
                             const hasEvents = events.some(e => e.key === eventKey);
                             
-                            if (localStorage.getItem(dateKey) === 'true' || hasEvents) {
+                            if (hasEvents) {
                                 const calendar = calendars.find(c => c.id === selectedCalendarId);
                                 if (calendar) {
                                     const color = getCalendarColor(calendar);
@@ -3359,25 +3497,8 @@
                                 if (!hasMoved) {
                                     hasMoved = true;
                                     isDragging = true;
-                                    dragProcessedCells.clear();
-                                    const dateKey = `calendar-${selectedCalendarId}-2026-${month + 1}-${day}`;
-                                    const currentlyMarked = localStorage.getItem(dateKey) === 'true';
-                                    localStorage.setItem(dateKey, (!currentlyMarked).toString());
-                                    const calendar = calendars.find(c => c.id === selectedCalendarId);
-                                    if (calendar) {
-                                        const color = getCalendarColor(calendar);
-                                        if (!currentlyMarked) {
-                                            dayRow.style.backgroundColor = color;
-                                            dayRow.style.color = '#fff';
-                                            dayRow.classList.add('marked');
-                                        } else {
-                                            dayRow.style.backgroundColor = '';
-                                            dayRow.style.color = '';
-                                            dayRow.classList.remove('marked');
-                                        }
-                                    }
-                                    dragStartState = !dragStartState;
-                                    dragProcessedCells.add(`${month}-${day}`);
+                                    eventDragEndCell = { month, day };
+                                    updateEventDragRangePreview();
                                 }
                             }
                         }
@@ -3386,12 +3507,15 @@
                     dayRow.onmouseenter = (e) => {
                         if (isDragging && currentMode === 'habits' && selectedHabitId) {
                             handleCellDragOver(2026, month, day);
+                        } else if (isDragging && currentMode === 'events' && selectedCalendarId) {
+                            eventDragEndCell = { month, day };
+                            updateEventDragRangePreview();
                         }
-                        // Drag handling for events mode can be added here if needed
                     };
                     
                     dayRow.onclick = async (e) => {
                         e.stopPropagation();
+                        if (eventDragJustEnded) return;
                         if (!hasMoved && !isDragging) {
                             if (currentMode === 'habits') {
                                 if (selectedHabitId) {
@@ -3402,9 +3526,7 @@
                                     await showCustomAlert('Please select a habit first', 'Notification');
                                 }
                             } else if (currentMode === 'events') {
-                                // Events mode
                                 if (selectedCalendarId) {
-                                    // Open event creation modal
                                     openEventModal(month, day);
                                 } else {
                                     await showCustomAlert('Please select a calendar first', 'Notification');
@@ -3620,6 +3742,10 @@
             
             modal.classList.add('active');
             document.body.classList.add('modal-open');
+            requestAnimationFrame(() => {
+                const input = document.getElementById('dayNotes');
+                if (input) input.focus();
+            });
         }
 
         function clearDayNotes() {
@@ -3805,14 +3931,60 @@
         }
 
         let selectedEventId = null;
+        let eventModalRange = null; // { start: {month, day}, end: {month, day} } when adding to multiple days
 
-        function openEventModal(month, day) {
+        function updateEventDragRangePreview() {
+            document.querySelectorAll('.day-row.event-drag-range').forEach(row => row.classList.remove('event-drag-range'));
+            if (!dragStartCell || !eventDragEndCell || currentMode !== 'events') return;
+            const dates = getDatesInRange(dragStartCell.month, dragStartCell.day, eventDragEndCell.month, eventDragEndCell.day);
+            dates.forEach(({ month, day }) => {
+                const row = document.querySelector(`.day-row[data-month="${month}"][data-day="${day}"]`);
+                if (row) row.classList.add('event-drag-range');
+            });
+        }
+
+        function clearEventDragRangePreview() {
+            document.querySelectorAll('.day-row.event-drag-range').forEach(row => row.classList.remove('event-drag-range'));
+        }
+
+        // Get all {month, day} pairs in a range (inclusive), year 2026
+        function getDatesInRange(startMonth, startDay, endMonth, endDay) {
+            const dates = [];
+            let start = new Date(2026, startMonth, startDay);
+            let end = new Date(2026, endMonth, endDay);
+            if (start > end) [start, end] = [end, start];
+            const current = new Date(start);
+            while (current <= end) {
+                dates.push({ month: current.getMonth(), day: current.getDate() });
+                current.setDate(current.getDate() + 1);
+            }
+            return dates;
+        }
+
+        function openEventModal(month, day, endMonth, endDay) {
             if (!selectedCalendarId) return;
             
             const year = 2026;
-            const date = new Date(year, month, day);
+            const isRange = endMonth !== undefined && endDay !== undefined && (endMonth !== month || endDay !== day);
+            if (isRange) {
+                eventModalRange = { start: { month, day }, end: { month: endMonth, day: endDay } };
+            } else {
+                eventModalRange = null;
+            }
+            
+            const dateStr = isRange
+                ? `${monthNames[month]} ${day} – ${monthNames[endMonth]} ${endDay}, 2026`
+                : `${monthNames[month]} ${day}, 2026`;
+            const dayCount = isRange ? getDatesInRange(month, day, endMonth, endDay).length : 1;
+            
             const eventKey = getEventKey(selectedCalendarId, year, month, day);
-            const existingEvents = events.filter(e => e.key === eventKey);
+            let existingEvents = events.filter(e => e.key === eventKey);
+            if (isRange) {
+                const rangeDates = getDatesInRange(month, day, endMonth, endDay);
+                existingEvents = events.filter(e =>
+                    rangeDates.some(d => e.key === getEventKey(selectedCalendarId, year, d.month, d.day))
+                );
+            }
             selectedEventId = null;
             
             const modal = document.getElementById('eventModal');
@@ -3821,27 +3993,36 @@
             let eventsHTML = '';
             if (existingEvents.length > 0) {
                 existingEvents.forEach(event => {
+                    const eventDate = `${monthNames[event.month]} ${event.day}`;
                     eventsHTML += `
                         <div class="event-card" data-event-id="${event.id}">
                             <div class="event-card-title">${event.name || 'Untitled Event'}</div>
+                            <div class="event-card-detail" style="font-size: 12px; color: #888;">${eventDate}</div>
                             ${event.time ? `<div class="event-card-detail">⏰ ${event.time}</div>` : ''}
                             ${event.location && event.location !== 'n/a' ? `<div class="event-card-detail">📍 ${event.location}</div>` : ''}
                             ${event.notes ? `<div class="event-card-notes">${event.notes}</div>` : ''}
                             <div class="event-card-actions">
-                                <button class="event-btn" style="padding: 6px 12px; font-size: 12px; border-color: #4C9A74; color: #4C9A74;" onclick="editEvent('${event.id}')">Edit</button>
+                                <button class="event-btn edit" style="padding: 6px 12px; font-size: 12px;" onclick="editEvent('${event.id}')">Edit</button>
                                 <button class="event-btn danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteEventById('${event.id}')">Delete</button>
                             </div>
                         </div>
                     `;
                 });
             } else {
-                eventsHTML = '<div style="padding: 40px; color: #999;">No events for this date</div>';
+                eventsHTML = isRange
+                    ? `<div style="padding: 40px; color: #999;">No events in this range</div>`
+                    : '<div style="padding: 40px; color: #999;">No events for this date</div>';
             }
+            
+            const saveBtnOnclick = isRange
+                ? `saveEventFromModalRange(${year})`
+                : `saveEventFromModal(${year}, ${month}, ${day})`;
             
             eventViewContent.innerHTML = `
                 <button class="modal-close" onclick="closeEventModal()">×</button>
                 <div class="event-header">
-                    <div class="event-date">${monthNames[month]} ${day}, 2026</div>
+                    <div class="event-date">${dateStr}</div>
+                    ${isRange ? `<div style="font-size: 13px; color: #666; margin-top: 4px;">Add event to ${dayCount} days</div>` : ''}
                 </div>
                 <div class="event-content-wrapper">
                     <div class="event-content">
@@ -3872,13 +4053,15 @@
                             </div>
                             <div class="event-actions" style="margin-top: auto;">
                                 <button class="event-btn" onclick="hideEventForm()">Cancel</button>
-                                <button class="event-btn primary" id="saveEventBtn" onclick="saveEventFromModal(${year}, ${month}, ${day})">Save Event</button>
+                                <button class="event-btn primary" id="saveEventBtn" onclick="${saveBtnOnclick}">Save Event</button>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
             
+            const accentColor = getSelectedCalendarColor() || '#4C9A74';
+            modal.style.setProperty('--event-accent-color', accentColor);
             modal.classList.add('active');
             document.body.classList.add('modal-open');
         }
@@ -3979,6 +4162,38 @@
             const modal = document.getElementById('eventModal');
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
+            eventModalRange = null;
+        }
+
+        function saveEventFromModalRange(year) {
+            if (!selectedCalendarId || !eventModalRange) return;
+            const { start, end } = eventModalRange;
+            const dates = getDatesInRange(start.month, start.day, end.month, end.day);
+            const name = document.getElementById('eventName').value.trim();
+            const time = document.getElementById('eventTime').value.trim();
+            const location = document.getElementById('eventLocation').value.trim();
+            const notes = document.getElementById('eventNotes').value.trim();
+            if (!name) {
+                showCustomAlert('Please enter an event name', 'Notification');
+                return;
+            }
+            dates.forEach(({ month, day }) => {
+                const eventKey = getEventKey(selectedCalendarId, year, month, day);
+                const newEvent = {
+                    id: Date.now().toString() + '-' + Math.random().toString(36).slice(2),
+                    key: eventKey,
+                    calendarId: selectedCalendarId,
+                    year, month, day,
+                    name, time, location, notes
+                };
+                saveEvent(newEvent);
+            });
+            hideEventForm();
+            const saveBtn = document.getElementById('saveEventBtn');
+            if (saveBtn) saveBtn.textContent = 'Save Event';
+            const addBtn = document.querySelector('.add-event-btn-side');
+            if (addBtn) addBtn.style.display = '';
+            openEventModal(start.month, start.day, end.month, end.day);
         }
 
         function saveEventFromModal(year, month, day) {
@@ -4044,21 +4259,29 @@
                 addBtn.style.display = '';
             }
             // Reopen modal to refresh the list
-            openEventModal(month, day);
+            if (eventModalRange) {
+                openEventModal(eventModalRange.start.month, eventModalRange.start.day, eventModalRange.end.month, eventModalRange.end.day);
+            } else {
+                openEventModal(month, day);
+            }
         }
 
         function deleteEventById(eventId) {
             const event = events.find(e => e.id === eventId);
             if (event) {
                 deleteEvent(eventId);
-                // Reopen modal to refresh the list
-                openEventModal(event.month, event.day);
+                if (eventModalRange) {
+                    openEventModal(eventModalRange.start.month, eventModalRange.start.day, eventModalRange.end.month, eventModalRange.end.day);
+                } else {
+                    openEventModal(event.month, event.day);
+                }
             }
         }
 
         // Make functions available globally for onclick handlers
         window.deleteEventById = deleteEventById;
         window.saveEventFromModal = saveEventFromModal;
+        window.saveEventFromModalRange = saveEventFromModalRange;
         window.closeEventModal = closeEventModal;
 
         // Close modal when clicking outside
@@ -4113,13 +4336,93 @@
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
-            // Handle "Mark Today" shortcut (M key) when in year view
-            if (currentView === 'year') {
-                // Don't trigger if user is typing in an input field
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            // Escape to close modals
+            if (e.key === 'Escape' && document.body.classList.contains('modal-open')) {
+                    const customOverlay = document.getElementById('customModalOverlay');
+                    const createModal = document.getElementById('createHabitModal');
+                    const statsModal = document.getElementById('statsModal');
+                    const dayModal = document.getElementById('dayModal');
+                    const eventModal = document.getElementById('eventModal');
+                    if (customOverlay && customOverlay.classList.contains('active')) {
+                        const cancelBtn = customOverlay.querySelector('.custom-modal-btn:not(.primary)');
+                        if (cancelBtn) cancelBtn.click();
+                        else customOverlay.querySelector('.custom-modal-btn')?.click();
+                        e.preventDefault();
+                        return;
+                    }
+                    if (createModal && createModal.classList.contains('active')) {
+                        closeCreateHabitModal();
+                        e.preventDefault();
+                        return;
+                    }
+                    if (statsModal && statsModal.classList.contains('active')) {
+                        closeStatsModal();
+                        e.preventDefault();
+                        return;
+                    }
+                    const shortcutsModal = document.getElementById('shortcutsModal');
+                    if (shortcutsModal && shortcutsModal.classList.contains('active')) {
+                        closeShortcutsModal();
+                        e.preventDefault();
+                        return;
+                    }
+                    if (dayModal && dayModal.classList.contains('active')) {
+                        closeDayModal();
+                        e.preventDefault();
+                        return;
+                    }
+                    if (eventModal && eventModal.classList.contains('active')) {
+                        closeEventModal();
+                        e.preventDefault();
+                        return;
+                    }
+            }
+            
+            // Don't trigger shortcuts when typing in inputs
+            const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+            
+            // ? to show keyboard shortcuts (when not typing)
+            if (!inInput && e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                openShortcutsModal();
+                e.preventDefault();
+                return;
+            }
+            
+            if (inInput) return;
+            
+            // 1/2/3 or E/H/J to switch modes
+            if (e.key === '1' || e.key === 'e' || e.key === 'E') {
+                switchMode('events');
+                e.preventDefault();
+                return;
+            }
+            if (e.key === '2' || e.key === 'h' || e.key === 'H') {
+                switchMode('habits');
+                e.preventDefault();
+                return;
+            }
+            if (e.key === '3' || e.key === 'j' || e.key === 'J') {
+                switchMode('journal');
+                e.preventDefault();
+                return;
+            }
+            
+            // N for new (habit or calendar)
+            if (e.key === 'n' || e.key === 'N') {
+                if (currentMode === 'habits') {
+                    openCreateHabitModal();
+                    e.preventDefault();
                     return;
                 }
-                
+                if (currentMode === 'events') {
+                    openCreateCalendarModal();
+                    e.preventDefault();
+                    return;
+                }
+            }
+            
+            // Handle "Mark Today" shortcut (M key) when in year view
+            if (currentView === 'year') {
                 if (e.key === 'm' || e.key === 'M') {
                     const canMark = (currentMode === 'habits' && selectedHabitId) ||
                                    (currentMode === 'events' && selectedCalendarId);
