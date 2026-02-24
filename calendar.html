@@ -457,16 +457,149 @@
             gap: 15px;
         }
 
-        .day-view .notes-input {
+        .day-view .notes-input,
+        .day-view .notes-display {
             flex: 1;
             width: 100%;
+            min-height: 120px;
             padding: 15px;
             font-family: 'Work Sans', sans-serif;
             font-size: 18px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            resize: none;
             outline: none;
+            overflow-y: auto;
+        }
+
+        .day-view .notes-display {
+            border-color: transparent;
+            background: #fafafa;
+            cursor: pointer;
+        }
+
+        .day-view .notes-display:hover {
+            background: #f5f5f5;
+        }
+
+        .day-view .notes-display:empty::before {
+            content: attr(data-placeholder);
+            color: #999;
+        }
+
+        .day-view .notes-display p {
+            margin-bottom: 0.5em;
+        }
+
+        .day-view .notes-display p:last-child {
+            margin-bottom: 0;
+        }
+
+        .day-view .notes-display h1,
+        .day-view .notes-display h2,
+        .day-view .notes-display h3,
+        .day-view .notes-display h4,
+        .day-view .notes-display h5,
+        .day-view .notes-display h6 {
+            font-weight: 600;
+            margin: 1em 0 0.5em 0;
+            line-height: 1.3;
+        }
+
+        .day-view .notes-display h1 { font-size: 1.75em; }
+        .day-view .notes-display h2 { font-size: 1.5em; }
+        .day-view .notes-display h3 { font-size: 1.25em; }
+        .day-view .notes-display h4 { font-size: 1.1em; }
+        .day-view .notes-display h5 { font-size: 1em; }
+        .day-view .notes-display h6 { font-size: 0.9em; }
+
+        .day-view .notes-display h1:first-child,
+        .day-view .notes-display h2:first-child,
+        .day-view .notes-display h3:first-child {
+            margin-top: 0;
+        }
+
+        .day-view .notes-display ul,
+        .day-view .notes-display ol {
+            margin: 0.5em 0 0.5em 1.5em;
+        }
+
+        .day-view .notes-display code {
+            background: #eee;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .day-view .notes-display pre {
+            background: #eee;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 0.5em 0;
+        }
+
+        .day-view .notes-display pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .day-view .notes-input {
+            resize: none;
+        }
+
+        .day-view .day-notes-hint {
+            font-size: 15px;
+            color: #999;
+            margin-top: -4px;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .day-view .notes-format-toolbar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .day-view .notes-format-toolbar button {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .day-view .notes-format-toolbar button:hover {
+            background: #f5f5f5;
+        }
+
+        .day-view .notes-display strong,
+        .day-view .notes-display b {
+            font-weight: 700;
+        }
+
+        .day-view .notes-display em,
+        .day-view .notes-display i {
+            font-style: italic;
+        }
+
+        .day-view .notes-display u {
+            text-decoration: underline;
+        }
+
+        .day-view .notes-display a {
+            color: #4C9A74;
+            text-decoration: underline;
+        }
+
+        .day-view .notes-display a:hover {
+            text-decoration: underline;
         }
 
         .day-view .day-actions {
@@ -474,6 +607,15 @@
             gap: 10px;
             justify-content: flex-end;
             margin-top: 10px;
+        }
+
+        .day-view .day-actions kbd {
+            font-size: 13px;
+            padding: 4px 7px;
+            margin-left: 6px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+            font-weight: 600;
         }
 
         .day-view-btn {
@@ -1623,6 +1765,7 @@
         }
 
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
 </head>
 <body>
     <input type="file" id="importDataInput" accept=".json,application/json" style="display: none;" />
@@ -1658,7 +1801,9 @@
                         <tr><td><kbd>3</kbd> or <kbd>J</kbd></td><td>Switch to Journal</td></tr>
                         <tr><td><kbd>N</kbd></td><td>Create new (habit or calendar)</td></tr>
                         <tr><td><kbd>M</kbd></td><td>Mark today (Habits or Events)</td></tr>
-                        <tr><td><kbd>Ctrl</kbd> + <kbd>Enter</kbd> <span style="color:#888;">(⌘ + Enter on Mac)</span></td><td>Save and close (journal entry)</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>S</kbd></td><td>Save (journal entry)</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>Enter</kbd></td><td>Done / Close (journal modal)</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>⌫</kbd></td><td>Clear All (journal, edit mode)</td></tr>
                     </tbody>
                 </table>
                 <div class="shortcuts-tips" style="margin-top: 8px; padding-top: 12px;">
@@ -3469,7 +3614,8 @@
                         // Journal mode - highlight days with journal entries
                         const dateKey = `2026-${month + 1}-${day}`;
                         const journalEntry = localStorage.getItem(dateKey);
-                        if (journalEntry && journalEntry.trim() !== '') {
+                        const hasContent = journalEntry && journalEntry.replace(/<[^>]+>/g, '').trim() !== '';
+                        if (hasContent) {
                             // Use the same green as habits mode
                             dayRow.style.backgroundColor = '#3E7A5E';
                             dayRow.style.color = '#fff';
@@ -3724,62 +3870,209 @@
             const modal = document.getElementById('dayModal');
             const dayViewContent = document.getElementById('dayViewContent');
             
+            const placeholder = currentMode === 'journal' ? 'What did you do today? What did you learn?' : 'What did you do today? Learn anything new?';
+            const hasContent = (savedNotes || '').trim() !== '';
+            const isEditMode = !hasContent;
+
             dayViewContent.innerHTML = `
                 <button class="modal-close" onclick="closeDayModal()">×</button>
                 <div class="day-header">
                     <div class="day-date">${monthNames[month]} ${day}, 2026</div>
                 </div>
-                <div class="day-content">
-                    <textarea 
-                        class="notes-input" 
-                        id="dayNotes"
-                        placeholder="${currentMode === 'journal' ? 'What did you do today? What did you learn?' : 'What did you do today? Learn anything new?'}"
-                        data-date="${dateKey}"
-                    >${savedNotes}</textarea>
+                <div class="day-content" data-date="${dateKey}">
+                    <div class="notes-display" id="dayNotesDisplay" data-placeholder="${placeholder}" style="${isEditMode ? 'display:none' : ''}"></div>
+                    <div class="notes-format-toolbar" id="dayNotesToolbar" style="${isEditMode ? '' : 'display:none'}">
+                        <button type="button" title="Bold" data-format="bold">B</button>
+                        <button type="button" title="Italic" data-format="italic">I</button>
+                        <button type="button" title="Underline" data-format="underline">U</button>
+                    </div>
+                    <textarea class="notes-input" id="dayNotesInput" placeholder="${placeholder}" style="${isEditMode ? '' : 'display:none'}"></textarea>
+                    <div class="day-notes-hint" id="dayNotesHintEdit" style="${isEditMode ? '' : 'display:none'}">Accepts markdown • **bold** • *italic* • # headings</div>
                     <div class="day-actions">
-                        <button class="day-view-btn danger" onclick="clearDayNotes()">Clear All</button>
-                        <button class="day-view-btn primary" onclick="closeDayModal()">Done</button>
+                        <button class="day-view-btn" id="dayNotesSaveBtn" onclick="saveDayNotesAndCloseEdit()" style="${isEditMode ? '' : 'display:none'}">Save</button>
+                        <button class="day-view-btn" id="dayNotesCancelBtn" onclick="cancelDayNotesEdit()" style="${isEditMode ? '' : 'display:none'}">Cancel</button>
+                        <button class="day-view-btn danger" id="dayNotesClearBtn" onclick="clearDayNotes()" style="${isEditMode ? '' : 'display:none'}">Clear All</button>
+                        <button class="day-view-btn primary" id="dayNotesDoneBtn" onclick="closeDayModal()" style="${isEditMode ? 'display:none' : ''}">Done</button>
                     </div>
                 </div>
             `;
-            
-            // Add event listener to save notes
-            const notesInput = document.getElementById('dayNotes');
-            notesInput.addEventListener('input', (e) => {
-                const dateKey = e.target.getAttribute('data-date');
-                localStorage.setItem(dateKey, e.target.value);
-                // If in journal mode, re-render to update highlighting
-                if (currentMode === 'journal') {
-                    renderYearView();
-                }
-            });
-            
-            // Add Enter key handler (Ctrl+Enter or Cmd+Enter to save)
-            notesInput.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+
+            const displayEl = document.getElementById('dayNotesDisplay');
+            const inputEl = document.getElementById('dayNotesInput');
+
+            if (isEditMode) {
+                inputEl.value = rawForEdit(savedNotes || '');
+                requestAnimationFrame(() => inputEl.focus());
+            } else {
+                const isLegacyHtml = /<[a-z][\s\S]*>/i.test(savedNotes);
+                const toRender = isLegacyHtml
+                    ? savedNotes
+                    : parseMarkdown(savedNotes);
+                displayEl.innerHTML = toRender || '';
+            }
+
+            inputEl.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                     e.preventDefault();
-                    closeDayModal();
+                    saveDayNotesAndCloseEdit();
                 }
             });
+
+            displayEl.addEventListener('click', () => switchDayNotesToEdit());
+
+            const toolbar = document.getElementById('dayNotesToolbar');
+            if (toolbar) {
+                toolbar.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        insertDayNotesFormat(btn.dataset.format);
+                    });
+                });
+            }
             
             modal.classList.add('active');
             document.body.classList.add('modal-open');
-            requestAnimationFrame(() => {
-                const input = document.getElementById('dayNotes');
-                if (input) input.focus();
-            });
+        }
+
+        function rawForEdit(str) {
+            if (!str) return '';
+            if (str.includes('<')) return str.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/<br\s*\/?>/gi, '\n').trim();
+            return str;
+        }
+
+        function parseMarkdown(s) {
+            if (!s) return '';
+            const normalized = s.replace(/^(#{1,6})([^\s#])/gm, '$1 $2');
+            let html = typeof marked !== 'undefined' ? (marked.parse || marked)(normalized) : normalized.replace(/\n/g, '<br>');
+            html = html.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ');
+            return html;
+        }
+
+        function insertDayNotesFormat(format) {
+            const inputEl = document.getElementById('dayNotesInput');
+            if (!inputEl) return;
+            inputEl.focus();
+            const start = inputEl.selectionStart;
+            const end = inputEl.selectionEnd;
+            const text = inputEl.value;
+            const selected = text.slice(start, end);
+
+            let before, after, newCursor;
+            switch (format) {
+                case 'bold':
+                    before = '**';
+                    after = '**';
+                    newCursor = end + 2;
+                    break;
+                case 'italic':
+                    before = '*';
+                    after = '*';
+                    newCursor = end + 1;
+                    break;
+                case 'underline':
+                    before = '<u>';
+                    after = '</u>';
+                    newCursor = end + 4;
+                    break;
+                default:
+                    return;
+            }
+
+            const replacement = before + (selected || '') + after;
+            inputEl.value = text.slice(0, start) + replacement + text.slice(end);
+            inputEl.selectionStart = inputEl.selectionEnd = selected ? newCursor : start + before.length;
+        }
+
+        function switchDayNotesToEdit() {
+            const content = document.querySelector('.day-content[data-date]');
+            const displayEl = document.getElementById('dayNotesDisplay');
+            const inputEl = document.getElementById('dayNotesInput');
+            const toolbar = document.getElementById('dayNotesToolbar');
+            const hintEdit = document.getElementById('dayNotesHintEdit');
+            const saveBtn = document.getElementById('dayNotesSaveBtn');
+            const cancelBtn = document.getElementById('dayNotesCancelBtn');
+            const clearBtn = document.getElementById('dayNotesClearBtn');
+            const doneBtn = document.getElementById('dayNotesDoneBtn');
+            if (!content || !displayEl || !inputEl) return;
+            const dateKey = content.getAttribute('data-date');
+            const currentRaw = localStorage.getItem(dateKey) || '';
+            const isLegacyHtml = (currentRaw.includes('<p>') || currentRaw.includes('<div>') || currentRaw.includes('<span>')) && !currentRaw.includes('<u>');
+            inputEl.value = isLegacyHtml ? rawForEdit(currentRaw) : (currentRaw || '');
+            displayEl.style.display = 'none';
+            if (toolbar) toolbar.style.display = 'flex';
+            inputEl.style.display = '';
+            if (hintEdit) hintEdit.style.display = '';
+            saveBtn.style.display = '';
+            cancelBtn.style.display = '';
+            if (clearBtn) clearBtn.style.display = '';
+            if (doneBtn) doneBtn.style.display = 'none';
+            requestAnimationFrame(() => inputEl.focus());
+        }
+
+        function saveDayNotesAndCloseEdit() {
+            const content = document.querySelector('.day-content[data-date]');
+            const displayEl = document.getElementById('dayNotesDisplay');
+            const inputEl = document.getElementById('dayNotesInput');
+            const toolbar = document.getElementById('dayNotesToolbar');
+            const hintEdit = document.getElementById('dayNotesHintEdit');
+            const saveBtn = document.getElementById('dayNotesSaveBtn');
+            const cancelBtn = document.getElementById('dayNotesCancelBtn');
+            const clearBtn = document.getElementById('dayNotesClearBtn');
+            const doneBtn = document.getElementById('dayNotesDoneBtn');
+            if (!content || !displayEl || !inputEl) return;
+            const dateKey = content.getAttribute('data-date');
+            const raw = inputEl.value.trim();
+            localStorage.setItem(dateKey, raw);
+            if (currentMode === 'journal') renderYearView();
+            const html = raw ? parseMarkdown(raw) : '';
+            displayEl.innerHTML = html;
+            displayEl.style.display = '';
+            if (toolbar) toolbar.style.display = 'none';
+            if (hintEdit) hintEdit.style.display = 'none';
+            inputEl.style.display = 'none';
+            inputEl.value = '';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (doneBtn) doneBtn.style.display = '';
+        }
+
+        function cancelDayNotesEdit() {
+            const content = document.querySelector('.day-content[data-date]');
+            const displayEl = document.getElementById('dayNotesDisplay');
+            const inputEl = document.getElementById('dayNotesInput');
+            const toolbar = document.getElementById('dayNotesToolbar');
+            const hintEdit = document.getElementById('dayNotesHintEdit');
+            const saveBtn = document.getElementById('dayNotesSaveBtn');
+            const cancelBtn = document.getElementById('dayNotesCancelBtn');
+            const clearBtn = document.getElementById('dayNotesClearBtn');
+            const doneBtn = document.getElementById('dayNotesDoneBtn');
+            if (!content || !displayEl || !inputEl) return;
+            const dateKey = content.getAttribute('data-date');
+            const savedRaw = localStorage.getItem(dateKey) || '';
+            const html = savedRaw ? parseMarkdown(savedRaw) : '';
+            displayEl.innerHTML = html;
+            displayEl.style.display = '';
+            if (toolbar) toolbar.style.display = 'none';
+            if (hintEdit) hintEdit.style.display = 'none';
+            inputEl.style.display = 'none';
+            inputEl.value = '';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (doneBtn) doneBtn.style.display = '';
         }
 
         function clearDayNotes() {
-            const notesInput = document.getElementById('dayNotes');
-            if (notesInput) {
-                const dateKey = notesInput.getAttribute('data-date');
-                notesInput.value = '';
+            const content = document.querySelector('.day-content[data-date]');
+            if (content) {
+                const dateKey = content.getAttribute('data-date');
                 localStorage.setItem(dateKey, '');
-                // If in journal mode, re-render to update highlighting
-                if (currentMode === 'journal') {
-                    renderYearView();
-                }
+                const displayEl = document.getElementById('dayNotesDisplay');
+                const inputEl = document.getElementById('dayNotesInput');
+                if (displayEl) displayEl.innerHTML = '';
+                if (inputEl) inputEl.value = '';
+                if (currentMode === 'journal') renderYearView();
             }
         }
 
@@ -4378,7 +4671,12 @@
                         return;
                     }
                     if (dayModal && dayModal.classList.contains('active')) {
-                        closeDayModal();
+                        const inputEl = document.getElementById('dayNotesInput');
+                        if (inputEl && inputEl.style.display !== 'none') {
+                            cancelDayNotesEdit();
+                        } else {
+                            closeDayModal();
+                        }
                         e.preventDefault();
                         return;
                     }
@@ -4389,14 +4687,33 @@
                     }
             }
             
-            // Don't trigger shortcuts when typing in inputs
-            const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+            // Don't trigger shortcuts when typing in inputs or contenteditable (e.g. journal)
+            const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
             
             // ? to show keyboard shortcuts (when not typing)
             if (!inInput && e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
                 openShortcutsModal();
                 e.preventDefault();
                 return;
+            }
+            
+            // Day modal shortcuts (work even when typing in textarea)
+            const dayModal = document.getElementById('dayModal');
+            if (dayModal && dayModal.classList.contains('active')) {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    const inputEl = document.getElementById('dayNotesInput');
+                    if (inputEl && inputEl.style.display !== 'none') {
+                        saveDayNotesAndCloseEdit();
+                    }
+                    closeDayModal();
+                    e.preventDefault();
+                    return;
+                }
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Backspace') {
+                    clearDayNotes();
+                    e.preventDefault();
+                    return;
+                }
             }
             
             if (inInput) return;
