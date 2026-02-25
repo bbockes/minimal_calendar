@@ -5270,50 +5270,170 @@
                 row.classList.remove('event-drag-range', 'edge-top', 'edge-bottom', 'edge-left', 'edge-right');
             });
             let title = '2026';
+            let subtitle = '';
             if (currentMode === 'habits' && selectedHabitId) {
                 const h = habits.find(x => x.id === selectedHabitId);
-                title += h ? ` — ${h.name}` : '';
+                subtitle = h ? h.name : '';
             } else if (currentMode === 'events' && selectedCalendarId && selectedCalendarId !== 'all') {
                 const c = calendars.find(x => x.id === selectedCalendarId);
-                title += c ? ` — ${c.name}` : '';
+                subtitle = c ? c.name : '';
             } else if (currentMode === 'journal' && selectedJournalId) {
                 const j = journals.find(x => x.id === selectedJournalId);
-                title += j ? ` — ${j.name}` : '';
+                subtitle = j ? j.name : '';
             }
+            const pageTitle = subtitle ? `${title} — ${subtitle}` : title;
+            const isJournal = currentMode === 'journal' && selectedJournalId;
+            const isAllEvents = currentMode === 'events' && selectedCalendarId === 'all';
+            const isSingleCalendar = currentMode === 'events' && selectedCalendarId && selectedCalendarId !== 'all';
             const styles = Array.from(document.querySelectorAll('style')).map(s => s.textContent).join('\n');
+            const pageOrientation = isJournal ? 'portrait' : 'landscape';
             const printStyles = `
                 body { margin: 0; padding: 20px; font-family: 'Work Sans', sans-serif; }
+                .print-first-page { page-break-inside: avoid; }
                 .year-view-container { margin-top: 0 !important; }
                 .year-view { overflow: visible !important; }
                 h1 { text-align: center; }
+                .print-subtitle { font-size: 15px; color: #666; text-align: center; margin-top: 4px; margin-bottom: 40px; font-weight: normal; }
                 .print-tip { font-size: 16px; color: #666; text-align: center; margin-bottom: 16px; }
                 @media print { .print-tip { display: none !important; } }
                 /* Preserve background colors when printing (marked days, habits, events) */
                 * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                @page { margin: 0.5in; size: landscape; }
+                @page { margin: 0.5in; size: ${pageOrientation}; }
                 @media print {
-                    @page { margin: 0.5in; size: landscape; }
+                    @page { margin: 0.5in; size: ${pageOrientation}; }
                     body { padding: 8px 0; }
-                    h1 { font-size: 36px !important; font-weight: bold !important; margin-bottom: 32px !important; text-align: center !important; }
-                    /* Scale calendar to fit all 12 months on one landscape page */
+                    h1 { font-size: 36px !important; font-weight: bold !important; text-align: center !important; }
+                    .print-subtitle { font-size: 15px !important; color: #666 !important; margin-bottom: 40px !important; }
+                    /* Scale calendar to fit all 12 months + header on one landscape page */
                     .year-view .month-column { width: 80px !important; min-width: 80px !important; }
-                    .year-view .month-header { font-size: 12px !important; padding: 8px 0 !important; }
-                    .year-view .day-row { min-height: 18px !important; }
-                    .year-view .day-number, .year-view .day-name { font-size: 10px !important; padding: 2px 5px !important; }
+                    .year-view .month-header { font-size: 11px !important; padding: 4px 0 !important; }
+                    .year-view .day-row { min-height: 14px !important; }
+                    .year-view .day-number, .year-view .day-name { font-size: 9px !important; padding: 1px 4px !important; }
                     /* Remove today highlight and hover styling in print */
                     .year-view .day-row.today::before { display: none !important; }
                     .year-view .day-row.today .day-number { font-weight: normal !important; }
                     .year-view .day-row:hover { background-color: inherit !important; }
                 }
+                .print-calendar-key { page-break-before: always; margin-top: 40px; padding-top: 24px; }
+                .print-calendar-key h2 { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 24px; }
+                .print-calendar-key ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: center; }
+                .print-calendar-key li { display: flex; align-items: center; gap: 10px; font-size: 16px; }
+                .print-calendar-key .key-swatch { width: 24px; height: 24px; border-radius: 4px; flex-shrink: 0; border: 1px solid #ccc; }
+                .print-events-list { margin-top: 32px; }
+                .print-events-list h3 { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
+                .print-events-list table { width: 100%; border-collapse: collapse; font-size: 14px; }
+                .print-events-list th { text-align: left; padding: 8px 12px; border-bottom: 2px solid #ddd; font-weight: 600; }
+                .print-events-list td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+                .print-events-list .event-cal { font-weight: 500; }
+                .print-events-single { page-break-before: always; margin-top: 0; padding-top: 0; }
+                .print-journal-entries { page-break-before: always; margin-top: 0; padding-top: 0; max-width: 65ch; margin-left: 0; margin-right: auto; text-align: left; }
+                .print-journal-entries h3 { font-size: 28px; font-weight: bold; margin-bottom: 32px; text-align: left; }
+                .print-journal-entry { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid #e8e8e8; }
+                .print-journal-entry:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+                .print-journal-entry-date { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; letter-spacing: 0.03em; }
+                .print-journal-entry-content { font-size: 14px; line-height: 1.6; color: #333; max-width: 65ch; word-wrap: break-word; overflow-wrap: break-word; }
+                .print-journal-entry-content p { margin: 0 0 8px 0; }
+                .print-journal-entry-content p:last-child { margin-bottom: 0; }
+                .print-journal-entry-content strong, .print-journal-entry-content b { font-weight: 600; }
+                .print-journal-entry-content em, .print-journal-entry-content i { font-style: italic; }
+                .print-journal-entry-content u { text-decoration: underline; }
+                .print-journal-entry-content a { color: #4C9A74; text-decoration: underline; }
+                @media print {
+                    .print-calendar-key { padding-top: 0; margin-top: 0; }
+                    body.print-journal .year-view .month-column { width: 65px !important; min-width: 65px !important; }
+                    body.print-journal .year-view .month-header { font-size: 11px !important; padding: 6px 0 !important; }
+                    body.print-journal .year-view .day-row { min-height: 16px !important; }
+                    body.print-journal .year-view .day-number, body.print-journal .year-view .day-name { font-size: 9px !important; }
+                }
             `;
-            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+            const bodyClass = isJournal ? ' class="print-journal"' : '';
+            const allEvents = isAllEvents
+                ? events.filter(e => e.year === 2026).sort((a, b) => (a.month - b.month) || (a.day - b.day))
+                : [];
+            const singleCalendarEvents = isSingleCalendar
+                ? events.filter(e => e.year === 2026 && e.calendarId === selectedCalendarId).sort((a, b) => (a.month - b.month) || (a.day - b.day))
+                : [];
+            const eventsListHtml = isAllEvents && allEvents.length > 0
+                ? `<div class="print-events-list">
+                    <h3>All Events (Chronological)</h3>
+                    <table>
+                        <thead><tr><th>Date</th><th>Event</th><th>Time</th><th>Calendar</th></tr></thead>
+                        <tbody>${allEvents.map(e => {
+                            const cal = calendars.find(c => c.id === e.calendarId);
+                            const calName = cal ? cal.name : '';
+                            const calColor = cal ? getCalendarColor(cal) : '#4C9A74';
+                            return `<tr>
+                                <td>${monthNames[e.month]} ${e.day}</td>
+                                <td>${escapeHtml(e.name || 'Untitled Event')}</td>
+                                <td>${escapeHtml(e.time || '—')}</td>
+                                <td><span class="event-cal" style="color:${calColor}">${escapeHtml(calName)}</span></td>
+                            </tr>`;
+                        }).join('')}</tbody>
+                    </table>
+                </div>`
+                : '';
+            const singleCalendarEventsHtml = isSingleCalendar && singleCalendarEvents.length > 0
+                ? `<div class="print-events-single print-events-list">
+                    <h3>${escapeHtml(subtitle || 'Events')} (Chronological)</h3>
+                    <table>
+                        <thead><tr><th>Date</th><th>Event</th><th>Time</th></tr></thead>
+                        <tbody>${singleCalendarEvents.map(e => `<tr>
+                            <td>${monthNames[e.month]} ${e.day}</td>
+                            <td>${escapeHtml(e.name || 'Untitled Event')}</td>
+                            <td>${escapeHtml(e.time || '—')}</td>
+                        </tr>`).join('')}</tbody>
+                    </table>
+                </div>`
+                : '';
+            const keyHtml = isAllEvents && calendars.length > 0
+                ? `<div class="print-calendar-key">
+                    <h2>Calendar Key</h2>
+                    <ul>${calendars.map(c => {
+                        const color = getCalendarColor(c);
+                        return `<li><span class="key-swatch" style="background-color:${color}"></span><span>${escapeHtml(c.name)}</span></li>`;
+                    }).join('')}</ul>
+                    ${eventsListHtml}
+                </div>`
+                : '';
+            const journalEntries = isJournal ? (() => {
+                const entries = [];
+                for (let month = 0; month < 12; month++) {
+                    const days = new Date(2026, month + 1, 0).getDate();
+                    for (let day = 1; day <= days; day++) {
+                        const key = getJournalKey(selectedJournalId, 2026, month, day);
+                        const raw = localStorage.getItem(key) || '';
+                        const hasContent = raw.length > 0 && raw.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() !== '';
+                        if (hasContent) {
+                            const isLegacyHtml = /<[a-z][\s\S]*>/i.test(raw);
+                            const html = isLegacyHtml ? raw : parseMarkdown(raw);
+                            entries.push({ month, day, html });
+                        }
+                    }
+                }
+                return entries;
+            })() : [];
+            const journalEntriesHtml = isJournal && journalEntries.length > 0
+                ? `<div class="print-journal-entries">
+                    <h3>${escapeHtml(subtitle || 'Journal')} Entries</h3>
+                    ${journalEntries.map(({ month, day, html }) => `
+                        <div class="print-journal-entry">
+                            <div class="print-journal-entry-date">${monthNames[month]} ${day}, 2026</div>
+                            <div class="print-journal-entry-content">${html}</div>
+                        </div>
+                    `).join('')}
+                </div>`
+                : '';
+            const headerHtml = subtitle
+                ? `<h1 style="font-size:36px;font-weight:bold;margin-bottom:0;margin-top:0;">${escapeHtml(title)}</h1><p class="print-subtitle">${escapeHtml(subtitle)}</p>`
+                : `<h1 style="font-size:36px;font-weight:bold;margin-bottom:40px;margin-top:0;">${escapeHtml(title)}</h1>`;
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(pageTitle)}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
                 <style>${styles.replace(/<\/style>/g, '<\\/style>')}</style>
                 <style>${printStyles.replace(/<\/style>/g, '<\\/style>')}</style>
-            </head><body>
-                <p class="print-tip">Tip: Use landscape orientation and uncheck "Headers and footers" in the print dialog for a cleaner print.</p>
-                <h1 style="font-size:36px;font-weight:bold;margin-bottom:32px;margin-top:0;">${escapeHtml(title)}</h1>${clone.outerHTML}</body></html>`;
+            </head><body${bodyClass}>
+                <p class="print-tip">Tip: Use ${pageOrientation} orientation and uncheck "Headers and footers" in the print dialog for a cleaner print.</p>
+                <div class="print-first-page">${headerHtml}${clone.outerHTML}</div>${keyHtml}${singleCalendarEventsHtml}${journalEntriesHtml}</body></html>`;
             const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const win = window.open(url, '_blank', 'noopener,noreferrer');
