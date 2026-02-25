@@ -689,6 +689,100 @@
             border-color: #999;
         }
 
+        /* At a Glance Modal - fixed size, slightly lower, list scrolls internally */
+        #atAGlanceModal {
+            align-items: flex-start;
+            padding-top: 60px;
+        }
+        .at-a-glance-modal {
+            width: 90vw;
+            max-width: 750px;
+            height: 70vh;
+            min-height: 320px;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 32px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+        }
+        .at-a-glance-header {
+            margin-bottom: 20px;
+        }
+        .at-a-glance-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 16px;
+        }
+        .at-a-glance-filters {
+            display: flex;
+            gap: 8px;
+        }
+        .at-a-glance-filter {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 2px solid #ccc;
+            background: #fff;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+        .at-a-glance-filter:hover {
+            border-color: #999;
+            background: #f5f5f5;
+        }
+        .at-a-glance-filter.active {
+            border-color: #4C9A74;
+            background: #4C9A74;
+            color: #fff;
+        }
+        .at-a-glance-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .at-a-glance-item {
+            padding: 14px 16px;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .at-a-glance-item:hover {
+            border-color: #4C9A74;
+            background: color-mix(in srgb, #4C9A74 8%, white);
+        }
+        .at-a-glance-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 4px;
+        }
+        .at-a-glance-item-date {
+            font-size: 14px;
+            color: #666;
+        }
+        .at-a-glance-item-time {
+            font-size: 13px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .at-a-glance-empty {
+            padding: 40px;
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+        }
+
         /* Event View Modal */
         .event-view {
             width: 95vw;
@@ -2010,10 +2104,11 @@
             border-color: #A03A2A;
         }
 
-        /* Hide Mark Today, Clear All, Weekends, and Stats buttons on mobile and tablet */
+        /* Hide Mark Today, Clear All, At a Glance, Weekends, and Stats buttons on mobile and tablet */
         @media (max-width: 900px) {
             .mark-today-btn,
             .clear-all-btn,
+            #atAGlanceBtn,
             #highlightWeekendsBtn,
             #statsBtn {
                 display: none !important;
@@ -2215,6 +2310,8 @@
                         <tr><td><kbd>⌘</kbd> + <kbd>S</kbd></td><td>Save (journal entry)</td></tr>
                         <tr><td><kbd>⌘</kbd> + <kbd>Enter</kbd></td><td>Done / Close (journal modal)</td></tr>
                         <tr><td><kbd>⌘</kbd> + <kbd>⌫</kbd></td><td>Clear All (journal, edit mode)</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>B</kbd></td><td>Bold (journal entry)</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>I</kbd></td><td>Italic (journal entry)</td></tr>
                     </tbody>
                 </table>
                 <div class="shortcuts-tips" style="margin-top: 8px; padding-top: 12px;">
@@ -2313,9 +2410,10 @@
             </div>
         </div>
         <div class="habit-controls-right">
+            <button class="create-habit-btn" id="statsBtn">Stats</button>
+            <button class="create-habit-btn" id="atAGlanceBtn" title="View all upcoming events at a glance">At a Glance</button>
             <button class="create-habit-btn" id="highlightWeekendsBtn" title="Highlight weekends (Saturdays and Sundays)">Weekends</button>
             <button class="clear-all-btn" id="clearAllBtn" title="Clear all marked dates">Clear All</button>
-            <button class="create-habit-btn" id="statsBtn">Stats</button>
         </div>
         <div class="header">
             <div class="slider" id="slider"></div>
@@ -2330,6 +2428,24 @@
     <div class="modal-overlay" id="dayModal">
         <div class="day-view" id="dayViewContent">
             <!-- Day content will be inserted here -->
+        </div>
+    </div>
+
+    <!-- At a Glance Modal (upcoming events) -->
+    <div class="modal-overlay" id="atAGlanceModal">
+        <div class="at-a-glance-modal" id="atAGlanceContent">
+            <button class="modal-close" onclick="closeAtAGlanceModal()">×</button>
+            <div class="at-a-glance-header">
+                <h2>Upcoming Events</h2>
+                <div class="at-a-glance-filters">
+                    <button type="button" class="at-a-glance-filter active" data-filter="week">Week</button>
+                    <button type="button" class="at-a-glance-filter" data-filter="month">Month</button>
+                    <button type="button" class="at-a-glance-filter" data-filter="year">Year</button>
+                </div>
+            </div>
+            <div class="at-a-glance-list" id="atAGlanceList">
+                <!-- Events populated by JS -->
+            </div>
         </div>
     </div>
 
@@ -3178,19 +3294,21 @@
                 (currentMode === 'events' && selectedCalendarId) ||
                 (currentMode === 'journal' && selectedJournalId);
             if (clearAllBtn) {
-                clearAllBtn.style.visibility = canClear ? 'visible' : 'hidden';
-                clearAllBtn.style.pointerEvents = canClear ? 'auto' : 'none';
+                clearAllBtn.style.display = canClear ? '' : 'none';
+            }
+            const atAGlanceBtn = document.getElementById('atAGlanceBtn');
+            if (atAGlanceBtn) {
+                const showAtAGlance = currentMode === 'events';
+                atAGlanceBtn.style.display = showAtAGlance ? '' : 'none';
             }
             if (markTodayBtn) {
                 const showMarkToday = currentMode === 'habits' && selectedHabitId;
-                markTodayBtn.style.visibility = showMarkToday ? 'visible' : 'hidden';
-                markTodayBtn.style.pointerEvents = showMarkToday ? 'auto' : 'none';
+                markTodayBtn.style.display = showMarkToday ? '' : 'none';
             }
             const editTodayJournalBtn = document.getElementById('editTodayJournalBtn');
             if (editTodayJournalBtn) {
                 const showEditToday = currentMode === 'journal' && selectedJournalId;
-                editTodayJournalBtn.style.visibility = showEditToday ? 'visible' : 'hidden';
-                editTodayJournalBtn.style.pointerEvents = showEditToday ? 'auto' : 'none';
+                editTodayJournalBtn.style.display = showEditToday ? '' : 'none';
             }
             updateMarkTodayButton();
             updateEditTodayButton();
@@ -3286,16 +3404,14 @@
                 }
             }
             
-            // Update Stats button visibility and hover
+            // Update Stats button visibility and hover (Habits mode only)
             if (statsBtn) {
-                if (!selectedHabitId) {
-                    statsBtn.style.visibility = 'hidden';
-                    statsBtn.style.pointerEvents = 'none';
+                if (currentMode !== 'habits' || !selectedHabitId) {
+                    statsBtn.style.display = 'none';
                     statsBtn.onmouseenter = null;
                     statsBtn.onmouseleave = null;
                 } else {
-                    statsBtn.style.visibility = 'visible';
-                    statsBtn.style.pointerEvents = 'auto';
+                    statsBtn.style.display = '';
                     if (habitColor) {
                         const lightColor = lightenColor(habitColor, 20);
                         statsBtn.onmouseenter = function() {
@@ -4033,6 +4149,37 @@
             
             const clearAllBtn = document.getElementById('clearAllBtn');
             clearAllBtn.addEventListener('click', clearAllForCurrentView);
+
+            const atAGlanceBtn = document.getElementById('atAGlanceBtn');
+            if (atAGlanceBtn) {
+                atAGlanceBtn.addEventListener('click', () => {
+                    if (!selectedCalendarId) {
+                        showCustomAlert('Please select a calendar first', 'Notification');
+                        return;
+                    }
+                    openAtAGlanceModal();
+                });
+            }
+
+            const atAGlanceModal = document.getElementById('atAGlanceModal');
+            if (atAGlanceModal) {
+                let atAGlanceMouseDownTarget = null;
+                atAGlanceModal.addEventListener('mousedown', (e) => { atAGlanceMouseDownTarget = e.target; });
+                atAGlanceModal.addEventListener('click', (e) => {
+                    if (e.target === atAGlanceModal && atAGlanceMouseDownTarget === atAGlanceModal) {
+                        closeAtAGlanceModal();
+                    }
+                });
+                atAGlanceModal.querySelectorAll('.at-a-glance-filter').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        atAGlanceModal.querySelectorAll('.at-a-glance-filter').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        atAGlanceFilter = btn.dataset.filter;
+                        renderAtAGlanceList();
+                    });
+                });
+            }
 
             const highlightWeekendsBtn = document.getElementById('highlightWeekendsBtn');
             if (highlightWeekendsBtn) {
@@ -4886,6 +5033,12 @@
                 if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                     e.preventDefault();
                     saveDayNotesAndCloseEdit();
+                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+                    e.preventDefault();
+                    insertDayNotesFormat('bold');
+                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+                    e.preventDefault();
+                    insertDayNotesFormat('italic');
                 }
             });
 
@@ -5183,6 +5336,91 @@
 
         function getEventKey(calendarId, year, month, day) {
             return `event-${calendarId}-${year}-${month + 1}-${day}`;
+        }
+
+        let atAGlanceFilter = 'week';
+
+        function getUpcomingEventsInRange(filter) {
+            const year = 2026;
+            const now = new Date();
+            const todayMonth = now.getFullYear() === year ? now.getMonth() : 0;
+            const todayDay = now.getFullYear() === year ? now.getDate() : 1;
+            const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
+
+            let endMonth, endDay;
+            if (filter === 'week') {
+                const endDate = new Date(year, todayMonth, todayDay + 6);
+                endMonth = endDate.getMonth();
+                endDay = endDate.getDate();
+            } else if (filter === 'month') {
+                endMonth = todayMonth;
+                endDay = daysInMonth(todayMonth);
+            } else {
+                endMonth = 11;
+                endDay = 31;
+            }
+
+            const inRange = (e) => {
+                if (e.year !== year) return false;
+                if (e.month < todayMonth) return false;
+                if (e.month === todayMonth && e.day < todayDay) return false;
+                if (e.month > endMonth) return false;
+                if (e.month === endMonth && e.day > endDay) return false;
+                return true;
+            };
+
+            let filtered = events.filter(inRange);
+            if (selectedCalendarId && selectedCalendarId !== 'all') {
+                filtered = filtered.filter(e => e.calendarId === selectedCalendarId);
+            }
+            return filtered.sort((a, b) => {
+                if (a.month !== b.month) return a.month - b.month;
+                return a.day - b.day;
+            });
+        }
+
+        function renderAtAGlanceList() {
+            const listEl = document.getElementById('atAGlanceList');
+            if (!listEl) return;
+            const upcoming = getUpcomingEventsInRange(atAGlanceFilter);
+            if (upcoming.length === 0) {
+                listEl.innerHTML = `<div class="at-a-glance-empty">No upcoming events in this ${atAGlanceFilter}</div>`;
+                return;
+            }
+            listEl.innerHTML = upcoming.map(e => {
+                const cal = calendars.find(c => c.id === e.calendarId);
+                const calColor = cal ? getCalendarColor(cal) : '#4C9A74';
+                const calName = cal ? cal.name : '';
+                return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}">
+                    <div class="at-a-glance-item-title">${(e.name || 'Untitled Event').replace(/</g, '&lt;')}</div>
+                    <div class="at-a-glance-item-date">${monthNames[e.month]} ${e.day}, 2026${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
+                    ${e.time ? `<div class="at-a-glance-item-time">⏰ ${e.time.replace(/</g, '&lt;')}</div>` : ''}
+                </div>`;
+            }).join('');
+            listEl.querySelectorAll('.at-a-glance-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const month = parseInt(item.dataset.month, 10);
+                    const day = parseInt(item.dataset.day, 10);
+                    closeAtAGlanceModal();
+                    openEventModal(month, day);
+                });
+            });
+        }
+
+        function openAtAGlanceModal() {
+            const modal = document.getElementById('atAGlanceModal');
+            if (!modal) return;
+            renderAtAGlanceList();
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeAtAGlanceModal() {
+            const modal = document.getElementById('atAGlanceModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
         }
 
         function getEventsForDate(calendarId, year, month, day) {
@@ -5910,15 +6148,23 @@
         // Close modal when clicking outside
         document.addEventListener('DOMContentLoaded', () => {
             const modal = document.getElementById('dayModal');
+            let dayModalMouseDownTarget = null;
+            modal.addEventListener('mousedown', (e) => {
+                dayModalMouseDownTarget = e.target;
+            });
             modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
+                if (e.target === modal && dayModalMouseDownTarget === modal) {
                     closeDayModal();
                 }
             });
             
             const eventModal = document.getElementById('eventModal');
+            let eventModalMouseDownTarget = null;
+            eventModal.addEventListener('mousedown', (e) => {
+                eventModalMouseDownTarget = e.target;
+            });
             eventModal.addEventListener('click', (e) => {
-                if (e.target === eventModal) {
+                if (e.target === eventModal && eventModalMouseDownTarget === eventModal) {
                     closeEventModal();
                 }
             });
@@ -6002,6 +6248,12 @@
                         } else {
                             closeDayModal();
                         }
+                        e.preventDefault();
+                        return;
+                    }
+                    const atAGlanceModal = document.getElementById('atAGlanceModal');
+                    if (atAGlanceModal && atAGlanceModal.classList.contains('active')) {
+                        closeAtAGlanceModal();
                         e.preventDefault();
                         return;
                     }
