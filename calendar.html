@@ -1885,7 +1885,6 @@
             font-family: 'Work Sans', sans-serif;
             font-size: 14px;
             font-weight: 500;
-            transition: all 0.3s ease;
             user-select: none;
             color: #000;
             position: relative;
@@ -1898,10 +1897,23 @@
 
         .mark-today-btn::after {
             content: '(M)';
-            font-size: 10px;
-            opacity: 0.5;
+            font-size: 11px;
             margin-left: 6px;
             font-weight: normal;
+            color: #666;
+        }
+
+        .btn-with-shortcut::after {
+            content: attr(data-shortcut);
+            font-size: 11px;
+            margin-left: 6px;
+            font-weight: normal;
+            color: #666;
+        }
+
+        .mark-today-btn.btn-colored::after,
+        .btn-with-shortcut.btn-colored::after {
+            color: #fff;
         }
 
         /* Custom Alert/Confirm Modal */
@@ -2196,8 +2208,10 @@
                         <tr><td><kbd>1</kbd> or <kbd>E</kbd></td><td>Switch to Events</td></tr>
                         <tr><td><kbd>2</kbd> or <kbd>H</kbd></td><td>Switch to Habits</td></tr>
                         <tr><td><kbd>3</kbd> or <kbd>J</kbd></td><td>Switch to Journal</td></tr>
-                        <tr><td><kbd>N</kbd></td><td>Create new (habit or calendar)</td></tr>
+                        <tr><td><kbd>N</kbd></td><td>Create new (habit, calendar, or journal)</td></tr>
                         <tr><td><kbd>M</kbd></td><td>Mark today (Habits or Events)</td></tr>
+                        <tr><td><kbd>A</kbd></td><td>Add event (Events mode)</td></tr>
+                        <tr><td><kbd>T</kbd></td><td>Edit today (Journal mode)</td></tr>
                         <tr><td><kbd>⌘</kbd> + <kbd>S</kbd></td><td>Save (journal entry)</td></tr>
                         <tr><td><kbd>⌘</kbd> + <kbd>Enter</kbd></td><td>Done / Close (journal modal)</td></tr>
                         <tr><td><kbd>⌘</kbd> + <kbd>⌫</kbd></td><td>Clear All (journal, edit mode)</td></tr>
@@ -2281,7 +2295,7 @@
                             <!-- Options will be populated by JavaScript -->
                         </div>
                     </div>
-                    <button class="create-habit-btn" id="addEventBtnHeader" title="Add event with manual dates">+ Add Event</button>
+                    <button class="create-habit-btn btn-with-shortcut" id="addEventBtnHeader" title="Add event with manual dates (or press A)" data-shortcut="(A)">+ Add Event</button>
                 </div>
                 <!-- Journal Mode UI -->
                 <div id="journalModeUI" class="mode-ui" style="display: none;">
@@ -2294,7 +2308,7 @@
                             <!-- Options will be populated by JavaScript -->
                         </div>
                     </div>
-                    <button class="create-habit-btn" id="editTodayJournalBtn" title="Edit today's journal">Edit Today</button>
+                    <button class="create-habit-btn btn-with-shortcut" id="editTodayJournalBtn" title="Edit today's journal (or press T)" data-shortcut="(T)">Edit Today</button>
                 </div>
             </div>
         </div>
@@ -3172,7 +3186,46 @@
                 markTodayBtn.style.visibility = showMarkToday ? 'visible' : 'hidden';
                 markTodayBtn.style.pointerEvents = showMarkToday ? 'auto' : 'none';
             }
+            const editTodayJournalBtn = document.getElementById('editTodayJournalBtn');
+            if (editTodayJournalBtn) {
+                const showEditToday = currentMode === 'journal' && selectedJournalId;
+                editTodayJournalBtn.style.visibility = showEditToday ? 'visible' : 'hidden';
+                editTodayJournalBtn.style.pointerEvents = showEditToday ? 'auto' : 'none';
+            }
             updateMarkTodayButton();
+            updateEditTodayButton();
+        }
+
+        function updateEditTodayButton() {
+            const editTodayJournalBtn = document.getElementById('editTodayJournalBtn');
+            if (!editTodayJournalBtn || currentMode !== 'journal' || !selectedJournalId) {
+                if (editTodayJournalBtn) {
+                    editTodayJournalBtn.style.backgroundColor = '';
+                    editTodayJournalBtn.style.borderColor = '';
+                    editTodayJournalBtn.style.color = '';
+                    editTodayJournalBtn.classList.remove('btn-colored');
+                }
+                return;
+            }
+            const now = new Date();
+            const month = now.getFullYear() === 2026 ? now.getMonth() : 1;
+            const day = now.getFullYear() === 2026 ? now.getDate() : 2;
+            const dateKey = getJournalKey(selectedJournalId, 2026, month, day);
+            const journalEntry = localStorage.getItem(dateKey);
+            const hasContent = journalEntry && journalEntry.replace(/<[^>]+>/g, '').trim() !== '';
+            const journal = journals.find(j => j.id === selectedJournalId);
+            const journalColor = journal ? getJournalColor(journal) : null;
+            if (hasContent && journalColor) {
+                editTodayJournalBtn.style.backgroundColor = journalColor;
+                editTodayJournalBtn.style.borderColor = journalColor;
+                editTodayJournalBtn.style.color = '#fff';
+                editTodayJournalBtn.classList.add('btn-colored');
+            } else {
+                editTodayJournalBtn.style.backgroundColor = '';
+                editTodayJournalBtn.style.borderColor = '';
+                editTodayJournalBtn.style.color = '';
+                editTodayJournalBtn.classList.remove('btn-colored');
+            }
         }
 
         // Update Mark Today button color based on whether today is marked
@@ -3187,6 +3240,7 @@
                     markTodayBtn.style.backgroundColor = '#fff';
                     markTodayBtn.style.borderColor = '#ccc';
                     markTodayBtn.style.color = '#000';
+                    markTodayBtn.classList.remove('btn-colored');
                     markTodayBtn.onmouseenter = null;
                     markTodayBtn.onmouseleave = null;
                 }
@@ -3206,10 +3260,12 @@
                     markTodayBtn.style.backgroundColor = habitColor;
                     markTodayBtn.style.borderColor = habitColor;
                     markTodayBtn.style.color = '#fff';
+                    markTodayBtn.classList.add('btn-colored');
                 } else {
                     markTodayBtn.style.backgroundColor = '#fff';
                     markTodayBtn.style.borderColor = '#ccc';
                     markTodayBtn.style.color = '#000';
+                    markTodayBtn.classList.remove('btn-colored');
                 }
                 
                 // Set hover colors
@@ -3322,6 +3378,7 @@
             const journalUI = document.getElementById('journalModeUI');
             const modeButton = document.getElementById('modeSelectButton');
             const statsBtn = document.getElementById('statsBtn');
+            const highlightWeekendsBtn = document.getElementById('highlightWeekendsBtn');
             
             // Hide all mode UIs first
             habitsUI.style.display = 'none';
@@ -3332,14 +3389,17 @@
                 habitsUI.style.display = 'flex';
                 modeButton.textContent = 'Habits';
                 if (statsBtn) statsBtn.style.display = '';
+                if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = '';
             } else if (currentMode === 'events') {
                 eventsUI.style.display = 'flex';
                 modeButton.textContent = 'Events';
                 if (statsBtn) statsBtn.style.display = 'none';
+                if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = '';
             } else if (currentMode === 'journal') {
                 journalUI.style.display = 'flex';
                 modeButton.textContent = 'Journal';
                 if (statsBtn) statsBtn.style.display = 'none';
+                if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = 'none';
             }
             
             // Update selected item in mode dropdown
@@ -4934,7 +4994,10 @@
             const dateKey = content.getAttribute('data-date');
             const raw = inputEl.value.trim();
             localStorage.setItem(dateKey, raw);
-            if (currentMode === 'journal') renderYearView();
+            if (currentMode === 'journal') {
+                renderYearView();
+                updateEditTodayButton();
+            }
             const html = raw ? parseMarkdown(raw) : '';
             displayEl.innerHTML = html;
             displayEl.style.display = '';
@@ -4983,7 +5046,10 @@
                 const inputEl = document.getElementById('dayNotesInput');
                 if (displayEl) displayEl.innerHTML = '';
                 if (inputEl) inputEl.value = '';
-                if (currentMode === 'journal') renderYearView();
+                if (currentMode === 'journal') {
+                    renderYearView();
+                    updateEditTodayButton();
+                }
             }
         }
 
@@ -6013,7 +6079,7 @@
                 }
             }
             
-            // Handle "Mark Today" shortcut (M key) when in year view
+            // Handle "Mark Today" (M), "Add Event" (A), "Edit Today" (T) shortcuts when in year view
             if (currentView === 'year') {
                 if (e.key === 'm' || e.key === 'M') {
                     const canMark = (currentMode === 'habits' && selectedHabitId) ||
@@ -6021,6 +6087,20 @@
                     if (canMark) {
                         e.preventDefault();
                         markToday();
+                        return;
+                    }
+                }
+                if (e.key === 'a' || e.key === 'A') {
+                    if (currentMode === 'events' && selectedCalendarId) {
+                        e.preventDefault();
+                        document.getElementById('addEventBtnHeader')?.click();
+                        return;
+                    }
+                }
+                if (e.key === 't' || e.key === 'T') {
+                    if (currentMode === 'journal' && selectedJournalId) {
+                        e.preventDefault();
+                        document.getElementById('editTodayJournalBtn')?.click();
                         return;
                     }
                 }
