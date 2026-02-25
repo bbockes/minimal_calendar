@@ -200,6 +200,10 @@
             background-color: #f5f5f5;
         }
 
+        .year-view-container.weekends-highlighted .day-row:nth-child(even) {
+            background-color: #fff;
+        }
+
         .year-view .day-row:hover {
             background-color: #d3d3d3;
         }
@@ -239,6 +243,22 @@
 
         .year-view .day-row.today .day-number {
             font-weight: 700;
+        }
+
+        .year-view .day-row.weekend:not(.marked) {
+            background-color: rgba(230, 240, 255, 0.7) !important;
+        }
+
+        .year-view .day-row.weekend:nth-child(even):not(.marked) {
+            background-color: rgba(220, 232, 255, 0.8) !important;
+        }
+
+        .year-view .day-row.weekend:hover:not(.marked) {
+            background-color: rgba(200, 220, 255, 0.9) !important;
+        }
+
+        .year-view .day-row.weekend.marked {
+            box-shadow: inset 0 0 0 2px rgba(100, 150, 255, 0.35);
         }
 
         .year-view .day-number {
@@ -1392,7 +1412,12 @@
 
         .create-habit-btn:hover {
             border-color: #999;
-            background-color: #f5f5f5;
+        }
+
+        .create-habit-btn.active {
+            border-color: #6b9bd1;
+            background-color: #e8f0fa;
+            color: #2d6bb3;
         }
 
         .stats-modal {
@@ -1760,10 +1785,11 @@
             border-color: #A03A2A;
         }
 
-        /* Hide Mark Today, Clear All, and Stats buttons on mobile and tablet */
+        /* Hide Mark Today, Clear All, Weekends, and Stats buttons on mobile and tablet */
         @media (max-width: 900px) {
             .mark-today-btn,
             .clear-all-btn,
+            #highlightWeekendsBtn,
             #statsBtn {
                 display: none !important;
             }
@@ -2018,6 +2044,7 @@
             </div>
         </div>
         <div class="habit-controls-right">
+            <button class="create-habit-btn" id="highlightWeekendsBtn" title="Highlight weekends (Saturdays and Sundays)">Weekends</button>
             <button class="clear-all-btn" id="clearAllBtn" title="Clear all marked dates">Clear All</button>
             <button class="create-habit-btn" id="statsBtn">Stats</button>
         </div>
@@ -2072,6 +2099,7 @@
         let events = []; // Array to store events
         let eventDragEndCell = null; // End cell when dragging to select range in events mode
         let eventDragJustEnded = false; // Prevents click from firing after drag
+        let highlightWeekends = false;
         
         // Habit colors - default green first, then cycle through others
         // All colors meet WCAG AA contrast (4.5:1) with white text - bright shades
@@ -3399,7 +3427,16 @@
             
             const clearAllBtn = document.getElementById('clearAllBtn');
             clearAllBtn.addEventListener('click', clearAllForCurrentView);
-            
+
+            const highlightWeekendsBtn = document.getElementById('highlightWeekendsBtn');
+            if (highlightWeekendsBtn) {
+                highlightWeekendsBtn.addEventListener('click', () => {
+                    highlightWeekends = !highlightWeekends;
+                    highlightWeekendsBtn.classList.toggle('active', highlightWeekends);
+                    renderYearView();
+                });
+            }
+
             const markTodayBtn = document.getElementById('markTodayBtn');
             if (markTodayBtn) {
                 markTodayBtn.addEventListener('click', markToday);
@@ -3725,7 +3762,7 @@
             document.getElementById('navigation').style.display = 'none';
             
             const calendar = document.getElementById('calendar');
-            calendar.className = 'year-view-container';
+            calendar.className = 'year-view-container' + (highlightWeekends ? ' weekends-highlighted' : '');
             if (currentMode === 'events' && selectedCalendarId) {
                 const color = getSelectedCalendarColor();
                 calendar.style.setProperty('--event-drag-range-color', color || '#4C9A74');
@@ -3816,6 +3853,10 @@
                     dayRow.dataset.year = '2026';
                     dayRow.dataset.month = month;
                     dayRow.dataset.day = day;
+                    if (highlightWeekends) {
+                        const dayOfWeek = new Date(2026, month, day).getDay();
+                        if (dayOfWeek === 0 || dayOfWeek === 6) dayRow.classList.add('weekend');
+                    }
                     
                     dayRow.onmousedown = (e) => {
                         e.stopPropagation();
