@@ -2646,63 +2646,30 @@
             return null;
         }
 
-        // Handle drag over a cell
+        // Handle drag over a cell (uses same row/different row logic as getDatesInRange)
         function handleCellDragOver(year, month, day) {
             if (!isDragging || !dragStartCell || !selectedHabitId) return;
             
             const currentCell = getCellElement(year, month, day);
             if (!currentCell) return;
             
-            // Get all cells between start and current
-            const startMonth = dragStartCell.month;
-            const startDay = dragStartCell.day;
+            const dates = getDatesInRange(dragStartCell.month, dragStartCell.day, month, day);
             
-            // Determine range
-            let startM = startMonth;
-            let startD = startDay;
-            let endM = month;
-            let endD = day;
-            
-            // Swap if needed to ensure start < end
-            if (startM > month || (startM === month && startD > day)) {
-                [startM, startD, endM, endD] = [month, day, startMonth, startDay];
-            }
-            
-            // Mark/unmark all cells in range based on starting state
-            let currentM = startM;
-            let currentD = startD;
-            
-            while (currentM < endM || (currentM === endM && currentD <= endD)) {
-                const cellKey = `${currentM}-${currentD}`;
-                
-                // Only process if not already processed
+            dates.forEach(({ month: m, day: d }) => {
+                const cellKey = `${m}-${d}`;
                 if (!dragProcessedCells.has(cellKey)) {
-                    const cell = getCellElement(2026, currentM, currentD);
+                    const cell = getCellElement(2026, m, d);
                     if (cell) {
-                        // Set to match the starting cell's state (after it was toggled)
-                        setDateMarked(2026, currentM, currentD, selectedHabitId, dragStartState);
-                        
+                        setDateMarked(2026, m, d, selectedHabitId, dragStartState);
                         if (dragStartState) {
                             applyHabitColorToCell(cell);
                         } else {
                             removeHabitColorFromCell(cell);
                         }
-                        
                         dragProcessedCells.add(cellKey);
                     }
                 }
-                
-                // Move to next day
-                currentD++;
-                const daysInMonth = getDaysInMonth(2026, currentM);
-                if (currentD > daysInMonth) {
-                    currentD = 1;
-                    currentM++;
-                }
-                
-                // Safety check
-                if (currentM > 11) break;
-            }
+            });
         }
 
         // Clear all dates for the current view (events/habit/journal) and selected item
@@ -3447,6 +3414,53 @@
             document.addEventListener('dragstart', (e) => {
                 if (isDragging) {
                     e.preventDefault();
+                }
+            });
+            
+            // Edge-scroll during drag: when mouse is near viewport edge, scroll so user can continue selecting
+            const EDGE_ZONE = 50;
+            const SCROLL_AMOUNT = 12;
+            const EDGE_SCROLL_INTERVAL = 16; // ~60fps
+            let lastEdgeScrollTime = 0;
+            document.addEventListener('mousemove', (e) => {
+                const draggingInYearView = isDragging && currentView === 'year';
+                const eventsMode = currentMode === 'events' && selectedCalendarId;
+                const habitsMode = currentMode === 'habits' && selectedHabitId;
+                if (!draggingInYearView || (!eventsMode && !habitsMode)) return;
+                
+                const yearView = document.querySelector('.year-view');
+                if (!yearView) return;
+                
+                const nearEdge = e.clientX < EDGE_ZONE || e.clientX > window.innerWidth - EDGE_ZONE ||
+                    e.clientY < EDGE_ZONE || e.clientY > window.innerHeight - EDGE_ZONE;
+                const now = Date.now();
+                
+                if (nearEdge && now - lastEdgeScrollTime >= EDGE_SCROLL_INTERVAL) {
+                    lastEdgeScrollTime = now;
+                    if (e.clientX < EDGE_ZONE) {
+                        yearView.scrollLeft -= SCROLL_AMOUNT;
+                    } else if (e.clientX > window.innerWidth - EDGE_ZONE) {
+                        yearView.scrollLeft += SCROLL_AMOUNT;
+                    }
+                    if (e.clientY < EDGE_ZONE) {
+                        window.scrollBy(0, -SCROLL_AMOUNT);
+                    } else if (e.clientY > window.innerHeight - EDGE_ZONE) {
+                        window.scrollBy(0, SCROLL_AMOUNT);
+                    }
+                }
+                
+                // Find cell under cursor and update selection (works when scrolled or when dragging over cells)
+                const el = document.elementFromPoint(e.clientX, e.clientY);
+                const dayRow = el?.closest('.day-row[data-month][data-day]');
+                if (dayRow) {
+                    const month = parseInt(dayRow.dataset.month, 10);
+                    const day = parseInt(dayRow.dataset.day, 10);
+                    if (eventsMode) {
+                        eventDragEndCell = { month, day };
+                        updateEventDragRangePreview();
+                    } else if (habitsMode) {
+                        handleCellDragOver(2026, month, day);
+                    }
                 }
             });
         });
@@ -4263,15 +4277,21 @@
         }
 
         // Get all {month, day} pairs in a range (inclusive), year 2026
+        // Same row (same day number): select only that day across months (e.g. Jan 5 to June 5 → 5th of each month)
+        // Different rows: select row-by-row (each day number fully across the month range, e.g. May 7–15 + Jun 7–15)
         function getDatesInRange(startMonth, startDay, endMonth, endDay) {
             const dates = [];
-            let start = new Date(2026, startMonth, startDay);
-            let end = new Date(2026, endMonth, endDay);
-            if (start > end) [start, end] = [end, start];
-            const current = new Date(start);
-            while (current <= end) {
-                dates.push({ month: current.getMonth(), day: current.getDate() });
-                current.setDate(current.getDate() + 1);
+            const minMonth = Math.min(startMonth, endMonth);
+            const maxMonth = Math.max(startMonth, endMonth);
+            const minDay = Math.min(startDay, endDay);
+            const maxDay = Math.max(startDay, endDay);
+            const daysInMonth = (m) => new Date(2026, m + 1, 0).getDate();
+            for (let d = minDay; d <= maxDay; d++) {
+                for (let m = minMonth; m <= maxMonth; m++) {
+                    if (d <= daysInMonth(m)) {
+                        dates.push({ month: m, day: d });
+                    }
+                }
             }
             return dates;
         }
@@ -4336,7 +4356,7 @@
                 <button class="modal-close" onclick="closeEventModal()">×</button>
                 <div class="event-header">
                     <div class="event-date">${dateStr}</div>
-                    ${isRange ? `<div style="font-size: 13px; color: #666; margin-top: 4px;">Add event to ${dayCount} days</div>` : ''}
+                    ${isRange && existingEvents.length > 0 ? `<button class="event-btn danger" style="margin-top: 12px; padding: 8px 16px;" onclick="deleteAllEventsInRange()">Delete All (${existingEvents.length} events)</button>` : ''}
                 </div>
                 <div class="event-content-wrapper">
                     <div class="event-content">
@@ -4346,6 +4366,7 @@
                         </div>
                     </div>
                     <div class="event-form-container">
+                        ${isRange ? `<div style="font-size: 13px; color: #666; margin-bottom: 10px;">Add event to ${dayCount} days</div>` : ''}
                         <button class="add-event-btn-side" id="addEventBtn" onclick="showEventForm()">+ Add New Event</button>
                         <div class="event-form-section" id="eventFormSection">
                             <div id="eventFormTitle" style="font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #333;">New Event</div>
@@ -4582,8 +4603,38 @@
             }
         }
 
+        async function deleteAllEventsInRange() {
+            if (!selectedCalendarId || !eventModalRange) return;
+            const { start, end } = eventModalRange;
+            const rangeDates = getDatesInRange(start.month, start.day, end.month, end.day);
+            const year = 2026;
+            const eventsToDelete = events.filter(e =>
+                e.calendarId === selectedCalendarId &&
+                rangeDates.some(d => e.key === getEventKey(selectedCalendarId, year, d.month, d.day))
+            );
+            if (eventsToDelete.length === 0) return;
+            const confirmed = await showCustomConfirm(
+                `Are you sure you want to delete all ${eventsToDelete.length} events in this range? This cannot be undone.`,
+                'Delete All Events'
+            );
+            if (!confirmed) return;
+            const idsToDelete = new Set(eventsToDelete.map(e => e.id));
+            events = events.filter(e => !idsToDelete.has(e.id));
+            eventsToDelete.forEach(e => {
+                const remainingEvents = events.filter(ev => ev.key === e.key);
+                if (remainingEvents.length === 0) {
+                    const calendarDateKey = `calendar-${e.calendarId}-${e.year}-${e.month + 1}-${e.day}`;
+                    localStorage.removeItem(calendarDateKey);
+                }
+            });
+            saveEvents();
+            renderYearView();
+            closeEventModal();
+        }
+
         // Make functions available globally for onclick handlers
         window.deleteEventById = deleteEventById;
+        window.deleteAllEventsInRange = deleteAllEventsInRange;
         window.saveEventFromModal = saveEventFromModal;
         window.saveEventFromModalRange = saveEventFromModalRange;
         window.closeEventModal = closeEventModal;
