@@ -2617,31 +2617,18 @@
             // Clear existing options
             menu.innerHTML = '';
             
-            // Add default option: "Add your first habit" when empty, "Select Habit" when habits exist
-            const defaultItem = document.createElement('button');
-            defaultItem.className = 'custom-dropdown-item';
-            defaultItem.dataset.value = '';
+            // Add "Add your first habit" only when empty
             if (habits.length === 0) {
+                const defaultItem = document.createElement('button');
+                defaultItem.className = 'custom-dropdown-item';
+                defaultItem.dataset.value = '';
                 defaultItem.textContent = 'Add your first habit';
                 defaultItem.onclick = () => {
                     closeDropdown();
                     openCreateHabitModal();
                 };
-            } else {
-                defaultItem.textContent = 'Select Habit';
-                defaultItem.onclick = () => {
-                    selectedHabitId = null;
-                    button.textContent = 'Select Habit';
-                    updateHabitButtonColor();
-                    updateMarkTodayButton();
-                    updateClearAllButton();
-                    closeDropdown();
-                    updateSelectedItem();
-                    renderYearView();
-                };
+                menu.appendChild(defaultItem);
             }
-            updateMarkTodayButton();
-            menu.appendChild(defaultItem);
             
             // Add habits
             habits.forEach(habit => {
@@ -3472,30 +3459,18 @@
                 menu.appendChild(allItem);
             }
             
-            // Add default option: "Add your first calendar" when empty, "Select Calendar" when calendars exist
-            const defaultItem = document.createElement('button');
-            defaultItem.className = 'custom-dropdown-item';
-            defaultItem.dataset.value = '';
+            // Add "Add your first calendar" only when empty
             if (calendars.length === 0) {
+                const defaultItem = document.createElement('button');
+                defaultItem.className = 'custom-dropdown-item';
+                defaultItem.dataset.value = '';
                 defaultItem.textContent = 'Add your first calendar';
                 defaultItem.onclick = () => {
                     closeCalendarDropdown();
                     openCreateCalendarModal();
                 };
-            } else {
-                defaultItem.textContent = 'Select Calendar';
-                defaultItem.onclick = () => {
-                    selectedCalendarId = null;
-                    button.textContent = 'Select Calendar';
-                    updateCalendarButtonColor();
-                    closeCalendarDropdown();
-                    updateSelectedCalendarItem();
-                    renderYearView();
-                    updateClearAllButton();
-                    refreshEventModalIfOpen();
-                };
+                menu.appendChild(defaultItem);
             }
-            menu.appendChild(defaultItem);
             
             // Add calendars
             calendars.forEach(calendar => {
@@ -3708,22 +3683,19 @@
             }
 
             menu.innerHTML = '';
-            const defaultItem = document.createElement('button');
-            defaultItem.className = 'custom-dropdown-item';
-            defaultItem.dataset.value = '';
-            defaultItem.textContent = journals.length === 0 ? 'Add your first journal' : 'Select Journal';
-            defaultItem.onclick = () => {
-                if (journals.length === 0) openCreateJournalModal();
-                else {
-                    selectedJournalId = null;
-                    button.textContent = 'Select Journal';
-                    updateClearAllButton();
-                    renderYearView();
-                }
-                closeJournalDropdown();
-                updateSelectedJournalItem();
-            };
-            menu.appendChild(defaultItem);
+            if (journals.length === 0) {
+                const defaultItem = document.createElement('button');
+                defaultItem.className = 'custom-dropdown-item';
+                defaultItem.dataset.value = '';
+                defaultItem.textContent = 'Add your first journal';
+                defaultItem.onclick = () => {
+                    openCreateJournalModal();
+                    closeJournalDropdown();
+                    updateSelectedJournalItem();
+                };
+                menu.appendChild(defaultItem);
+                button.textContent = 'Add your first journal';
+            }
 
             journals.forEach(journal => {
                 const item = document.createElement('button');
