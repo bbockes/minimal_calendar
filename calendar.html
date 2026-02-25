@@ -217,9 +217,19 @@
         }
 
         .year-view .day-row.event-drag-range {
-            outline: 2px dashed color-mix(in srgb, var(--event-drag-range-color, #4C9A74) 70%, transparent);
-            outline-offset: -2px;
             background-color: color-mix(in srgb, var(--event-drag-range-color, #4C9A74) 15%, transparent) !important;
+        }
+        .year-view .day-row.event-drag-range.edge-top {
+            border-top: 2px dashed color-mix(in srgb, var(--event-drag-range-color, #4C9A74) 70%, transparent);
+        }
+        .year-view .day-row.event-drag-range.edge-bottom {
+            border-bottom: 2px dashed color-mix(in srgb, var(--event-drag-range-color, #4C9A74) 70%, transparent);
+        }
+        .year-view .day-row.event-drag-range.edge-left {
+            border-left: 2px dashed color-mix(in srgb, var(--event-drag-range-color, #4C9A74) 70%, transparent);
+        }
+        .year-view .day-row.event-drag-range.edge-right {
+            border-right: 2px dashed color-mix(in srgb, var(--event-drag-range-color, #4C9A74) 70%, transparent);
         }
 
         .year-view .day-row.marked .day-number,
@@ -857,6 +867,31 @@
 
         .event-field input:focus,
         .event-field textarea:focus {
+            border-color: var(--event-accent-color, #4C9A74);
+        }
+
+        .event-calendar-select {
+            width: 100%;
+            padding: 12px 36px 12px 12px;
+            font-size: 15px;
+            font-family: 'Work Sans', sans-serif;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .event-calendar-select:hover {
+            border-color: #999;
+        }
+
+        .event-calendar-select:focus {
+            outline: none;
             border-color: var(--event-accent-color, #4C9A74);
         }
 
@@ -2854,20 +2889,33 @@
                     await showCustomAlert('Please select a calendar first', 'Notification');
                     return;
                 }
-                const calendar = calendars.find(c => c.id === selectedCalendarId);
-                itemName = calendar ? calendar.name : 'this calendar';
+                if (selectedCalendarId === 'all') {
+                    itemName = 'all calendars';
+                } else {
+                    const calendar = calendars.find(c => c.id === selectedCalendarId);
+                    itemName = calendar ? calendar.name : 'this calendar';
+                }
                 confirmed = await showCustomConfirm(
                     `Are you sure you want to clear all marked dates and events for <strong>"${itemName}"</strong>? This action cannot be undone.`,
                     'Clear All Dates'
                 );
                 if (!confirmed) return;
                 const keys = Object.keys(localStorage);
-                keys.forEach(key => {
-                    if (key.startsWith(`calendar-${selectedCalendarId}-`)) {
-                        localStorage.removeItem(key);
-                    }
-                });
-                events = events.filter(e => e.calendarId !== selectedCalendarId);
+                if (selectedCalendarId === 'all') {
+                    keys.forEach(key => {
+                        if (key.startsWith('calendar-') && calendars.some(cal => key.startsWith(`calendar-${cal.id}-`))) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                    events = [];
+                } else {
+                    keys.forEach(key => {
+                        if (key.startsWith(`calendar-${selectedCalendarId}-`)) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+                    events = events.filter(e => e.calendarId !== selectedCalendarId);
+                }
                 saveEvents();
             } else if (currentMode === 'journal') {
                 confirmed = await showCustomConfirm(
@@ -3158,14 +3206,38 @@
             const button = document.getElementById('calendarSelectButton');
             const currentValue = selectedCalendarId;
             
-            // Auto-select first calendar when any exist and none is selected
-            if (calendars.length > 0 && !selectedCalendarId) {
-                selectedCalendarId = calendars[0].id;
-                button.textContent = calendars[0].name;
+            // Default to "All" when calendars exist and nothing selected (or invalid selection)
+            if (calendars.length > 0) {
+                const validCal = calendars.find(c => c.id === currentValue);
+                if (!currentValue || currentValue === 'all' || !validCal) {
+                    selectedCalendarId = 'all';
+                    button.textContent = 'All';
+                } else {
+                    button.textContent = validCal.name;
+                }
                 updateCalendarButtonColor();
             }
             
             menu.innerHTML = '';
+            
+            // Add "All" option when calendars exist
+            if (calendars.length > 0) {
+                const allItem = document.createElement('button');
+                allItem.className = 'custom-dropdown-item';
+                allItem.dataset.value = 'all';
+                allItem.textContent = 'All';
+                allItem.onclick = () => {
+                    selectedCalendarId = 'all';
+                    button.textContent = 'All';
+                    updateCalendarButtonColor();
+                    closeCalendarDropdown();
+                    updateSelectedCalendarItem();
+                    renderYearView();
+                    updateClearAllButton();
+                    refreshEventModalIfOpen();
+                };
+                menu.appendChild(allItem);
+            }
             
             // Add default option: "Add your first calendar" when empty, "Select Calendar" when calendars exist
             const defaultItem = document.createElement('button');
@@ -3187,6 +3259,7 @@
                     updateSelectedCalendarItem();
                     renderYearView();
                     updateClearAllButton();
+                    refreshEventModalIfOpen();
                 };
             }
             menu.appendChild(defaultItem);
@@ -3237,6 +3310,7 @@
                     updateSelectedCalendarItem();
                     renderYearView();
                     updateClearAllButton();
+                    refreshEventModalIfOpen();
                 };
                 menu.appendChild(item);
             });
@@ -3281,7 +3355,8 @@
             const items = document.querySelectorAll('#calendarDropdownMenu .custom-dropdown-item');
             items.forEach(item => {
                 item.classList.remove('selected');
-                if (item.dataset.value === selectedCalendarId) {
+                const val = item.dataset.value;
+                if (val === selectedCalendarId || (val === 'all' && selectedCalendarId === 'all')) {
                     item.classList.add('selected');
                 }
             });
@@ -3823,16 +3898,30 @@
                     } else if (currentMode === 'events') {
                         // Events mode
                         if (selectedCalendarId) {
-                            const eventKey = getEventKey(selectedCalendarId, 2026, month, day);
-                            const hasEvents = events.some(e => e.key === eventKey);
-                            
-                            if (hasEvents) {
-                                const calendar = calendars.find(c => c.id === selectedCalendarId);
-                                if (calendar) {
-                                    const color = getCalendarColor(calendar);
-                                    dayRow.style.backgroundColor = color;
+                            let dayEvents = [];
+                            if (selectedCalendarId === 'all') {
+                                dayEvents = events.filter(e => e.year === 2026 && e.month === month && e.day === day);
+                            } else {
+                                const eventKey = getEventKey(selectedCalendarId, 2026, month, day);
+                                if (events.some(e => e.key === eventKey)) {
+                                    dayEvents = [{ calendarId: selectedCalendarId }];
+                                }
+                            }
+                            if (dayEvents.length > 0) {
+                                const uniqueCals = [...new Set(dayEvents.map(e => e.calendarId))];
+                                const colors = uniqueCals.map(cid => {
+                                    const cal = calendars.find(c => c.id === cid);
+                                    return cal ? getCalendarColor(cal) : '#4C9A74';
+                                });
+                                if (colors.length === 1) {
+                                    dayRow.style.backgroundColor = colors[0];
                                     dayRow.style.color = '#fff';
                                     dayRow.classList.add('marked');
+                                } else {
+                                    const stops = colors.flatMap((c, i) => [`${c} ${(i / colors.length) * 100}%`, `${c} ${((i + 1) / colors.length) * 100}%`]).join(', ');
+                                    dayRow.style.background = `linear-gradient(to right, ${stops})`;
+                                    dayRow.style.color = '#fff';
+                                    dayRow.classList.add('marked', 'multi-event');
                                 }
                             }
                         }
@@ -4477,19 +4566,35 @@
 
         let selectedEventId = null;
         let eventModalRange = null; // { start: {month, day}, end: {month, day} } when adding to multiple days
+        let eventModalContext = null; // { month, day, endMonth?, endDay? } - last opened modal context for refresh
 
         function updateEventDragRangePreview() {
-            document.querySelectorAll('.day-row.event-drag-range').forEach(row => row.classList.remove('event-drag-range'));
+            document.querySelectorAll('.day-row.event-drag-range').forEach(row => {
+                row.classList.remove('event-drag-range', 'edge-top', 'edge-bottom', 'edge-left', 'edge-right');
+            });
             if (!dragStartCell || !eventDragEndCell || currentMode !== 'events') return;
             const dates = getDatesInRange(dragStartCell.month, dragStartCell.day, eventDragEndCell.month, eventDragEndCell.day);
+            const dateSet = new Set(dates.map(d => `${d.month}-${d.day}`));
+            const daysInMonth = (m) => new Date(2026, m + 1, 0).getDate();
             dates.forEach(({ month, day }) => {
                 const row = document.querySelector(`.day-row[data-month="${month}"][data-day="${day}"]`);
-                if (row) row.classList.add('event-drag-range');
+                if (!row) return;
+                row.classList.add('event-drag-range');
+                const hasAbove = day > 1 && dateSet.has(`${month}-${day - 1}`);
+                const hasBelow = day < daysInMonth(month) && dateSet.has(`${month}-${day + 1}`);
+                const hasLeft = month > 0 && day <= daysInMonth(month - 1) && dateSet.has(`${month - 1}-${day}`);
+                const hasRight = month < 11 && day <= daysInMonth(month + 1) && dateSet.has(`${month + 1}-${day}`);
+                if (!hasAbove) row.classList.add('edge-top');
+                if (!hasBelow) row.classList.add('edge-bottom');
+                if (!hasLeft) row.classList.add('edge-left');
+                if (!hasRight) row.classList.add('edge-right');
             });
         }
 
         function clearEventDragRangePreview() {
-            document.querySelectorAll('.day-row.event-drag-range').forEach(row => row.classList.remove('event-drag-range'));
+            document.querySelectorAll('.day-row.event-drag-range').forEach(row => {
+                row.classList.remove('event-drag-range', 'edge-top', 'edge-bottom', 'edge-left', 'edge-right');
+            });
         }
 
         // Get all {month, day} pairs in a range (inclusive), year 2026
@@ -4519,8 +4624,10 @@
             const isRange = endMonth !== undefined && endDay !== undefined && (endMonth !== month || endDay !== day);
             if (isRange) {
                 eventModalRange = { start: { month, day }, end: { month: endMonth, day: endDay } };
+                eventModalContext = { month, day, endMonth, endDay };
             } else {
                 eventModalRange = null;
+                eventModalContext = { month, day };
             }
             
             const dateStr = isRange
@@ -4528,12 +4635,18 @@
                 : `${monthNames[month]} ${day}, 2026`;
             const dayCount = isRange ? getDatesInRange(month, day, endMonth, endDay).length : 1;
             
-            const eventKey = getEventKey(selectedCalendarId, year, month, day);
-            let existingEvents = events.filter(e => e.key === eventKey);
-            if (isRange) {
-                const rangeDates = getDatesInRange(month, day, endMonth, endDay);
+            let existingEvents;
+            const rangeDates = isRange ? getDatesInRange(month, day, endMonth, endDay) : [{ month, day }];
+            if (selectedCalendarId === 'all') {
                 existingEvents = events.filter(e =>
-                    rangeDates.some(d => e.key === getEventKey(selectedCalendarId, year, d.month, d.day))
+                    e.year === year && rangeDates.some(d => e.month === d.month && e.day === d.day)
+                );
+            } else {
+                // Filter by calendarId so only events from the selected calendar show
+                existingEvents = events.filter(e =>
+                    e.calendarId === selectedCalendarId &&
+                    e.year === year &&
+                    rangeDates.some(d => e.month === d.month && e.day === d.day)
                 );
             }
             selectedEventId = null;
@@ -4545,10 +4658,13 @@
             if (existingEvents.length > 0) {
                 existingEvents.forEach(event => {
                     const eventDate = `${monthNames[event.month]} ${event.day}`;
+                    const cal = calendars.find(c => c.id === event.calendarId);
+                    const calName = cal ? cal.name : '';
+                    const calColor = cal ? getCalendarColor(cal) : '#4C9A74';
                     eventsHTML += `
                         <div class="event-card" data-event-id="${event.id}">
                             <div class="event-card-title">${event.name || 'Untitled Event'}</div>
-                            <div class="event-card-detail" style="font-size: 12px; color: #888;">${eventDate}</div>
+                            <div class="event-card-detail" style="font-size: 12px; color: #888;">${eventDate}${selectedCalendarId === 'all' && calName ? ` · <span style="color: ${calColor}; font-weight: 500;">${calName}</span>` : ''}</div>
                             ${event.time ? `<div class="event-card-detail">⏰ ${event.time}</div>` : ''}
                             ${event.notes ? `<div class="event-card-notes">${event.notes}</div>` : ''}
                             <div class="event-card-actions">
@@ -4579,9 +4695,18 @@
                     </div>
                     <div class="event-form-container">
                         ${isRange ? `<div style="font-size: 13px; color: #666; margin-bottom: 10px;">Add event to ${dayCount} days</div>` : ''}
+                        ${selectedCalendarId === 'all' ? `<div style="font-size: 13px; color: #666; margin-bottom: 10px;">Select a calendar to add events</div>` : ''}
                         <button class="add-event-btn-side" id="addEventBtn" onclick="showEventForm()">+ Add New Event</button>
                         <div class="event-form-section" id="eventFormSection">
                             <div id="eventFormTitle" style="font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #333;">New Event</div>
+                            ${selectedCalendarId === 'all' ? `
+                            <div class="event-field">
+                                <label for="eventCalendarSelect">Select calendar</label>
+                                <select id="eventCalendarSelect" class="event-calendar-select">
+                                    ${calendars.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            ` : ''}
                             <div class="event-field" style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <div style="flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 8px;">
                                     <label>Start Date</label>
@@ -4878,10 +5003,31 @@
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
             eventModalRange = null;
+            eventModalContext = null;
+        }
+
+        function refreshEventModalIfOpen() {
+            const modal = document.getElementById('eventModal');
+            if (!modal || !modal.classList.contains('active') || !eventModalContext) return;
+            if (!selectedCalendarId) {
+                closeEventModal();
+                return;
+            }
+            const { month, day, endMonth, endDay } = eventModalContext;
+            if (endMonth !== undefined && endDay !== undefined) {
+                openEventModal(month, day, endMonth, endDay);
+            } else {
+                openEventModal(month, day);
+            }
         }
 
         function saveEventFromForm(year) {
-            if (!selectedCalendarId) return;
+            let calendarId = selectedCalendarId;
+            if (calendarId === 'all') {
+                const sel = document.getElementById('eventCalendarSelect');
+                calendarId = sel ? sel.value : null;
+            }
+            if (!calendarId) return;
             const startMonthEl = document.getElementById('eventStartMonth');
             const startDayEl = document.getElementById('eventStartDay');
             const endMonthEl = document.getElementById('eventEndMonth');
@@ -4899,6 +5045,7 @@
                 showCustomAlert('Please enter an event name', 'Notification');
                 return;
             }
+            const effectiveCalendarId = calendarId;
             const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
             if (startDay < 1 || startDay > daysInMonth(startMonth)) {
                 showCustomAlert(`Please enter a valid day (1–${daysInMonth(startMonth)}) for ${monthNames[startMonth]}`, 'Invalid Date');
@@ -4919,7 +5066,7 @@
                     existingEvent.name = name;
                     existingEvent.time = time;
                     existingEvent.notes = notes;
-                    existingEvent.key = getEventKey(selectedCalendarId, year, startMonth, startDay);
+                    existingEvent.key = getEventKey(effectiveCalendarId, year, startMonth, startDay);
                     saveEvents();
                     renderYearView();
                     window.editingEventId = null;
@@ -4929,11 +5076,11 @@
                     ? getDatesInRange(startMonth, startDay, endMonthVal, endDayValNum)
                     : [{ month: startMonth, day: startDay }];
                 dates.forEach(({ month, day }) => {
-                    const eventKey = getEventKey(selectedCalendarId, year, month, day);
+                    const eventKey = getEventKey(effectiveCalendarId, year, month, day);
                     const newEvent = {
                         id: Date.now().toString() + '-' + Math.random().toString(36).slice(2),
                         key: eventKey,
-                        calendarId: selectedCalendarId,
+                        calendarId: effectiveCalendarId,
                         year, month, day,
                         name, time, notes
                     };
@@ -5068,10 +5215,12 @@
             const { start, end } = eventModalRange;
             const rangeDates = getDatesInRange(start.month, start.day, end.month, end.day);
             const year = 2026;
-            const eventsToDelete = events.filter(e =>
-                e.calendarId === selectedCalendarId &&
-                rangeDates.some(d => e.key === getEventKey(selectedCalendarId, year, d.month, d.day))
-            );
+            const eventsToDelete = selectedCalendarId === 'all'
+                ? events.filter(e => e.year === year && rangeDates.some(d => e.month === d.month && e.day === d.day))
+                : events.filter(e =>
+                    e.calendarId === selectedCalendarId &&
+                    rangeDates.some(d => e.key === getEventKey(selectedCalendarId, year, d.month, d.day))
+                );
             if (eventsToDelete.length === 0) return;
             const confirmed = await showCustomConfirm(
                 `Are you sure you want to delete all ${eventsToDelete.length} events in this range? This cannot be undone.`,
