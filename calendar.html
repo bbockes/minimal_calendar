@@ -2109,6 +2109,7 @@
             .mark-today-btn,
             .clear-all-btn,
             #atAGlanceBtn,
+            #printCalendarBtn,
             #highlightWeekendsBtn,
             #statsBtn {
                 display: none !important;
@@ -2413,6 +2414,7 @@
             <button class="create-habit-btn" id="statsBtn">Stats</button>
             <button class="create-habit-btn" id="atAGlanceBtn" title="View all upcoming events at a glance">At a Glance</button>
             <button class="create-habit-btn" id="highlightWeekendsBtn" title="Highlight weekends (Saturdays and Sundays)">Weekends</button>
+            <button class="create-habit-btn" id="printCalendarBtn" title="Print calendar as PDF">Print</button>
             <button class="clear-all-btn" id="clearAllBtn" title="Clear all marked dates">Clear All</button>
         </div>
         <div class="header">
@@ -4190,6 +4192,11 @@
                 });
             }
 
+            const printCalendarBtn = document.getElementById('printCalendarBtn');
+            if (printCalendarBtn) {
+                printCalendarBtn.addEventListener('click', printCalendarToPdf);
+            }
+
             const markTodayBtn = document.getElementById('markTodayBtn');
             if (markTodayBtn) {
                 markTodayBtn.addEventListener('click', markToday);
@@ -5228,6 +5235,91 @@
 
         function saveEvents() {
             localStorage.setItem('events', JSON.stringify(events));
+        }
+
+        function escapeHtml(s) {
+            if (!s) return '';
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function printCalendarToPdf() {
+            const hasData = (currentMode === 'habits' && selectedHabitId) ||
+                (currentMode === 'events' && selectedCalendarId) ||
+                (currentMode === 'journal' && selectedJournalId);
+            if (!hasData) {
+                const msg = currentMode === 'habits' ? 'Please select a habit first' :
+                    currentMode === 'events' ? 'Please select a calendar first' : 'Please select a journal first';
+                showCustomAlert(msg, 'Notification');
+                return;
+            }
+            const prevView = currentView;
+            const prevMonth = currentMonth;
+            const prevDay = currentDay;
+            renderYearView();
+            const calendarEl = document.getElementById('calendar');
+            const clone = calendarEl.cloneNode(true);
+            clone.querySelectorAll('[onclick], [onmousedown], [onmousemove], [onmouseenter]').forEach(el => {
+                el.removeAttribute('onclick');
+                el.removeAttribute('onmousedown');
+                el.removeAttribute('onmousemove');
+                el.removeAttribute('onmouseenter');
+            });
+            clone.querySelectorAll('.day-row.event-drag-range').forEach(row => {
+                row.classList.remove('event-drag-range', 'edge-top', 'edge-bottom', 'edge-left', 'edge-right');
+            });
+            let title = '2026';
+            if (currentMode === 'habits' && selectedHabitId) {
+                const h = habits.find(x => x.id === selectedHabitId);
+                title += h ? ` — ${h.name}` : '';
+            } else if (currentMode === 'events' && selectedCalendarId && selectedCalendarId !== 'all') {
+                const c = calendars.find(x => x.id === selectedCalendarId);
+                title += c ? ` — ${c.name}` : '';
+            } else if (currentMode === 'journal' && selectedJournalId) {
+                const j = journals.find(x => x.id === selectedJournalId);
+                title += j ? ` — ${j.name}` : '';
+            }
+            const styles = Array.from(document.querySelectorAll('style')).map(s => s.textContent).join('\n');
+            const printStyles = `
+                body { margin: 0; padding: 20px; font-family: 'Work Sans', sans-serif; }
+                .year-view-container { margin-top: 0 !important; }
+                .year-view { overflow: visible !important; }
+                h1 { text-align: center; }
+                .print-tip { font-size: 16px; color: #666; text-align: center; margin-bottom: 16px; }
+                @media print { .print-tip { display: none !important; } }
+                /* Preserve background colors when printing (marked days, habits, events) */
+                * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                @page { margin: 0.5in; size: landscape; }
+                @media print {
+                    @page { margin: 0.5in; size: landscape; }
+                    body { padding: 8px 0; }
+                    h1 { font-size: 36px !important; font-weight: bold !important; margin-bottom: 32px !important; text-align: center !important; }
+                    /* Scale calendar to fit all 12 months on one landscape page */
+                    .year-view .month-column { width: 80px !important; min-width: 80px !important; }
+                    .year-view .month-header { font-size: 12px !important; padding: 8px 0 !important; }
+                    .year-view .day-row { min-height: 18px !important; }
+                    .year-view .day-number, .year-view .day-name { font-size: 10px !important; padding: 2px 5px !important; }
+                    /* Remove today highlight and hover styling in print */
+                    .year-view .day-row.today::before { display: none !important; }
+                    .year-view .day-row.today .day-number { font-weight: normal !important; }
+                    .year-view .day-row:hover { background-color: inherit !important; }
+                }
+            `;
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+                <style>${styles.replace(/<\/style>/g, '<\\/style>')}</style>
+                <style>${printStyles.replace(/<\/style>/g, '<\\/style>')}</style>
+            </head><body>
+                <p class="print-tip">Tip: Use landscape orientation and uncheck "Headers and footers" in the print dialog for a cleaner print.</p>
+                <h1 style="font-size:36px;font-weight:bold;margin-bottom:32px;margin-top:0;">${escapeHtml(title)}</h1>${clone.outerHTML}</body></html>`;
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const win = window.open(url, '_blank', 'noopener,noreferrer');
+            URL.revokeObjectURL(url);
+            if (prevView === 'day') renderDayView(prevMonth, prevDay);
+            if (win) setTimeout(() => win.print(), 500);
         }
 
         // Export all calendar data to a JSON file (habits, events, calendars, journal, marked dates)
