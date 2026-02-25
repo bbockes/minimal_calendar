@@ -662,7 +662,7 @@
         /* Event View Modal */
         .event-view {
             width: 95vw;
-            height: 85vh;
+            height: 95vh;
             max-width: 1400px;
             min-height: 700px;
             background: #fff;
@@ -843,6 +843,131 @@
         .event-field textarea {
             resize: vertical;
             min-height: 140px;
+        }
+
+        /* Date picker - expandable calendar */
+        .date-picker {
+            position: relative;
+            width: 100%;
+        }
+        .date-picker-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        .date-picker-trigger:hover {
+            border-color: #999;
+        }
+        .date-picker-trigger.has-value {
+            color: #333;
+        }
+        .date-picker-trigger .placeholder {
+            color: #999;
+        }
+        .date-picker-trigger svg {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            color: #666;
+        }
+        .date-picker-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 6px;
+            padding: 16px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 280px;
+        }
+        .date-picker-dropdown.open {
+            display: block;
+        }
+        .date-picker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .date-picker-month {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        .date-picker-nav {
+            display: flex;
+            gap: 4px;
+        }
+        .date-picker-nav-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: #f0f0f0;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .date-picker-nav-btn:hover {
+            background: #e0e0e0;
+        }
+        .date-picker-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        .date-picker-weekday {
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+            font-weight: 500;
+        }
+        .date-picker-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .date-picker-day {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Work Sans', sans-serif;
+            transition: all 0.2s;
+        }
+        .date-picker-day:hover:not(.empty) {
+            background: #f0f0f0;
+        }
+        .date-picker-day.selected {
+            background: var(--event-accent-color, #4C9A74);
+            color: #fff;
+            font-weight: 600;
+        }
+        .date-picker-day.empty {
+            cursor: default;
+            visibility: hidden;
         }
 
         .event-actions {
@@ -1884,6 +2009,7 @@
                             <!-- Options will be populated by JavaScript -->
                         </div>
                     </div>
+                    <button class="create-habit-btn" id="addEventBtnHeader" title="Add event with manual dates">+ Add Event</button>
                 </div>
                 <!-- Journal Mode UI -->
                 <div id="journalModeUI" class="mode-ui" style="display: none;">
@@ -3255,6 +3381,21 @@
             const createCalendarBtn = document.getElementById('createCalendarBtn');
             createCalendarBtn.addEventListener('click', openCreateCalendarModal);
             
+            // Add Event button - opens modal with form for manual date entry
+            const addEventBtnHeader = document.getElementById('addEventBtnHeader');
+            if (addEventBtnHeader) {
+                addEventBtnHeader.addEventListener('click', async () => {
+                    if (!selectedCalendarId) {
+                        await showCustomAlert('Please select a calendar first', 'Notification');
+                        return;
+                    }
+                    const now = new Date();
+                    const defaultMonth = now.getFullYear() === 2026 ? now.getMonth() : 0;
+                    const defaultDay = now.getFullYear() === 2026 ? now.getDate() : 1;
+                    openEventModal(defaultMonth, defaultDay);
+                    showEventForm();
+                });
+            }
             
             const clearAllBtn = document.getElementById('clearAllBtn');
             clearAllBtn.addEventListener('click', clearAllForCurrentView);
@@ -3382,7 +3523,12 @@
             });
             
             // Global mouseup handler to stop dragging
+            let edgeScrollRAF = null;
             document.addEventListener('mouseup', () => {
+                if (edgeScrollRAF) {
+                    cancelAnimationFrame(edgeScrollRAF);
+                    edgeScrollRAF = null;
+                }
                 if (isDragging && currentMode === 'events' && selectedCalendarId && dragStartCell) {
                     const end = eventDragEndCell || dragStartCell;
                     openEventModal(dragStartCell.month, dragStartCell.day, end.month, end.day);
@@ -3418,38 +3564,67 @@
             });
             
             // Edge-scroll during drag: when mouse is near viewport edge, scroll so user can continue selecting
-            const EDGE_ZONE = 50;
-            const SCROLL_AMOUNT = 12;
-            const EDGE_SCROLL_INTERVAL = 16; // ~60fps
-            let lastEdgeScrollTime = 0;
+            const EDGE_ZONE = 60;
+            const MAX_SCROLL_SPEED = 28;
+            let lastMouseX = 0, lastMouseY = 0;
+            function runEdgeScroll() {
+                const yearView = document.querySelector('.year-view');
+                if (!yearView || !isDragging) return;
+                const eventsMode = currentMode === 'events' && selectedCalendarId;
+                const habitsMode = currentMode === 'habits' && selectedHabitId;
+                if (!eventsMode && !habitsMode) return;
+                const x = lastMouseX, y = lastMouseY;
+                const w = window.innerWidth, h = window.innerHeight;
+                let dx = 0, dy = 0;
+                if (x < EDGE_ZONE) {
+                    const intensity = 1 - x / EDGE_ZONE;
+                    dx = -Math.round(MAX_SCROLL_SPEED * intensity);
+                } else if (x > w - EDGE_ZONE) {
+                    const intensity = (x - (w - EDGE_ZONE)) / EDGE_ZONE;
+                    dx = Math.round(MAX_SCROLL_SPEED * intensity);
+                }
+                if (y < EDGE_ZONE) {
+                    const intensity = 1 - y / EDGE_ZONE;
+                    dy = -Math.round(MAX_SCROLL_SPEED * intensity);
+                } else if (y > h - EDGE_ZONE) {
+                    const intensity = (y - (h - EDGE_ZONE)) / EDGE_ZONE;
+                    dy = Math.round(MAX_SCROLL_SPEED * intensity);
+                }
+                if (dx !== 0) yearView.scrollLeft += dx;
+                if (dy !== 0) window.scrollBy(0, dy);
+                if (dx !== 0 || dy !== 0) {
+                    const el = document.elementFromPoint(x, y);
+                    const dayRow = el?.closest('.day-row[data-month][data-day]');
+                    if (dayRow) {
+                        const month = parseInt(dayRow.dataset.month, 10);
+                        const day = parseInt(dayRow.dataset.day, 10);
+                        if (eventsMode) {
+                            eventDragEndCell = { month, day };
+                            updateEventDragRangePreview();
+                        } else if (habitsMode) {
+                            handleCellDragOver(2026, month, day);
+                        }
+                    }
+                }
+                edgeScrollRAF = requestAnimationFrame(runEdgeScroll);
+            }
             document.addEventListener('mousemove', (e) => {
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
                 const draggingInYearView = isDragging && currentView === 'year';
                 const eventsMode = currentMode === 'events' && selectedCalendarId;
                 const habitsMode = currentMode === 'habits' && selectedHabitId;
                 if (!draggingInYearView || (!eventsMode && !habitsMode)) return;
-                
                 const yearView = document.querySelector('.year-view');
                 if (!yearView) return;
-                
                 const nearEdge = e.clientX < EDGE_ZONE || e.clientX > window.innerWidth - EDGE_ZONE ||
                     e.clientY < EDGE_ZONE || e.clientY > window.innerHeight - EDGE_ZONE;
-                const now = Date.now();
-                
-                if (nearEdge && now - lastEdgeScrollTime >= EDGE_SCROLL_INTERVAL) {
-                    lastEdgeScrollTime = now;
-                    if (e.clientX < EDGE_ZONE) {
-                        yearView.scrollLeft -= SCROLL_AMOUNT;
-                    } else if (e.clientX > window.innerWidth - EDGE_ZONE) {
-                        yearView.scrollLeft += SCROLL_AMOUNT;
-                    }
-                    if (e.clientY < EDGE_ZONE) {
-                        window.scrollBy(0, -SCROLL_AMOUNT);
-                    } else if (e.clientY > window.innerHeight - EDGE_ZONE) {
-                        window.scrollBy(0, SCROLL_AMOUNT);
-                    }
+                if (nearEdge && !edgeScrollRAF) {
+                    edgeScrollRAF = requestAnimationFrame(runEdgeScroll);
+                } else if (!nearEdge && edgeScrollRAF) {
+                    cancelAnimationFrame(edgeScrollRAF);
+                    edgeScrollRAF = null;
                 }
-                
-                // Find cell under cursor and update selection (works when scrolled or when dragging over cells)
                 const el = document.elementFromPoint(e.clientX, e.clientY);
                 const dayRow = el?.closest('.day-row[data-month][data-day]');
                 if (dayRow) {
@@ -4348,10 +4523,6 @@
                     : '<div style="padding: 40px; color: #999;">No events for this date</div>';
             }
             
-            const saveBtnOnclick = isRange
-                ? `saveEventFromModalRange(${year})`
-                : `saveEventFromModal(${year}, ${month}, ${day})`;
-            
             eventViewContent.innerHTML = `
                 <button class="modal-close" onclick="closeEventModal()">×</button>
                 <div class="event-header">
@@ -4370,6 +4541,33 @@
                         <button class="add-event-btn-side" id="addEventBtn" onclick="showEventForm()">+ Add New Event</button>
                         <div class="event-form-section" id="eventFormSection">
                             <div id="eventFormTitle" style="font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #333;">New Event</div>
+                            <div class="event-field" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 8px;">
+                                    <label>Start Date</label>
+                                    <div class="date-picker" id="eventStartDatePicker">
+                                        <input type="hidden" id="eventStartMonth" value="${month}" />
+                                        <input type="hidden" id="eventStartDay" value="${day}" />
+                                        <div class="date-picker-trigger has-value" data-picker="start">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                                            <span class="date-picker-label">${monthNames[month]} ${day}, 2026</span>
+                                        </div>
+                                        <div class="date-picker-dropdown" id="eventStartDateDropdown"></div>
+                                    </div>
+                                </div>
+                                <div style="flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 8px;">
+                                    <label>End Date (optional)</label>
+                                    <div class="date-picker" id="eventEndDatePicker">
+                                        <input type="hidden" id="eventEndMonth" value="${isRange ? endMonth : ''}" />
+                                        <input type="hidden" id="eventEndDay" value="${isRange ? endDay : ''}" />
+                                        <div class="date-picker-trigger ${isRange ? 'has-value' : ''}" data-picker="end">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                                            <span class="date-picker-label ${!isRange ? 'placeholder' : ''}">${isRange ? `${monthNames[endMonth]} ${endDay}, 2026` : 'Pick a date'}</span>
+                                        </div>
+                                        <div class="date-picker-dropdown" id="eventEndDateDropdown"></div>
+                                    </div>
+                                    <div style="font-size: 11px; color: #888; margin-top: 2px;">Leave empty for single day</div>
+                                </div>
+                            </div>
                             <div class="event-field">
                                 <label for="eventName">Event Name</label>
                                 <input type="text" id="eventName" placeholder="Enter event name..." />
@@ -4384,7 +4582,7 @@
                             </div>
                             <div class="event-actions" style="margin-top: auto;">
                                 <button class="event-btn" onclick="hideEventForm()">Cancel</button>
-                                <button class="event-btn primary" id="saveEventBtn" onclick="${saveBtnOnclick}">Save Event</button>
+                                <button class="event-btn primary" id="saveEventBtn" onclick="saveEventFromForm(2026)">Save Event</button>
                             </div>
                         </div>
                     </div>
@@ -4395,6 +4593,131 @@
             modal.style.setProperty('--event-accent-color', accentColor);
             modal.classList.add('active');
             document.body.classList.add('modal-open');
+            initEventDatePickers(year);
+        }
+
+        function initEventDatePickers(year) {
+            const renderPickerCalendar = (pickerId, viewMonth, selectedMonth, selectedDay, isEndPicker) => {
+                const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
+                const firstDay = new Date(year, viewMonth, 1).getDay();
+                const days = daysInMonth(viewMonth);
+                let html = `<div class="date-picker-header">
+                    <span class="date-picker-month">${monthNames[viewMonth]} ${year}</span>
+                    <div class="date-picker-nav">
+                        <button type="button" class="date-picker-nav-btn" data-dir="-1">‹</button>
+                        <button type="button" class="date-picker-nav-btn" data-dir="1">›</button>
+                    </div>
+                </div>
+                <div class="date-picker-weekdays">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => `<span class="date-picker-weekday">${d}</span>`).join('')}</div>
+                <div class="date-picker-days">`;
+                for (let i = 0; i < firstDay; i++) html += `<button type="button" class="date-picker-day empty"></button>`;
+                for (let d = 1; d <= days; d++) {
+                    const sel = !isNaN(selectedMonth) && !isNaN(selectedDay) && viewMonth === selectedMonth && d === selectedDay ? ' selected' : '';
+                    html += `<button type="button" class="date-picker-day${sel}" data-day="${d}">${d}</button>`;
+                }
+                html += '</div>';
+                if (isEndPicker && !isNaN(selectedMonth) && !isNaN(selectedDay)) {
+                    html += `<button type="button" class="event-btn" style="margin-top: 10px; width: 100%; font-size: 12px;" data-clear="true">Clear (single day)</button>`;
+                }
+                return html;
+            };
+            const updateTrigger = (picker, month, day) => {
+                const trigger = picker.querySelector('.date-picker-trigger');
+                const label = trigger.querySelector('.date-picker-label');
+                if (month !== null && day) {
+                    label.textContent = `${monthNames[month]} ${day}, ${year}`;
+                    trigger.classList.add('has-value');
+                } else {
+                    label.textContent = 'Pick a date';
+                    label.classList.add('placeholder');
+                    trigger.classList.remove('has-value');
+                }
+            };
+            const updateEventModalHeader = () => {
+                const headerEl = document.querySelector('.event-header .event-date');
+                if (!headerEl) return;
+                const sm = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
+                const sd = parseInt(document.getElementById('eventStartDay')?.value || '1', 10);
+                const em = document.getElementById('eventEndMonth')?.value?.trim();
+                const ed = document.getElementById('eventEndDay')?.value?.trim();
+                const isRange = em && ed && (parseInt(em, 10) !== sm || parseInt(ed, 10) !== sd);
+                if (isRange) {
+                    headerEl.textContent = `${monthNames[sm]} ${sd} – ${monthNames[parseInt(em, 10)]} ${parseInt(ed, 10)}, ${year}`;
+                } else {
+                    headerEl.textContent = `${monthNames[sm]} ${sd}, ${year}`;
+                }
+            };
+            ['start', 'end'].forEach(type => {
+                const picker = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}DatePicker`);
+                const dropdown = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}DateDropdown`);
+                const monthInput = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}Month`);
+                const dayInput = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}Day`);
+                if (!picker || !dropdown) return;
+                let viewMonth = parseInt(monthInput?.value || '0', 10);
+                let viewDay = parseInt(dayInput?.value || '1', 10);
+                if (type === 'end' && !monthInput?.value && !dayInput?.value) {
+                    viewMonth = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
+                    viewDay = parseInt(document.getElementById('eventStartDay')?.value || '1', 10);
+                }
+                const render = () => {
+                    const selMonth = parseInt(monthInput?.value || '0', 10);
+                    const selDay = parseInt(dayInput?.value || '1', 10);
+                    dropdown.innerHTML = renderPickerCalendar(picker.id, viewMonth, selMonth, selDay, type === 'end');
+                    dropdown.querySelectorAll('.date-picker-nav-btn').forEach(btn => {
+                        btn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            viewMonth = (viewMonth + 12 + parseInt(btn.dataset.dir, 10)) % 12;
+                            render();
+                        };
+                    });
+                    dropdown.querySelectorAll('.date-picker-day:not(.empty)').forEach(btn => {
+                        btn.onclick = () => {
+                            const d = parseInt(btn.dataset.day, 10);
+                            monthInput.value = viewMonth;
+                            dayInput.value = d;
+                            updateTrigger(picker, viewMonth, d);
+                            picker.querySelector('.date-picker-trigger').classList.add('has-value');
+                            updateEventModalHeader();
+                            dropdown.classList.remove('open');
+                            render();
+                        };
+                    });
+                    dropdown.querySelector('[data-clear="true"]')?.addEventListener('click', () => {
+                        monthInput.value = '';
+                        dayInput.value = '';
+                        const trigger = picker.querySelector('.date-picker-trigger');
+                        const label = trigger.querySelector('.date-picker-label');
+                        label.textContent = 'Pick a date';
+                        label.classList.add('placeholder');
+                        trigger.classList.remove('has-value');
+                        updateEventModalHeader();
+                        dropdown.classList.remove('open');
+                        render();
+                    });
+                };
+                render();
+                picker.querySelector('.date-picker-trigger').onclick = (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.date-picker-dropdown.open').forEach(d => d.classList.remove('open'));
+                    dropdown.classList.toggle('open');
+                    if (dropdown.classList.contains('open')) {
+                        const sm = parseInt(monthInput?.value || document.getElementById('eventStartMonth')?.value || '0', 10);
+                        const sd = parseInt(dayInput?.value || document.getElementById('eventStartDay')?.value || '1', 10);
+                        viewMonth = sm;
+                        viewDay = sd;
+                        render();
+                    }
+                };
+            });
+            if (!window._datePickerCloseBound) {
+                window._datePickerCloseBound = true;
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.date-picker')) {
+                        document.querySelectorAll('.date-picker-dropdown.open').forEach(d => d.classList.remove('open'));
+                    }
+                });
+            }
         }
 
         function editEvent(eventId) {
@@ -4416,6 +4739,28 @@
             document.getElementById('eventName').value = event.name || '';
             document.getElementById('eventTime').value = event.time || '';
             document.getElementById('eventNotes').value = event.notes || '';
+            const startMonthEl = document.getElementById('eventStartMonth');
+            const startDayEl = document.getElementById('eventStartDay');
+            const endMonthEl = document.getElementById('eventEndMonth');
+            const endDayEl = document.getElementById('eventEndDay');
+            if (startMonthEl) startMonthEl.value = event.month;
+            if (startDayEl) startDayEl.value = event.day;
+            if (endMonthEl) endMonthEl.value = '';
+            if (endDayEl) endDayEl.value = '';
+            const startTrigger = document.querySelector('#eventStartDatePicker .date-picker-trigger');
+            const startLabel = startTrigger?.querySelector('.date-picker-label');
+            if (startLabel) {
+                startLabel.textContent = `${monthNames[event.month]} ${event.day}, 2026`;
+                startLabel.classList.remove('placeholder');
+                startTrigger?.classList.add('has-value');
+            }
+            const endTrigger = document.querySelector('#eventEndDatePicker .date-picker-trigger');
+            const endLabel = endTrigger?.querySelector('.date-picker-label');
+            if (endLabel) {
+                endLabel.textContent = 'Pick a date';
+                endLabel.classList.add('placeholder');
+                endTrigger?.classList.remove('has-value');
+            }
             
             // Hide the "Add New Event" button
             const addBtn = document.querySelector('.add-event-btn-side');
@@ -4492,6 +4837,80 @@
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
             eventModalRange = null;
+        }
+
+        function saveEventFromForm(year) {
+            if (!selectedCalendarId) return;
+            const startMonthEl = document.getElementById('eventStartMonth');
+            const startDayEl = document.getElementById('eventStartDay');
+            const endMonthEl = document.getElementById('eventEndMonth');
+            const endDayEl = document.getElementById('eventEndDay');
+            if (!startMonthEl || !startDayEl) return;
+            const startMonth = parseInt(startMonthEl.value, 10);
+            const startDay = parseInt(startDayEl.value, 10) || 1;
+            const endDayVal = endDayEl?.value?.trim();
+            const endMonth = endMonthEl ? parseInt(endMonthEl.value, 10) : startMonth;
+            const endDayParsed = endDayVal ? (parseInt(endDayVal, 10) || null) : null;
+            const name = document.getElementById('eventName').value.trim();
+            const time = document.getElementById('eventTime').value.trim();
+            const notes = document.getElementById('eventNotes').value.trim();
+            if (!name) {
+                showCustomAlert('Please enter an event name', 'Notification');
+                return;
+            }
+            const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
+            if (startDay < 1 || startDay > daysInMonth(startMonth)) {
+                showCustomAlert(`Please enter a valid day (1–${daysInMonth(startMonth)}) for ${monthNames[startMonth]}`, 'Invalid Date');
+                return;
+            }
+            const isRange = endDayParsed !== null && !isNaN(endDayParsed) && (startMonth !== endMonth || startDay !== endDayParsed);
+            const endMonthVal = isRange ? endMonth : startMonth;
+            const endDayValNum = isRange ? Math.min(endDayParsed, daysInMonth(endMonthVal)) : startDay;
+            if (isRange && (endMonthVal < startMonth || (endMonthVal === startMonth && endDayValNum < startDay))) {
+                showCustomAlert('End date must be on or after start date', 'Invalid Date');
+                return;
+            }
+            if (window.editingEventId) {
+                const existingEvent = events.find(e => e.id === window.editingEventId);
+                if (existingEvent) {
+                    existingEvent.month = startMonth;
+                    existingEvent.day = startDay;
+                    existingEvent.name = name;
+                    existingEvent.time = time;
+                    existingEvent.notes = notes;
+                    existingEvent.key = getEventKey(selectedCalendarId, year, startMonth, startDay);
+                    saveEvents();
+                    renderYearView();
+                    window.editingEventId = null;
+                }
+            } else {
+                const dates = isRange
+                    ? getDatesInRange(startMonth, startDay, endMonthVal, endDayValNum)
+                    : [{ month: startMonth, day: startDay }];
+                dates.forEach(({ month, day }) => {
+                    const eventKey = getEventKey(selectedCalendarId, year, month, day);
+                    const newEvent = {
+                        id: Date.now().toString() + '-' + Math.random().toString(36).slice(2),
+                        key: eventKey,
+                        calendarId: selectedCalendarId,
+                        year, month, day,
+                        name, time, notes
+                    };
+                    saveEvent(newEvent);
+                });
+            }
+            document.querySelectorAll('.event-card').forEach(card => card.classList.remove('editing'));
+            hideEventForm();
+            const saveBtn = document.getElementById('saveEventBtn');
+            if (saveBtn) saveBtn.textContent = 'Save Event';
+            const addBtn = document.querySelector('.add-event-btn-side');
+            if (addBtn) addBtn.style.display = '';
+            eventModalRange = isRange ? { start: { month: startMonth, day: startDay }, end: { month: endMonthVal, day: endDayValNum } } : null;
+            if (eventModalRange) {
+                openEventModal(startMonth, startDay, endMonthVal, endDayValNum);
+            } else {
+                openEventModal(startMonth, startDay);
+            }
         }
 
         function saveEventFromModalRange(year) {
@@ -4637,6 +5056,7 @@
         window.deleteAllEventsInRange = deleteAllEventsInRange;
         window.saveEventFromModal = saveEventFromModal;
         window.saveEventFromModalRange = saveEventFromModalRange;
+        window.saveEventFromForm = saveEventFromForm;
         window.closeEventModal = closeEventModal;
 
         // Close modal when clicking outside
