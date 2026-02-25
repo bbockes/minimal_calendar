@@ -2285,7 +2285,16 @@
                 </div>
                 <!-- Journal Mode UI -->
                 <div id="journalModeUI" class="mode-ui" style="display: none;">
-                    <!-- No controls needed - just click on days to journal -->
+                    <button class="create-habit-btn" id="createJournalBtn" title="Create new journal">+ New</button>
+                    <div class="custom-dropdown habit-calendar-dropdown">
+                        <button class="custom-dropdown-button" id="journalSelectButton">
+                            Select Journal
+                        </button>
+                        <div class="custom-dropdown-menu" id="journalDropdownMenu">
+                            <!-- Options will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <button class="create-habit-btn" id="editTodayJournalBtn" title="Edit today's journal">Edit Today</button>
                 </div>
             </div>
         </div>
@@ -2342,6 +2351,8 @@
         let currentMode = 'events'; // 'habits', 'events', or 'journal'
         let selectedCalendarId = null;
         let calendars = [];
+        let journals = [];
+        let selectedJournalId = null;
         let events = []; // Array to store events
         let eventDragEndCell = null; // End cell when dragging to select range in events mode
         let eventDragJustEnded = false; // Prevents click from firing after drag
@@ -2824,6 +2835,10 @@
             return `habit-${year}-${month + 1}-${day}`;
         }
 
+        function getJournalKey(journalId, year, month, day) {
+            return `journal-${journalId}-${year}-${month + 1}-${day}`;
+        }
+
         // Check if a date is marked as green (for any habit or specific habit)
         function isDateMarked(year, month, day, habitId = null) {
             if (habitId) {
@@ -3133,15 +3148,17 @@
                     events = events.filter(e => e.calendarId !== selectedCalendarId);
                 }
                 saveEvents();
-            } else if (currentMode === 'journal') {
+            } else if (currentMode === 'journal' && selectedJournalId) {
+                const journal = journals.find(j => j.id === selectedJournalId);
+                const journalName = journal ? journal.name : 'this journal';
                 confirmed = await showCustomConfirm(
-                    'Are you sure you want to clear all journal entries? This action cannot be undone.',
-                    'Clear All Journal'
+                    `Are you sure you want to clear all entries in <strong>"${journalName}"</strong>? This cannot be undone.`,
+                    'Clear All Journal Entries'
                 );
                 if (!confirmed) return;
                 const keys = Object.keys(localStorage);
                 keys.forEach(key => {
-                    if (/^2026-\d{1,2}-\d{1,2}$/.test(key)) {
+                    if (key.startsWith(`journal-${selectedJournalId}-`)) {
                         localStorage.removeItem(key);
                     }
                 });
@@ -3158,7 +3175,7 @@
             const markTodayBtn = document.getElementById('markTodayBtn');
             const canClear = (currentMode === 'habits' && selectedHabitId) ||
                 (currentMode === 'events' && selectedCalendarId) ||
-                (currentMode === 'journal');
+                (currentMode === 'journal' && selectedJournalId);
             if (clearAllBtn) {
                 clearAllBtn.style.visibility = canClear ? 'visible' : 'hidden';
                 clearAllBtn.style.pointerEvents = canClear ? 'auto' : 'none';
@@ -3619,6 +3636,184 @@
             return calendar ? getCalendarColor(calendar) : null;
         }
 
+        // Journal management
+        function loadJournals() {
+            const saved = localStorage.getItem('journals');
+            journals = saved ? JSON.parse(saved) : [];
+            journals.forEach((journal, index) => {
+                if (!journal.color) {
+                    journal.color = habitColors[index % habitColors.length];
+                }
+            });
+            if (journals.length > 0) saveJournals();
+            populateJournalDropdown();
+        }
+
+        function migrateLegacyJournalEntriesTo(journalId) {
+            const legacyKeys = Object.keys(localStorage).filter(k => /^2026-\d{1,2}-\d{1,2}$/.test(k));
+            legacyKeys.forEach(key => {
+                const val = localStorage.getItem(key);
+                const newKey = key.replace(/^2026-/, `journal-${journalId}-2026-`);
+                localStorage.setItem(newKey, val || '');
+                localStorage.removeItem(key);
+            });
+        }
+
+        function saveJournals() {
+            localStorage.setItem('journals', JSON.stringify(journals));
+            populateJournalDropdown();
+        }
+
+        function createJournal(name, color) {
+            if (!name || name.trim() === '') return;
+            const hexColor = (color && /^#[0-9A-Fa-f]{6}$/.test(color)) ? color : habitColors[journals.length % habitColors.length];
+            const newJournal = { id: Date.now().toString(), name: name.trim(), color: hexColor };
+            const isFirstJournal = journals.length === 0;
+            journals.push(newJournal);
+            if (isFirstJournal) migrateLegacyJournalEntriesTo(newJournal.id);
+            saveJournals();
+            selectedJournalId = newJournal.id;
+            const button = document.getElementById('journalSelectButton');
+            button.textContent = newJournal.name;
+            updateSelectedJournalItem();
+            updateClearAllButton();
+            renderYearView();
+        }
+
+        function deleteJournal(journalId) {
+            journals = journals.filter(j => j.id !== journalId);
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith(`journal-${journalId}-`)) localStorage.removeItem(key);
+            });
+            if (selectedJournalId === journalId) {
+                selectedJournalId = journals.length > 0 ? journals[0].id : null;
+                const button = document.getElementById('journalSelectButton');
+                button.textContent = journals.length > 0 ? journals[0].name : 'Select Journal';
+            }
+            saveJournals();
+            renderYearView();
+            updateClearAllButton();
+        }
+
+        function populateJournalDropdown() {
+            const menu = document.getElementById('journalDropdownMenu');
+            const button = document.getElementById('journalSelectButton');
+            if (!menu || !button) return;
+
+            if (journals.length > 0 && !selectedJournalId) {
+                selectedJournalId = journals[0].id;
+                button.textContent = journals[0].name;
+                updateClearAllButton();
+            }
+
+            menu.innerHTML = '';
+            const defaultItem = document.createElement('button');
+            defaultItem.className = 'custom-dropdown-item';
+            defaultItem.dataset.value = '';
+            defaultItem.textContent = journals.length === 0 ? 'Add your first journal' : 'Select Journal';
+            defaultItem.onclick = () => {
+                if (journals.length === 0) openCreateJournalModal();
+                else {
+                    selectedJournalId = null;
+                    button.textContent = 'Select Journal';
+                    updateClearAllButton();
+                    renderYearView();
+                }
+                closeJournalDropdown();
+                updateSelectedJournalItem();
+            };
+            menu.appendChild(defaultItem);
+
+            journals.forEach(journal => {
+                const item = document.createElement('button');
+                item.className = 'custom-dropdown-item';
+                item.dataset.value = journal.id;
+                const itemText = document.createElement('span');
+                itemText.className = 'custom-dropdown-item-text';
+                const colorDot = document.createElement('span');
+                colorDot.className = 'custom-dropdown-item-color';
+                colorDot.style.backgroundColor = getJournalColor(journal);
+                const journalNameSpan = document.createElement('span');
+                journalNameSpan.textContent = journal.name;
+                itemText.appendChild(colorDot);
+                itemText.appendChild(journalNameSpan);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'custom-dropdown-item-delete';
+                deleteBtn.textContent = '×';
+                deleteBtn.title = 'Delete journal';
+                deleteBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    const confirmed = await showCustomConfirm(
+                        `Are you sure you want to delete <strong>"${journal.name}"</strong>? All entries will be lost.`,
+                        'Delete Journal'
+                    );
+                    if (confirmed) { deleteJournal(journal.id); closeJournalDropdown(); }
+                };
+                item.appendChild(itemText);
+                item.appendChild(deleteBtn);
+                item.onclick = () => {
+                    selectedJournalId = journal.id;
+                    button.textContent = journal.name;
+                    closeJournalDropdown();
+                    updateSelectedJournalItem();
+                    updateClearAllButton();
+                    renderYearView();
+                };
+                menu.appendChild(item);
+            });
+
+            updateSelectedJournalItem();
+        }
+
+        function updateSelectedJournalItem() {
+            document.querySelectorAll('#journalDropdownMenu .custom-dropdown-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.value === selectedJournalId) item.classList.add('selected');
+            });
+        }
+
+        function toggleJournalDropdown() {
+            const menu = document.getElementById('journalDropdownMenu');
+            const button = document.getElementById('journalSelectButton');
+            if (menu.classList.contains('active')) {
+                menu.classList.remove('active');
+                button.classList.remove('active');
+            } else {
+                menu.classList.add('active');
+                button.classList.add('active');
+            }
+        }
+
+        function closeJournalDropdown() {
+            const menu = document.getElementById('journalDropdownMenu');
+            const button = document.getElementById('journalSelectButton');
+            menu?.classList.remove('active');
+            button?.classList.remove('active');
+        }
+
+        function getJournalColor(journal) {
+            if (!journal.color) {
+                const index = journals.indexOf(journal);
+                journal.color = habitColors[index % habitColors.length];
+                saveJournals();
+            }
+            return journal.color;
+        }
+
+        function openCreateJournalModal() {
+            const modal = document.getElementById('createHabitModal');
+            const input = document.getElementById('habitNameInput');
+            const title = modal.querySelector('h3');
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+            input.value = '';
+            input.placeholder = 'Enter journal name... (daily notes, gratitude, lessons learned, etc.)';
+            if (title) title.textContent = 'Create a New Journal';
+            const defaultColor = habitColors[journals.length % habitColors.length];
+            setCreateModalColor(defaultColor);
+            input.focus();
+        }
 
         function openCreateCalendarModal() {
             const modal = document.getElementById('createHabitModal');
@@ -3724,6 +3919,7 @@
             loadMode();
             loadHabits();
             loadCalendars();
+            loadJournals();
             loadEvents();
             updateMarkTodayButton();
             updateClearAllButton();
@@ -3840,7 +4036,37 @@
                     openCreateHabitModal();
                 }
             });
-            
+
+            const createJournalBtn = document.getElementById('createJournalBtn');
+            if (createJournalBtn) createJournalBtn.addEventListener('click', openCreateJournalModal);
+
+            const journalSelectButton = document.getElementById('journalSelectButton');
+            if (journalSelectButton) {
+                journalSelectButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleJournalDropdown();
+                });
+            }
+
+            document.addEventListener('click', (e) => {
+                const journalWrapper = document.querySelector('#journalModeUI .custom-dropdown');
+                if (journalWrapper && !journalWrapper.contains(e.target)) closeJournalDropdown();
+            });
+
+            const editTodayJournalBtn = document.getElementById('editTodayJournalBtn');
+            if (editTodayJournalBtn) {
+                editTodayJournalBtn.addEventListener('click', () => {
+                    if (!selectedJournalId) {
+                        showCustomAlert('Please select a journal first', 'Notification');
+                        return;
+                    }
+                    const now = new Date();
+                    const month = now.getFullYear() === 2026 ? now.getMonth() : 0;
+                    const day = now.getFullYear() === 2026 ? now.getDate() : 1;
+                    renderDayView(month, day);
+                });
+            }
+
             const statsBtn = document.getElementById('statsBtn');
             if (statsBtn) {
                 statsBtn.addEventListener('click', openStatsModal);
@@ -3916,6 +4142,8 @@
                     const color = getCreateModalColor();
                     if (title?.textContent === 'Create a New Habit') {
                         createHabit(name, color);
+                    } else if (title?.textContent === 'Create a New Journal') {
+                        createJournal(name, color);
                     } else {
                         createCalendar(name, color);
                     }
@@ -4311,14 +4539,15 @@
                                 }
                             }
                         }
-                    } else if (currentMode === 'journal') {
-                        // Journal mode - highlight days with journal entries
-                        const dateKey = `2026-${month + 1}-${day}`;
+                    } else if (currentMode === 'journal' && selectedJournalId) {
+                        // Journal mode - highlight days with journal entries for selected journal
+                        const dateKey = getJournalKey(selectedJournalId, 2026, month, day);
                         const journalEntry = localStorage.getItem(dateKey);
                         const hasContent = journalEntry && journalEntry.replace(/<[^>]+>/g, '').trim() !== '';
                         if (hasContent) {
-                            // Use the same green as habits mode
-                            dayRow.style.backgroundColor = '#3E7A5E';
+                            const journal = journals.find(j => j.id === selectedJournalId);
+                            const journalColor = journal ? getJournalColor(journal) : '#3E7A5E';
+                            dayRow.style.backgroundColor = journalColor;
                             dayRow.style.color = '#fff';
                             dayRow.classList.add('marked');
                         }
@@ -4405,8 +4634,11 @@
                                     await showCustomAlert('Please select a calendar first', 'Notification');
                                 }
                             } else if (currentMode === 'journal') {
-                                // Journal mode - always open day view modal
-                                renderDayView(month, day);
+                                if (selectedJournalId) {
+                                    renderDayView(month, day);
+                                } else {
+                                    showCustomAlert('Please select a journal first', 'Notification');
+                                }
                             }
                         }
                     };
@@ -4567,7 +4799,9 @@
 
             const date = new Date(2026, month, day);
             const dayName = dayNames[date.getDay()];
-            const dateKey = `2026-${month + 1}-${day}`;
+            const dateKey = currentMode === 'journal' && selectedJournalId
+                ? getJournalKey(selectedJournalId, 2026, month, day)
+                : `2026-${month + 1}-${day}`;
             
             // Get saved notes from localStorage
             const savedNotes = localStorage.getItem(dateKey) || '';
@@ -4575,7 +4809,7 @@
             const modal = document.getElementById('dayModal');
             const dayViewContent = document.getElementById('dayViewContent');
             
-            const placeholder = currentMode === 'journal' ? 'What did you do today? What did you learn?' : 'What did you do today? Learn anything new?';
+            const placeholder = currentMode === 'journal' ? 'Add your entry...' : 'What did you do today? Learn anything new?';
             const hasContent = (savedNotes || '').trim() !== '';
             const isEditMode = !hasContent;
 
@@ -4810,8 +5044,8 @@
             const data = {};
             const keys = Object.keys(localStorage);
             keys.forEach(key => {
-                if (key === 'habits' || key === 'currentMode' || key === 'calendars' || key === 'events' ||
-                    key.startsWith('habit-') || key.startsWith('calendar-') || /^2026-\d{1,2}-\d{1,2}$/.test(key)) {
+                if (key === 'habits' || key === 'currentMode' || key === 'calendars' || key === 'events' || key === 'journals' ||
+                    key.startsWith('habit-') || key.startsWith('calendar-') || key.startsWith('journal-') || /^2026-\d{1,2}-\d{1,2}$/.test(key)) {
                     data[key] = localStorage.getItem(key);
                 }
             });
@@ -4900,8 +5134,8 @@
             if (confirmed) {
                 const keys = Object.keys(localStorage);
                 keys.forEach(key => {
-                    if (key === 'habits' || key === 'currentMode' || key === 'calendars' || key === 'events' ||
-                        key.startsWith('habit-') || key.startsWith('calendar-') || /^2026-\d{1,2}-\d{1,2}$/.test(key)) {
+                    if (key === 'habits' || key === 'currentMode' || key === 'calendars' || key === 'events' || key === 'journals' ||
+                        key.startsWith('habit-') || key.startsWith('calendar-') || key.startsWith('journal-') || /^2026-\d{1,2}-\d{1,2}$/.test(key)) {
                         localStorage.removeItem(key);
                     }
                 });
@@ -5797,6 +6031,11 @@
                 }
                 if (currentMode === 'events') {
                     openCreateCalendarModal();
+                    e.preventDefault();
+                    return;
+                }
+                if (currentMode === 'journal') {
+                    openCreateJournalModal();
                     e.preventDefault();
                     return;
                 }
