@@ -104,6 +104,7 @@
             width: 100%;
             max-width: 100%;
             position: relative;
+            overflow-x: hidden;
         }
 
         /* 3-dot icon: inside #title so it scrolls with content, aligned with year via flex */
@@ -2250,6 +2251,7 @@
             transition: all 0.3s ease;
             user-select: none;
             color: #000;
+            white-space: nowrap;
         }
 
         .clear-all-btn:hover {
@@ -2414,6 +2416,20 @@
             }
         }
 
+        /* Progressive right-side button hiding — remove one at a time as viewport shrinks */
+        @media (max-width: 950px) {
+            #clearAllBtn { display: none; }
+        }
+        @media (max-width: 870px) {
+            #printCalendarBtn { display: none; }
+        }
+        @media (max-width: 790px) {
+            #highlightWeekendsBtn { display: none; }
+        }
+        @media (max-width: 720px) {
+            #atAGlanceBtn, #statsBtn { display: none; }
+        }
+
         /* Responsive: full-width stacked controls on narrow viewports */
         @media (max-width: 700px) {
             body {
@@ -2424,6 +2440,11 @@
             .habit-toggle-container {
                 gap: 10px;
                 flex-direction: column;
+                width: 100%;
+            }
+
+            .controls-row {
+                width: 100%;
             }
 
             .habit-controls-right {
@@ -2454,7 +2475,8 @@
                 width: 100%;
             }
 
-            .habit-select-wrapper .create-habit-btn {
+            .habit-select-wrapper .create-habit-btn,
+            .habit-select-wrapper .mark-today-btn {
                 width: 100%;
                 padding: 12px 16px;
                 font-size: 14px;
@@ -3951,7 +3973,7 @@
         }
 
         function setYear(year) {
-            currentYear = Math.max(2020, Math.min(2050, year));
+            currentYear = Math.max(2020, Math.min(2100, year));
             updateModeUI();
         }
 
@@ -5223,7 +5245,7 @@
             const prevYearBtn = document.getElementById('prevYearBtn');
             const nextYearBtn = document.getElementById('nextYearBtn');
             if (prevYearBtn) prevYearBtn.disabled = currentYear <= 2020;
-            if (nextYearBtn) nextYearBtn.disabled = currentYear >= 2050;
+            if (nextYearBtn) nextYearBtn.disabled = currentYear >= 2100;
             renderYearSlider();
             document.getElementById('navigation').style.display = 'none';
             
