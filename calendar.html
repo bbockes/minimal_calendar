@@ -104,7 +104,7 @@
             width: 100%;
             max-width: 100%;
             position: relative;
-            overflow-x: hidden;
+            overflow-x: clip;
         }
 
         /* 3-dot icon: inside #title so it scrolls with content, aligned with year via flex */
@@ -553,6 +553,7 @@
             padding: 15px;
             font-family: 'Work Sans', sans-serif;
             font-size: 18px;
+            line-height: 1.75;
             border: 1px solid #ddd;
             border-radius: 4px;
             outline: none;
@@ -575,7 +576,7 @@
         }
 
         .day-view .notes-display p {
-            margin-bottom: 0.5em;
+            margin-bottom: 1em;
         }
 
         .day-view .notes-display p:last-child {
