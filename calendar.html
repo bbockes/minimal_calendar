@@ -1478,6 +1478,10 @@
             display: block;
         }
 
+        .title-options-dropdown {
+            min-width: 0;
+        }
+
         .title-options-dropdown .title-options-menu {
             left: auto;
             right: 0;
@@ -1527,6 +1531,150 @@
             border-top: 1px solid #e5e5e5;
             margin: 4px 0;
         }
+
+        /* ---- Search ---- */
+        .search-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 600;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 80px;
+        }
+
+        .search-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 36px rgba(0,0,0,0.18);
+            width: 700px;
+            max-width: 92vw;
+            overflow: hidden;
+        }
+
+        .search-input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 18px;
+            background: transparent;
+            color: #111;
+        }
+
+        .search-input::placeholder { color: #bbb; }
+
+        .search-close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 22px;
+            color: #bbb;
+            line-height: 1;
+            padding: 0 2px;
+            transition: color 0.15s;
+        }
+
+        .search-close-btn:hover { color: #555; }
+
+        .search-results-list {
+            max-height: 520px;
+            overflow-y: auto;
+        }
+
+        .search-results-list:not(:empty) {
+            padding-bottom: 8px;
+        }
+
+        .search-group-label {
+            padding: 12px 20px 5px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #bbb;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: 'Work Sans', sans-serif;
+            transition: background 0.1s;
+        }
+
+        .search-result-item:hover,
+        .search-result-item.active { background: #f5f5f5; }
+
+        .search-result-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .search-result-date {
+            font-size: 13px;
+            color: #999;
+            flex-shrink: 0;
+            width: 52px;
+        }
+
+        .search-result-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-result-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #111;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-snippet {
+            font-size: 13px;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .search-result-meta {
+            font-size: 13px;
+            color: #bbb;
+            flex-shrink: 0;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-empty {
+            padding: 28px 16px;
+            text-align: center;
+            color: #bbb;
+            font-size: 14px;
+        }
+        /* ---- End Search ---- */
 
         .custom-dropdown-item-color {
             width: 12px;
@@ -2420,6 +2568,13 @@
     <div class="calendar-page">
         <div id="title">
             <span>2026</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+            <button class="title-circle-btn" id="searchBtn" title="Search (/)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="11" cy="11" r="7" stroke="#333" stroke-width="2"/>
+                    <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
             <div class="custom-dropdown title-options-dropdown" id="titleOptionsDropdown">
                 <button class="title-circle-btn" id="optionsMenuButton" title="Data &amp; backup">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2436,6 +2591,7 @@
                     <button type="button" class="custom-dropdown-item" id="sendFeedbackBtn">Send feedback</button>
                 </div>
             </div>
+            </div><!-- end search+options group -->
         </div>
         <div class="habit-toggle-container">
             <div class="habit-select-wrapper">
@@ -2505,6 +2661,21 @@
     <div class="navigation" id="navigation" style="display: none;">
         <button class="nav-btn" id="prevBtn">← Previous Month</button>
         <button class="nav-btn" id="nextBtn">Next Month →</button>
+    </div>
+
+    <!-- Search overlay -->
+    <div id="searchOverlay" class="search-overlay" style="display:none">
+        <div class="search-card">
+            <div class="search-input-row">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+                    <circle cx="11" cy="11" r="7" stroke="#aaa" stroke-width="2"/>
+                    <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#aaa" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search…" autocomplete="off" spellcheck="false">
+                <button id="searchCloseBtn" class="search-close-btn" title="Close (Esc)">×</button>
+            </div>
+            <div id="searchResultsList" class="search-results-list"></div>
+        </div>
     </div>
 
     <div class="modal-overlay" id="dayModal">
@@ -3668,6 +3839,7 @@
             const modeButton = document.getElementById('modeSelectButton');
             const statsBtn = document.getElementById('statsBtn');
             const highlightWeekendsBtn = document.getElementById('highlightWeekendsBtn');
+            const searchBtn = document.getElementById('searchBtn');
             
             // Hide all mode UIs first
             habitsUI.style.display = 'none';
@@ -3679,16 +3851,19 @@
                 modeButton.textContent = 'Habits';
                 if (statsBtn) statsBtn.style.display = '';
                 if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = '';
+                if (searchBtn) searchBtn.style.display = 'none';
             } else if (currentMode === 'events') {
                 eventsUI.style.display = 'flex';
                 modeButton.textContent = 'Events';
                 if (statsBtn) statsBtn.style.display = 'none';
                 if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = '';
+                if (searchBtn) searchBtn.style.display = '';
             } else if (currentMode === 'journal') {
                 journalUI.style.display = 'flex';
                 modeButton.textContent = 'Journal';
                 if (statsBtn) statsBtn.style.display = 'none';
                 if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = 'none';
+                if (searchBtn) searchBtn.style.display = '';
             }
             
             // Update selected item in mode dropdown
@@ -5790,6 +5965,210 @@
             }
         }
 
+        // ---- Search ----
+        let searchResults = [];
+        let searchActiveIndex = -1;
+
+        function openSearch() {
+            const overlay = document.getElementById('searchOverlay');
+            overlay.style.display = 'flex';
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            input.placeholder = getSearchPlaceholder();
+            document.getElementById('searchResultsList').innerHTML = '';
+            searchResults = [];
+            searchActiveIndex = -1;
+            setTimeout(() => input.focus(), 30);
+        }
+
+        function getSearchPlaceholder() {
+            if (currentMode === 'events') {
+                if (selectedCalendarId === 'all') return 'Search all events…';
+                const cal = calendars.find(c => c.id === selectedCalendarId);
+                return cal ? `Search ${cal.name}…` : 'Search events…';
+            } else if (currentMode === 'journal') {
+                const journal = journals.find(j => j.id === selectedJournalId);
+                return journal ? `Search ${journal.name}…` : 'Search journal…';
+            }
+            return 'Search…';
+        }
+
+        function closeSearch() {
+            document.getElementById('searchOverlay').style.display = 'none';
+            searchActiveIndex = -1;
+        }
+
+        function performSearch(query) {
+            query = query.trim().toLowerCase();
+            searchResults = [];
+            searchActiveIndex = -1;
+
+            if (!query) {
+                document.getElementById('searchResultsList').innerHTML = '';
+                return;
+            }
+
+            if (currentMode === 'events') {
+                // Scope to selected calendar (or all calendars if 'all' is selected)
+                events.forEach(e => {
+                    if (e.year !== 2026) return;
+                    if (selectedCalendarId !== 'all' && e.calendarId !== selectedCalendarId) return;
+                    const text = [e.name, e.location, e.time].filter(Boolean).join(' ').toLowerCase();
+                    if (!text.includes(query)) return;
+                    const cal = calendars.find(c => c.id === e.calendarId);
+                    searchResults.push({
+                        type: 'event',
+                        month: e.month,
+                        day: e.day,
+                        title: e.name || 'Untitled Event',
+                        meta: cal ? cal.name : '',
+                        calendarId: e.calendarId,
+                        color: cal ? getCalendarColor(cal) : '#157A6E',
+                    });
+                });
+            } else if (currentMode === 'journal' && selectedJournalId) {
+                // Scope to the selected journal only
+                const journal = journals.find(j => j.id === selectedJournalId);
+                if (journal) {
+                    for (let month = 0; month < 12; month++) {
+                        const days = new Date(2026, month + 1, 0).getDate();
+                        for (let day = 1; day <= days; day++) {
+                            const key = getJournalKey(journal.id, 2026, month, day);
+                            const raw = localStorage.getItem(key);
+                            if (!raw) continue;
+                            const plain = raw.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ');
+                            if (!plain.toLowerCase().includes(query)) continue;
+                            const idx = plain.toLowerCase().indexOf(query);
+                            const start = Math.max(0, idx - 35);
+                            const snippet = (start > 0 ? '…' : '') +
+                                plain.slice(start, idx + query.length + 50).trim() +
+                                (idx + query.length + 50 < plain.length ? '…' : '');
+                            searchResults.push({
+                                type: 'journal',
+                                month,
+                                day,
+                                title: journal.name,
+                                snippet: snippet.replace(/\n/g, ' '),
+                                journalId: journal.id,
+                                color: getJournalColor(journal),
+                            });
+                        }
+                    }
+                }
+            }
+
+            searchResults.sort((a, b) => a.month !== b.month ? a.month - b.month : a.day - b.day);
+            renderSearchResults();
+        }
+
+        function renderSearchResults() {
+            const list = document.getElementById('searchResultsList');
+
+            if (searchResults.length === 0) {
+                const msg = currentMode === 'habits'
+                    ? 'Switch to Events or Journal mode to search'
+                    : 'No results found';
+                list.innerHTML = `<div class="search-empty">${msg}</div>`;
+                return;
+            }
+
+            const eventResults  = searchResults.filter(r => r.type === 'event');
+            const journalResults = searchResults.filter(r => r.type === 'journal');
+
+            let html = '';
+
+            if (eventResults.length > 0) {
+                html += '<div class="search-group-label">Events</div>';
+                eventResults.forEach(r => {
+                    const i = searchResults.indexOf(r);
+                    const dateStr = `${monthNames[r.month].slice(0, 3)} ${r.day}`;
+                    html += `<button class="search-result-item" data-idx="${i}">
+                        <span class="search-result-dot" style="background:${r.color}"></span>
+                        <span class="search-result-date">${dateStr}</span>
+                        <div class="search-result-body">
+                            <div class="search-result-title">${escapeHtml(r.title)}</div>
+                        </div>
+                        <span class="search-result-meta">${escapeHtml(r.meta)}</span>
+                    </button>`;
+                });
+            }
+
+            if (journalResults.length > 0) {
+                html += '<div class="search-group-label">Journal</div>';
+                journalResults.forEach(r => {
+                    const i = searchResults.indexOf(r);
+                    const dateStr = `${monthNames[r.month].slice(0, 3)} ${r.day}`;
+                    html += `<button class="search-result-item" data-idx="${i}">
+                        <span class="search-result-dot" style="background:${r.color}"></span>
+                        <span class="search-result-date">${dateStr}</span>
+                        <div class="search-result-body">
+                            <div class="search-result-title">${escapeHtml(r.title)}</div>
+                            <div class="search-result-snippet">${escapeHtml(r.snippet || '')}</div>
+                        </div>
+                    </button>`;
+                });
+            }
+
+            list.innerHTML = html;
+
+            list.querySelectorAll('.search-result-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    navigateToResult(searchResults[parseInt(btn.dataset.idx)]);
+                });
+                btn.addEventListener('mouseenter', () => {
+                    list.querySelectorAll('.search-result-item').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    searchActiveIndex = Array.from(list.querySelectorAll('.search-result-item')).indexOf(btn);
+                });
+            });
+        }
+
+        function navigateToResult(result) {
+            closeSearch();
+            if (result.type === 'event') {
+                openEventModal(result.month, result.day);
+            } else {
+                renderDayView(result.month, result.day);
+            }
+        }
+
+        // Wire up search button and input
+        document.getElementById('searchBtn').addEventListener('click', openSearch);
+        document.getElementById('searchCloseBtn').addEventListener('click', closeSearch);
+        document.getElementById('searchOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('searchOverlay')) closeSearch();
+        });
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            performSearch(e.target.value);
+        });
+        document.getElementById('searchInput').addEventListener('keydown', (e) => {
+            const items = document.querySelectorAll('#searchResultsList .search-result-item');
+            if (e.key === 'Escape') {
+                closeSearch();
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                searchActiveIndex = Math.min(searchActiveIndex + 1, items.length - 1);
+                items.forEach((el, i) => el.classList.toggle('active', i === searchActiveIndex));
+                items[searchActiveIndex]?.scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                searchActiveIndex = Math.max(searchActiveIndex - 1, 0);
+                items.forEach((el, i) => el.classList.toggle('active', i === searchActiveIndex));
+                items[searchActiveIndex]?.scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter' && searchActiveIndex >= 0) {
+                items[searchActiveIndex]?.click();
+            }
+        });
+
+        // Press "/" anywhere (when not typing) to open search
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable) {
+                e.preventDefault();
+                openSearch();
+            }
+        });
+        // ---- End Search ----
+
         // Export all calendar data to a JSON file (habits, events, calendars, journal, marked dates)
         function exportData() {
             const data = {};
@@ -6318,7 +6697,6 @@
                     </div>
                     <div class="event-form-container">
                         ${isRange ? `<div style="font-size: 14px; color: #666; margin-bottom: 10px;">Add event to ${dayCount} days</div>` : ''}
-                        ${selectedCalendarId === 'all' ? `<div style="font-size: 14px; color: #666; margin-bottom: 10px;">Select a calendar to add events</div>` : ''}
                         <button class="add-event-btn-side" id="addEventBtn" onclick="showEventForm()">+ Add New Event</button>
                         <div class="event-form-section" id="eventFormSection">
                             <div id="eventFormTitle" style="font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #333;">New Event</div>
@@ -6348,7 +6726,7 @@
                                     </div>
                                 </div>
                                 <div style="flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 8px;">
-                                    <label>End Date (optional)</label>
+                                    <label>End Date</label>
                                     <div class="date-picker" id="eventEndDatePicker">
                                         <input type="hidden" id="eventEndMonth" value="${isRange ? endMonth : ''}" />
                                         <input type="hidden" id="eventEndDay" value="${isRange ? endDay : ''}" />
@@ -6366,7 +6744,7 @@
                                 <input type="text" id="eventTime" placeholder="e.g., 2:00 PM, all day, etc." />
                             </div>
                             <div class="event-field">
-                                <label for="eventLocation">Location (optional)</label>
+                                <label for="eventLocation">Location</label>
                                 <input type="text" id="eventLocation" placeholder="e.g., Conference Room A, Zoom, etc." />
                             </div>
                             <div class="event-field">
