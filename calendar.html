@@ -455,10 +455,10 @@
         }
 
         .day-view {
-            width: 70vw;
-            height: 75vh;
-            max-width: 900px;
-            min-height: 500px;
+            width: 90vw;
+            max-width: 800px;
+            height: 80vh;
+            min-height: 450px;
             background: #fff;
             border: 1px solid #ddd;
             padding: 40px;
@@ -690,15 +690,16 @@
         }
 
         /* At a Glance Modal - fixed size, slightly lower, list scrolls internally */
-        #atAGlanceModal {
+        #atAGlanceModal,
+        #journalAtAGlanceModal {
             align-items: flex-start;
             padding-top: 60px;
         }
         .at-a-glance-modal {
             width: 90vw;
-            max-width: 750px;
-            height: 70vh;
-            min-height: 320px;
+            max-width: 800px;
+            height: 80vh;
+            min-height: 450px;
             background: #fff;
             border: 1px solid #ddd;
             padding: 32px;
@@ -742,6 +743,43 @@
             background: #157A6E;
             color: #fff;
         }
+        .at-a-glance-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .at-a-glance-nav.hidden {
+            display: none;
+        }
+        .at-a-glance-nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            border: 2px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .at-a-glance-nav-btn svg {
+            flex-shrink: 0;
+        }
+        .at-a-glance-nav-btn:hover {
+            border-color: #157A6E;
+            background: color-mix(in srgb, #157A6E 8%, white);
+        }
+        .at-a-glance-period {
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+            width: 220px;
+            text-align: center;
+            flex-shrink: 0;
+        }
         .at-a-glance-list {
             flex: 1;
             overflow-y: auto;
@@ -782,13 +820,23 @@
             color: #999;
             font-size: 16px;
         }
+        .at-a-glance-item-preview {
+            font-size: 14px;
+            color: #666;
+            margin-top: 6px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
         /* Event View Modal */
         .event-view {
-            width: 95vw;
-            height: 95vh;
-            max-width: 1400px;
-            min-height: 700px;
+            width: 90vw;
+            max-width: 1000px;
+            height: 80vh;
+            min-height: 450px;
             background: #fff;
             border: 1px solid #ddd;
             padding: 40px;
@@ -1570,8 +1618,8 @@
             background: #fff;
             border-radius: 8px;
             padding: 40px;
-            max-width: 600px;
-            width: 90%;
+            width: 90vw;
+            max-width: 800px;
             max-height: 80vh;
             overflow-y: auto;
             position: relative;
@@ -1638,9 +1686,9 @@
         }
 
         #shortcutsModal .stats-modal-content {
-            max-width: 950px;
-            width: 92%;
-            max-height: 88vh;
+            width: 90vw;
+            max-width: 800px;
+            max-height: 80vh;
         }
 
         .stats-section {
@@ -1702,8 +1750,8 @@
 
         .create-habit-content {
             background: #fff;
-            width: 55vw;
-            max-width: 770px;
+            width: 90vw;
+            max-width: 600px;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -2030,8 +2078,8 @@
 
         .custom-modal {
             background: #fff;
-            width: 55vw;
-            max-width: 770px;
+            width: 90vw;
+            max-width: 600px;
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -2412,7 +2460,7 @@
         </div>
         <div class="habit-controls-right">
             <button class="create-habit-btn" id="statsBtn">Stats</button>
-            <button class="create-habit-btn" id="atAGlanceBtn" title="View all upcoming events at a glance">At a Glance</button>
+            <button class="create-habit-btn" id="atAGlanceBtn" title="View events or journal entries at a glance">At a Glance</button>
             <button class="create-habit-btn" id="highlightWeekendsBtn" title="Highlight weekends (Saturdays and Sundays)">Weekends</button>
             <button class="create-habit-btn" id="printCalendarBtn" title="Print calendar as PDF">Print</button>
             <button class="clear-all-btn" id="clearAllBtn" title="Clear all marked dates">Clear All</button>
@@ -2433,7 +2481,7 @@
         </div>
     </div>
 
-    <!-- At a Glance Modal (upcoming events) -->
+    <!-- At a Glance Modal (events) -->
     <div class="modal-overlay" id="atAGlanceModal">
         <div class="at-a-glance-modal" id="atAGlanceContent">
             <button class="modal-close" onclick="closeAtAGlanceModal()">×</button>
@@ -2444,9 +2492,45 @@
                     <button type="button" class="at-a-glance-filter" data-filter="month">Month</button>
                     <button type="button" class="at-a-glance-filter" data-filter="year">Year</button>
                 </div>
+                <div class="at-a-glance-nav" id="atAGlanceNav">
+                    <button type="button" class="at-a-glance-nav-btn" id="atAGlancePrevBtn" title="Previous period">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <span class="at-a-glance-period" id="atAGlancePeriod"></span>
+                    <button type="button" class="at-a-glance-nav-btn" id="atAGlanceNextBtn" title="Next period">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
             </div>
             <div class="at-a-glance-list" id="atAGlanceList">
                 <!-- Events populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Journal At a Glance Modal -->
+    <div class="modal-overlay" id="journalAtAGlanceModal">
+        <div class="at-a-glance-modal" id="journalAtAGlanceContent">
+            <button class="modal-close" onclick="closeJournalAtAGlanceModal()">×</button>
+            <div class="at-a-glance-header">
+                <h2>Journal Entries</h2>
+                <div class="at-a-glance-filters" id="journalAtAGlanceFilters">
+                    <button type="button" class="at-a-glance-filter active" data-filter="week">Week</button>
+                    <button type="button" class="at-a-glance-filter" data-filter="month">Month</button>
+                    <button type="button" class="at-a-glance-filter" data-filter="year">Year</button>
+                </div>
+                <div class="at-a-glance-nav" id="journalAtAGlanceNav">
+                    <button type="button" class="at-a-glance-nav-btn" id="journalAtAGlancePrevBtn" title="Previous period">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <span class="at-a-glance-period" id="journalAtAGlancePeriod"></span>
+                    <button type="button" class="at-a-glance-nav-btn" id="journalAtAGlanceNextBtn" title="Next period">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="at-a-glance-list" id="journalAtAGlanceList">
+                <!-- Journal entries populated by JS -->
             </div>
         </div>
     </div>
@@ -3295,7 +3379,7 @@
             }
             const atAGlanceBtn = document.getElementById('atAGlanceBtn');
             if (atAGlanceBtn) {
-                const showAtAGlance = currentMode === 'events';
+                const showAtAGlance = currentMode === 'events' || currentMode === 'journal';
                 atAGlanceBtn.style.display = showAtAGlance ? '' : 'none';
             }
             if (markTodayBtn) {
@@ -4150,11 +4234,19 @@
             const atAGlanceBtn = document.getElementById('atAGlanceBtn');
             if (atAGlanceBtn) {
                 atAGlanceBtn.addEventListener('click', () => {
-                    if (!selectedCalendarId) {
-                        showCustomAlert('Please select a calendar first', 'Notification');
-                        return;
+                    if (currentMode === 'events') {
+                        if (!selectedCalendarId) {
+                            showCustomAlert('Please select a calendar first', 'Notification');
+                            return;
+                        }
+                        openAtAGlanceModal();
+                    } else if (currentMode === 'journal') {
+                        if (!selectedJournalId) {
+                            showCustomAlert('Please select a journal first', 'Notification');
+                            return;
+                        }
+                        openJournalAtAGlanceModal();
                     }
-                    openAtAGlanceModal();
                 });
             }
 
@@ -4173,9 +4265,59 @@
                         atAGlanceModal.querySelectorAll('.at-a-glance-filter').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
                         atAGlanceFilter = btn.dataset.filter;
+                        atAGlanceOffset = 0;
                         renderAtAGlanceList();
                     });
                 });
+                const atAGlancePrevBtn = document.getElementById('atAGlancePrevBtn');
+                const atAGlanceNextBtn = document.getElementById('atAGlanceNextBtn');
+                if (atAGlancePrevBtn) {
+                    atAGlancePrevBtn.addEventListener('click', () => {
+                        atAGlanceOffset--;
+                        renderAtAGlanceList();
+                    });
+                }
+                if (atAGlanceNextBtn) {
+                    atAGlanceNextBtn.addEventListener('click', () => {
+                        atAGlanceOffset++;
+                        renderAtAGlanceList();
+                    });
+                }
+            }
+
+            const journalAtAGlanceModal = document.getElementById('journalAtAGlanceModal');
+            if (journalAtAGlanceModal) {
+                let journalAtAGlanceMouseDownTarget = null;
+                journalAtAGlanceModal.addEventListener('mousedown', (e) => { journalAtAGlanceMouseDownTarget = e.target; });
+                journalAtAGlanceModal.addEventListener('click', (e) => {
+                    if (e.target === journalAtAGlanceModal && journalAtAGlanceMouseDownTarget === journalAtAGlanceModal) {
+                        closeJournalAtAGlanceModal();
+                    }
+                });
+                journalAtAGlanceModal.querySelectorAll('#journalAtAGlanceFilters .at-a-glance-filter').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        journalAtAGlanceModal.querySelectorAll('#journalAtAGlanceFilters .at-a-glance-filter').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        journalAtAGlanceFilter = btn.dataset.filter;
+                        journalAtAGlanceOffset = 0;
+                        renderJournalAtAGlanceList();
+                    });
+                });
+                const journalAtAGlancePrevBtn = document.getElementById('journalAtAGlancePrevBtn');
+                const journalAtAGlanceNextBtn = document.getElementById('journalAtAGlanceNextBtn');
+                if (journalAtAGlancePrevBtn) {
+                    journalAtAGlancePrevBtn.addEventListener('click', () => {
+                        journalAtAGlanceOffset--;
+                        renderJournalAtAGlanceList();
+                    });
+                }
+                if (journalAtAGlanceNextBtn) {
+                    journalAtAGlanceNextBtn.addEventListener('click', () => {
+                        journalAtAGlanceOffset++;
+                        renderJournalAtAGlanceList();
+                    });
+                }
             }
 
             const highlightWeekendsBtn = document.getElementById('highlightWeekendsBtn');
@@ -5546,31 +5688,44 @@
         }
 
         let atAGlanceFilter = 'week';
+        let atAGlanceOffset = 0; // 0 = current, 1 = next, -1 = prev
 
-        function getUpcomingEventsInRange(filter) {
+        function getUpcomingEventsInRange(filter, offset) {
             const year = 2026;
             const now = new Date();
             const todayMonth = now.getFullYear() === year ? now.getMonth() : 0;
             const todayDay = now.getFullYear() === year ? now.getDate() : 1;
             const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
 
-            let endMonth, endDay;
+            let startMonth, startDay, endMonth, endDay;
             if (filter === 'week') {
-                const endDate = new Date(year, todayMonth, todayDay + 6);
+                const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
+                const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
+                startMonth = startDate.getMonth();
+                startDay = startDate.getDate();
                 endMonth = endDate.getMonth();
                 endDay = endDate.getDate();
             } else if (filter === 'month') {
-                endMonth = todayMonth;
-                endDay = daysInMonth(todayMonth);
+                const m = todayMonth + offset;
+                if (m < 0 || m > 11) {
+                    return []; // Outside 2026
+                }
+                startMonth = m;
+                startDay = offset === 0 ? todayDay : 1;
+                endMonth = m;
+                endDay = daysInMonth(m);
             } else {
+                if (offset !== 0) return [];
+                startMonth = todayMonth;
+                startDay = todayDay;
                 endMonth = 11;
                 endDay = 31;
             }
 
             const inRange = (e) => {
                 if (e.year !== year) return false;
-                if (e.month < todayMonth) return false;
-                if (e.month === todayMonth && e.day < todayDay) return false;
+                if (e.month < startMonth) return false;
+                if (e.month === startMonth && e.day < startDay) return false;
                 if (e.month > endMonth) return false;
                 if (e.month === endMonth && e.day > endDay) return false;
                 return true;
@@ -5586,12 +5741,40 @@
             });
         }
 
+        function getAtAGlancePeriodLabel(filter, offset) {
+            const year = 2026;
+            const now = new Date();
+            const todayMonth = now.getFullYear() === year ? now.getMonth() : 0;
+            const todayDay = now.getFullYear() === year ? now.getDate() : 1;
+
+            if (filter === 'week') {
+                const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
+                const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
+                return `${monthNames[startDate.getMonth()]} ${startDate.getDate()}–${monthNames[endDate.getMonth()]} ${endDate.getDate()}, ${year}`;
+            }
+            if (filter === 'month') {
+                const m = todayMonth + offset;
+                if (m < 0 || m > 11) return '';
+                return `${monthNames[m]} ${year}`;
+            }
+            return `${year}`;
+        }
+
         function renderAtAGlanceList() {
             const listEl = document.getElementById('atAGlanceList');
             if (!listEl) return;
-            const upcoming = getUpcomingEventsInRange(atAGlanceFilter);
+
+            const navEl = document.getElementById('atAGlanceNav');
+            const periodEl = document.getElementById('atAGlancePeriod');
+
+            const showNav = atAGlanceFilter === 'week' || atAGlanceFilter === 'month';
+            if (navEl) navEl.classList.toggle('hidden', !showNav);
+            if (periodEl) periodEl.textContent = getAtAGlancePeriodLabel(atAGlanceFilter, atAGlanceOffset);
+
+            const upcoming = getUpcomingEventsInRange(atAGlanceFilter, atAGlanceOffset);
+            const periodLabel = getAtAGlancePeriodLabel(atAGlanceFilter, atAGlanceOffset);
             if (upcoming.length === 0) {
-                listEl.innerHTML = `<div class="at-a-glance-empty">No upcoming events in this ${atAGlanceFilter}</div>`;
+                listEl.innerHTML = `<div class="at-a-glance-empty">No events in ${periodLabel || ('this ' + atAGlanceFilter)}</div>`;
                 return;
             }
             listEl.innerHTML = upcoming.map(e => {
@@ -5617,6 +5800,7 @@
         function openAtAGlanceModal() {
             const modal = document.getElementById('atAGlanceModal');
             if (!modal) return;
+            atAGlanceOffset = 0;
             renderAtAGlanceList();
             modal.classList.add('active');
             document.body.classList.add('modal-open');
@@ -5624,6 +5808,129 @@
 
         function closeAtAGlanceModal() {
             const modal = document.getElementById('atAGlanceModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        let journalAtAGlanceFilter = 'week';
+        let journalAtAGlanceOffset = 0;
+
+        function getJournalEntriesInRange(filter, offset) {
+            if (!selectedJournalId) return [];
+            const year = 2026;
+            const now = new Date();
+            const todayMonth = now.getFullYear() === year ? now.getMonth() : 0;
+            const todayDay = now.getFullYear() === year ? now.getDate() : 1;
+            const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
+
+            let startMonth, startDay, endMonth, endDay;
+            if (filter === 'week') {
+                const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
+                const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
+                startMonth = startDate.getMonth();
+                startDay = startDate.getDate();
+                endMonth = endDate.getMonth();
+                endDay = endDate.getDate();
+            } else if (filter === 'month') {
+                const m = todayMonth + offset;
+                if (m < 0 || m > 11) return [];
+                startMonth = m;
+                startDay = offset === 0 ? todayDay : 1;
+                endMonth = m;
+                endDay = daysInMonth(m);
+            } else {
+                if (offset !== 0) return [];
+                startMonth = 0;
+                startDay = 1;
+                endMonth = 11;
+                endDay = 31;
+            }
+
+            const entries = [];
+            for (let month = startMonth; month <= endMonth; month++) {
+                const dayStart = (month === startMonth) ? startDay : 1;
+                const dayEnd = (month === endMonth) ? endDay : daysInMonth(month);
+                for (let day = dayStart; day <= dayEnd; day++) {
+                    const key = getJournalKey(selectedJournalId, year, month, day);
+                    const raw = localStorage.getItem(key) || '';
+                    const plain = raw.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+                    if (plain) {
+                        entries.push({ month, day, raw, plain });
+                    }
+                }
+            }
+            return entries.sort((a, b) => {
+                if (a.month !== b.month) return a.month - b.month;
+                return a.day - b.day;
+            });
+        }
+
+        function getJournalAtAGlancePeriodLabel(filter, offset) {
+            const year = 2026;
+            const now = new Date();
+            const todayMonth = now.getFullYear() === year ? now.getMonth() : 0;
+            const todayDay = now.getFullYear() === year ? now.getDate() : 1;
+
+            if (filter === 'week') {
+                const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
+                const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
+                return `${monthNames[startDate.getMonth()]} ${startDate.getDate()}–${monthNames[endDate.getMonth()]} ${endDate.getDate()}, ${year}`;
+            }
+            if (filter === 'month') {
+                const m = todayMonth + offset;
+                if (m < 0 || m > 11) return '';
+                return `${monthNames[m]} ${year}`;
+            }
+            return `${year}`;
+        }
+
+        function renderJournalAtAGlanceList() {
+            const listEl = document.getElementById('journalAtAGlanceList');
+            if (!listEl) return;
+
+            const navEl = document.getElementById('journalAtAGlanceNav');
+            const periodEl = document.getElementById('journalAtAGlancePeriod');
+
+            const showNav = journalAtAGlanceFilter === 'week' || journalAtAGlanceFilter === 'month';
+            if (navEl) navEl.classList.toggle('hidden', !showNav);
+            if (periodEl) periodEl.textContent = getJournalAtAGlancePeriodLabel(journalAtAGlanceFilter, journalAtAGlanceOffset);
+
+            const entries = getJournalEntriesInRange(journalAtAGlanceFilter, journalAtAGlanceOffset);
+            const periodLabel = getJournalAtAGlancePeriodLabel(journalAtAGlanceFilter, journalAtAGlanceOffset);
+            if (entries.length === 0) {
+                listEl.innerHTML = `<div class="at-a-glance-empty">No journal entries in ${periodLabel || ('this ' + journalAtAGlanceFilter)}</div>`;
+                return;
+            }
+            listEl.innerHTML = entries.map(e => {
+                const preview = e.plain.length > 120 ? e.plain.slice(0, 120) + '…' : e.plain;
+                return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}">
+                    <div class="at-a-glance-item-title">${monthNames[e.month]} ${e.day}, 2026</div>
+                    <div class="at-a-glance-item-preview">${escapeHtml(preview)}</div>
+                </div>`;
+            }).join('');
+            listEl.querySelectorAll('.at-a-glance-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const month = parseInt(item.dataset.month, 10);
+                    const day = parseInt(item.dataset.day, 10);
+                    closeJournalAtAGlanceModal();
+                    renderDayView(month, day);
+                });
+            });
+        }
+
+        function openJournalAtAGlanceModal() {
+            const modal = document.getElementById('journalAtAGlanceModal');
+            if (!modal) return;
+            journalAtAGlanceOffset = 0;
+            renderJournalAtAGlanceList();
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeJournalAtAGlanceModal() {
+            const modal = document.getElementById('journalAtAGlanceModal');
             if (modal) {
                 modal.classList.remove('active');
                 document.body.classList.remove('modal-open');
@@ -6461,6 +6768,12 @@
                     const atAGlanceModal = document.getElementById('atAGlanceModal');
                     if (atAGlanceModal && atAGlanceModal.classList.contains('active')) {
                         closeAtAGlanceModal();
+                        e.preventDefault();
+                        return;
+                    }
+                    const journalAtAGlanceModal = document.getElementById('journalAtAGlanceModal');
+                    if (journalAtAGlanceModal && journalAtAGlanceModal.classList.contains('active')) {
+                        closeJournalAtAGlanceModal();
                         e.preventDefault();
                         return;
                     }
