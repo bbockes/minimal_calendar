@@ -18,7 +18,7 @@
     "appId": "com.minimal-calendar",
     "productName": "Minimal Calendar",
     "directories": { "output": "dist" },
-    "files": ["main.js", "calendar.html"],
+    "files": ["main.js", "preload.js", "calendar.html"],
     "mac": {
       "category": "public.app-category.productivity",
       "icon": null

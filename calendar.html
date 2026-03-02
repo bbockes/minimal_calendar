@@ -75,13 +75,13 @@
             align-items: center;
             justify-content: center;
             padding: 0;
-            background: #E8E0F0;
+            background: #e0e0e0;
             transition: background-color 0.2s;
             flex-shrink: 0;
         }
 
         .title-circle-btn:hover {
-            background: #D4C4E8;
+            background: #c8c8c8;
         }
 
         .title-circle-btn svg {
@@ -812,7 +812,7 @@
         .at-a-glance-item-time {
             font-size: 13px;
             color: #888;
-            margin-top: 2px;
+            margin-top: 8px;
         }
         .at-a-glance-empty {
             padding: 40px;
@@ -2787,17 +2787,19 @@
             const saved = localStorage.getItem('habits');
             habits = saved ? JSON.parse(saved) : [];
             
-            // Migrate old purple color to new palette purple
+            // Migrate old purple color to new palette purple; restore grey back to purple
             const oldPurple = '#2D2343';
             const newPurple = '#54457F';
+            const greyColor = '#6b6b6b';
             
             // Assign colors to existing habits that don't have them
             habits.forEach((habit, index) => {
                 if (!habit.color) {
                     habit.color = habitColors[index % habitColors.length];
                 } else if (habit.color === oldPurple) {
-                    // Migrate old purple to new lighter purple
                     habit.color = newPurple;
+                } else if (habit.color === greyColor) {
+                    habit.color = newPurple; // Restore purple (was wrongly changed to grey)
                 }
             });
             if (habits.length > 0) {
@@ -3706,6 +3708,14 @@
         function loadCalendars() {
             const saved = localStorage.getItem('calendars');
             calendars = saved ? JSON.parse(saved) : [];
+            let needsSave = false;
+            calendars.forEach((cal) => {
+                if (cal.color === '#6b6b6b') {
+                    cal.color = '#54457F'; // Restore purple
+                    needsSave = true;
+                }
+            });
+            if (needsSave) saveCalendars();
             populateCalendarDropdown();
         }
 
@@ -3994,12 +4004,17 @@
         function loadJournals() {
             const saved = localStorage.getItem('journals');
             journals = saved ? JSON.parse(saved) : [];
+            let needsSave = false;
             journals.forEach((journal, index) => {
                 if (!journal.color) {
                     journal.color = habitColors[index % habitColors.length];
+                    needsSave = true;
+                } else if (journal.color === '#6b6b6b') {
+                    journal.color = '#54457F'; // Restore purple
+                    needsSave = true;
                 }
             });
-            if (journals.length > 0) saveJournals();
+            if (journals.length > 0 && needsSave) saveJournals();
             populateJournalDropdown();
         }
 
@@ -5751,12 +5766,17 @@
             </head><body${bodyClass}>
                 <p class="print-tip">Tip: Use ${pageOrientation} orientation and uncheck "Headers and footers" in the print dialog for a cleaner print.</p>
                 <div class="print-first-page">${headerHtml}${clone.outerHTML}</div>${keyHtml}${singleCalendarEventsHtml}${journalEntriesHtml}</body></html>`;
-            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const win = window.open(url, '_blank', 'noopener,noreferrer');
-            URL.revokeObjectURL(url);
-            if (prevView === 'day') renderDayView(prevMonth, prevDay);
-            if (win) setTimeout(() => win.print(), 500);
+            if (window.electronAPI?.printHtml) {
+                if (prevView === 'day') renderDayView(prevMonth, prevDay);
+                window.electronAPI.printHtml(html);
+            } else {
+                const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const win = window.open(url, '_blank', 'noopener,noreferrer');
+                URL.revokeObjectURL(url);
+                if (prevView === 'day') renderDayView(prevMonth, prevDay);
+                if (win) setTimeout(() => win.print(), 500);
+            }
         }
 
         // Export all calendar data to a JSON file (habits, events, calendars, journal, marked dates)
