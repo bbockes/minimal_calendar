@@ -833,13 +833,13 @@
 
         /* Event View Modal */
         .event-view {
-            width: 90vw;
-            max-width: 1000px;
-            height: 80vh;
-            min-height: 450px;
+            width: 95vw;
+            max-width: 1300px;
+            height: 90vh;
+            min-height: 600px;
             background: #fff;
             border: 1px solid #ddd;
-            padding: 40px;
+            padding: 48px;
             position: relative;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             display: flex;
@@ -863,7 +863,7 @@
             flex: 1;
             display: flex;
             flex-direction: row;
-            gap: 30px;
+            gap: 40px;
             overflow: hidden;
         }
 
@@ -871,7 +871,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             min-width: 0;
         }
 
@@ -879,18 +879,18 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
             overflow-y: auto;
             padding-right: 10px;
             align-items: flex-start;
         }
 
         .event-view .event-form-container {
-            width: 550px;
+            width: 600px;
             flex-shrink: 0;
             border-left: 1px solid #e0e0e0;
-            padding-left: 30px;
-            padding-right: 20px;
+            padding-left: 40px;
+            padding-right: 24px;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -912,7 +912,7 @@
         .event-card {
             border: 2px solid #ddd;
             border-radius: 8px;
-            padding: 20px;
+            padding: 28px;
             background: #fff;
             transition: all 0.2s ease;
             cursor: default;
@@ -933,31 +933,32 @@
 
         .event-card-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 12px;
+            gap: 12px;
+            margin-top: 20px;
         }
 
         .event-card-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
             color: #000;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .event-card-detail {
-            font-size: 14px;
+            font-size: 15px;
             color: #666;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .event-card-notes {
-            font-size: 14px;
+            font-size: 15px;
+            line-height: 1.5;
             color: #333;
-            margin-top: 12px;
-            padding-top: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
             border-top: 1px solid #e0e0e0;
         }
 
@@ -1536,6 +1537,30 @@
             text-overflow: ellipsis;
             display: flex;
             align-items: center;
+        }
+
+        .custom-dropdown-item-edit {
+            padding: 4px 6px;
+            border: none;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            transition: color 0.2s ease;
+            flex-shrink: 0;
+        }
+        .custom-dropdown-item:hover .custom-dropdown-item-edit {
+            color: #666;
+        }
+        .custom-dropdown-item.selected .custom-dropdown-item-edit {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .custom-dropdown-item.selected:hover .custom-dropdown-item-edit {
+            color: #fff;
+        }
+        .custom-dropdown-item-edit:hover {
+            color: #157A6E !important;
         }
 
         .custom-dropdown-item-delete {
@@ -2563,6 +2588,9 @@
         let currentDay = null;
         let selectedHabitId = null;
         let habits = [];
+        let editingHabitId = null;
+        let editingCalendarId = null;
+        let editingJournalId = null;
         let showLongestStreak = false;
         let currentMode = 'events'; // 'habits', 'events', or 'journal'
         let selectedCalendarId = null;
@@ -2860,6 +2888,16 @@
                 itemText.appendChild(colorDot);
                 itemText.appendChild(habitNameSpan);
                 
+                const editBtn = document.createElement('button');
+                editBtn.className = 'custom-dropdown-item-edit';
+                editBtn.textContent = '✎';
+                editBtn.title = 'Edit habit';
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    closeDropdown();
+                    openEditHabitModal(habit);
+                };
+                
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'custom-dropdown-item-delete';
                 deleteBtn.textContent = '×';
@@ -2877,6 +2915,7 @@
                 };
                 
                 item.appendChild(itemText);
+                item.appendChild(editBtn);
                 item.appendChild(deleteBtn);
                 
                 item.onclick = () => {
@@ -3004,20 +3043,54 @@
         }
 
         function openCreateHabitModal() {
+            editingHabitId = null;
             const modal = document.getElementById('createHabitModal');
             const input = document.getElementById('habitNameInput');
             const title = modal.querySelector('h3');
+            const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
             document.body.classList.add('modal-open');
             input.value = '';
             input.placeholder = 'Enter habit name... (meditate for 2 minutes, do 5 pushups, read a page, etc.)';
             if (title) title.textContent = 'Create a New Habit';
+            if (saveBtn) saveBtn.textContent = 'Create';
             const defaultColor = habitColors[habits.length % habitColors.length];
             setCreateModalColor(defaultColor);
             input.focus();
         }
 
+        function openEditHabitModal(habit) {
+            editingHabitId = habit.id;
+            const modal = document.getElementById('createHabitModal');
+            const input = document.getElementById('habitNameInput');
+            const title = modal.querySelector('h3');
+            const saveBtn = document.getElementById('saveHabitBtn');
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+            input.value = habit.name;
+            input.placeholder = 'Enter habit name...';
+            if (title) title.textContent = 'Edit Habit';
+            if (saveBtn) saveBtn.textContent = 'Save';
+            setCreateModalColor(getHabitColor(habit));
+            input.focus();
+        }
+
+        function updateHabit(habitId, name, color) {
+            const habit = habits.find(h => h.id === habitId);
+            if (!habit || !name || name.trim() === '') return;
+            habit.name = name.trim();
+            const hexColor = (color && /^#[0-9A-Fa-f]{6}$/.test(color)) ? color : habit.color;
+            habit.color = hexColor;
+            saveHabits();
+            populateHabitDropdown();
+            renderYearView();
+            updateMarkTodayButton();
+        }
+
         function closeCreateHabitModal() {
+            editingHabitId = null;
+            editingCalendarId = null;
+            editingJournalId = null;
             const modal = document.getElementById('createHabitModal');
             const pickerDropdown = document.getElementById('customColorPickerDropdown');
             modal?.classList.remove('active');
@@ -3177,17 +3250,27 @@
             
             // Calculate current month stats
             const now = new Date();
-            const currentMonth = (now.getFullYear() === 2026) ? now.getMonth() : 1; // Feb if not 2026
+            const currentMonth = (now.getFullYear() === 2026) ? now.getMonth() : 1;
             const daysInCurrentMonth = getDaysInMonth(2026, currentMonth);
             let daysMarkedThisMonth = 0;
-            
             for (let day = 1; day <= daysInCurrentMonth; day++) {
-                if (isDateMarked(2026, currentMonth, day, selectedHabitId)) {
-                    daysMarkedThisMonth++;
+                if (isDateMarked(2026, currentMonth, day, selectedHabitId)) daysMarkedThisMonth++;
+            }
+            const monthCompletionPercentage = Math.round((daysMarkedThisMonth / daysInCurrentMonth) * 100);
+            
+            // Calculate current week stats (Sun–Sat)
+            const today = (now.getFullYear() === 2026) ? new Date(2026, now.getMonth(), now.getDate()) : new Date(2026, 1, 2);
+            const dayOfWeek = today.getDay();
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - dayOfWeek);
+            let daysMarkedThisWeek = 0;
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(weekStart);
+                d.setDate(weekStart.getDate() + i);
+                if (d.getFullYear() === 2026 && d.getMonth() >= 0 && d.getMonth() <= 11) {
+                    if (isDateMarked(2026, d.getMonth(), d.getDate(), selectedHabitId)) daysMarkedThisWeek++;
                 }
             }
-            
-            const monthCompletionPercentage = Math.round((daysMarkedThisMonth / daysInCurrentMonth) * 100);
             
             statsContent.innerHTML = `
                 <div class="stats-section">
@@ -3196,33 +3279,33 @@
                 
                 <div class="stats-grid">
                     <div class="stats-item">
-                        <div class="stats-value">${currentStreak}</div>
+                        <div class="stats-value">${currentStreak} ${currentStreak === 1 ? 'day' : 'days'}</div>
                         <div class="stats-label">Current Streak</div>
-                        <div class="stats-label" style="font-size: 12px; margin-top: -10px;">${currentStreak === 1 ? 'day' : 'days'}</div>
                     </div>
                     
                     <div class="stats-item">
-                        <div class="stats-value">${longestStreak}</div>
+                        <div class="stats-value">${longestStreak} ${longestStreak === 1 ? 'day' : 'days'}</div>
                         <div class="stats-label">Longest Streak</div>
-                        <div class="stats-label" style="font-size: 12px; margin-top: -10px;">${longestStreak === 1 ? 'day' : 'days'}</div>
                     </div>
                     
                     <div class="stats-item">
-                        <div class="stats-value">${totalDaysMarked}</div>
+                        <div class="stats-value">${totalDaysMarked} ${totalDaysMarked === 1 ? 'day' : 'days'} marked</div>
                         <div class="stats-label">Total Days</div>
-                        <div class="stats-label" style="font-size: 12px; margin-top: -10px;">${totalDaysMarked === 1 ? 'day' : 'days'} marked</div>
                     </div>
                     
                     <div class="stats-item">
                         <div class="stats-value">${completionPercentage}%</div>
-                        <div class="stats-label">Year Progress</div>
-                        <div class="stats-label" style="font-size: 12px; margin-top: -10px;">of 2026</div>
+                        <div class="stats-label">Year Progress (of 2026)</div>
                     </div>
                     
                     <div class="stats-item">
-                        <div class="stats-value">${daysMarkedThisMonth}</div>
+                        <div class="stats-value">${daysMarkedThisMonth} ${daysMarkedThisMonth === 1 ? 'day' : 'days'} (${monthCompletionPercentage}%)</div>
                         <div class="stats-label">This Month</div>
-                        <div class="stats-label" style="font-size: 12px; margin-top: -10px;">${daysMarkedThisMonth === 1 ? 'day' : 'days'} (${monthCompletionPercentage}%)</div>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <div class="stats-value">${daysMarkedThisWeek} ${daysMarkedThisWeek === 1 ? 'day' : 'days'}</div>
+                        <div class="stats-label">This Week</div>
                     </div>
                 </div>
             `;
@@ -3656,6 +3739,34 @@
             renderYearView();
         }
 
+        function openEditCalendarModal(calendar) {
+            editingHabitId = null;
+            editingJournalId = null;
+            editingCalendarId = calendar.id;
+            const modal = document.getElementById('createHabitModal');
+            const input = document.getElementById('habitNameInput');
+            const title = modal.querySelector('h3');
+            const saveBtn = document.getElementById('saveHabitBtn');
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+            input.value = calendar.name;
+            input.placeholder = 'Enter calendar name...';
+            if (title) title.textContent = 'Edit Calendar';
+            if (saveBtn) saveBtn.textContent = 'Save';
+            setCreateModalColor(getCalendarColor(calendar));
+            input.focus();
+        }
+
+        function updateCalendar(calendarId, name, color) {
+            const calendar = calendars.find(c => c.id === calendarId);
+            if (!calendar || !name || name.trim() === '') return;
+            calendar.name = name.trim();
+            const hexColor = (color && /^#[0-9A-Fa-f]{6}$/.test(color)) ? color : calendar.color;
+            calendar.color = hexColor;
+            saveCalendars();
+            renderYearView();
+        }
+
         function deleteCalendar(calendarId) {
             calendars = calendars.filter(c => c.id !== calendarId);
             
@@ -3748,6 +3859,16 @@
                 itemText.appendChild(colorDot);
                 itemText.appendChild(calendarNameSpan);
                 
+                const editBtn = document.createElement('button');
+                editBtn.className = 'custom-dropdown-item-edit';
+                editBtn.textContent = '✎';
+                editBtn.title = 'Edit calendar';
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    closeCalendarDropdown();
+                    openEditCalendarModal(calendar);
+                };
+                
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'custom-dropdown-item-delete';
                 deleteBtn.textContent = '×';
@@ -3765,6 +3886,7 @@
                 };
                 
                 item.appendChild(itemText);
+                item.appendChild(editBtn);
                 item.appendChild(deleteBtn);
                 
                 item.onclick = () => {
@@ -3928,6 +4050,35 @@
             updateClearAllButton();
         }
 
+        function openEditJournalModal(journal) {
+            editingHabitId = null;
+            editingCalendarId = null;
+            editingJournalId = journal.id;
+            const modal = document.getElementById('createHabitModal');
+            const input = document.getElementById('habitNameInput');
+            const title = modal.querySelector('h3');
+            const saveBtn = document.getElementById('saveHabitBtn');
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+            input.value = journal.name;
+            input.placeholder = 'Enter journal name...';
+            if (title) title.textContent = 'Edit Journal';
+            if (saveBtn) saveBtn.textContent = 'Save';
+            setCreateModalColor(getJournalColor(journal));
+            input.focus();
+        }
+
+        function updateJournal(journalId, name, color) {
+            const journal = journals.find(j => j.id === journalId);
+            if (!journal || !name || name.trim() === '') return;
+            journal.name = name.trim();
+            const hexColor = (color && /^#[0-9A-Fa-f]{6}$/.test(color)) ? color : journal.color;
+            journal.color = hexColor;
+            saveJournals();
+            renderYearView();
+            updateClearAllButton();
+        }
+
         function populateJournalDropdown() {
             const menu = document.getElementById('journalDropdownMenu');
             const button = document.getElementById('journalSelectButton');
@@ -3967,6 +4118,16 @@
                 journalNameSpan.textContent = journal.name;
                 itemText.appendChild(colorDot);
                 itemText.appendChild(journalNameSpan);
+                const editBtn = document.createElement('button');
+                editBtn.className = 'custom-dropdown-item-edit';
+                editBtn.textContent = '✎';
+                editBtn.title = 'Edit journal';
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    closeJournalDropdown();
+                    openEditJournalModal(journal);
+                };
+                
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'custom-dropdown-item-delete';
                 deleteBtn.textContent = '×';
@@ -3980,6 +4141,7 @@
                     if (confirmed) { deleteJournal(journal.id); closeJournalDropdown(); }
                 };
                 item.appendChild(itemText);
+                item.appendChild(editBtn);
                 item.appendChild(deleteBtn);
                 item.onclick = () => {
                     selectedJournalId = journal.id;
@@ -4031,28 +4193,38 @@
         }
 
         function openCreateJournalModal() {
+            editingHabitId = null;
+            editingCalendarId = null;
+            editingJournalId = null;
             const modal = document.getElementById('createHabitModal');
             const input = document.getElementById('habitNameInput');
             const title = modal.querySelector('h3');
+            const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
             document.body.classList.add('modal-open');
             input.value = '';
             input.placeholder = 'Enter journal name... (daily notes, gratitude, lessons learned, etc.)';
             if (title) title.textContent = 'Create a New Journal';
+            if (saveBtn) saveBtn.textContent = 'Create';
             const defaultColor = habitColors[journals.length % habitColors.length];
             setCreateModalColor(defaultColor);
             input.focus();
         }
 
         function openCreateCalendarModal() {
+            editingHabitId = null;
+            editingCalendarId = null;
+            editingJournalId = null;
             const modal = document.getElementById('createHabitModal');
             const input = document.getElementById('habitNameInput');
             const title = modal.querySelector('h3');
+            const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
             document.body.classList.add('modal-open');
             input.value = '';
             input.placeholder = 'Enter calendar name... (birthdays, holidays, travel, plans, etc.)';
             if (title) title.textContent = 'Create a new Calendar';
+            if (saveBtn) saveBtn.textContent = 'Create';
             const defaultColor = habitColors[calendars.length % habitColors.length];
             setCreateModalColor(defaultColor);
             input.focus();
@@ -4463,7 +4635,13 @@
                 const name = input.value.trim();
                 if (name) {
                     const color = getCreateModalColor();
-                    if (title?.textContent === 'Create a New Habit') {
+                    if (editingHabitId) {
+                        updateHabit(editingHabitId, name, color);
+                    } else if (editingCalendarId) {
+                        updateCalendar(editingCalendarId, name, color);
+                    } else if (editingJournalId) {
+                        updateJournal(editingJournalId, name, color);
+                    } else if (title?.textContent === 'Create a New Habit') {
                         createHabit(name, color);
                     } else if (title?.textContent === 'Create a New Journal') {
                         createJournal(name, color);
@@ -5494,7 +5672,7 @@
                 ? `<div class="print-events-list">
                     <h3>All Events (Chronological)</h3>
                     <table>
-                        <thead><tr><th>Date</th><th>Event</th><th>Time</th><th>Calendar</th></tr></thead>
+                        <thead><tr><th>Date</th><th>Event</th><th>Time</th><th>Location</th><th>Calendar</th></tr></thead>
                         <tbody>${allEvents.map(e => {
                             const cal = calendars.find(c => c.id === e.calendarId);
                             const calName = cal ? cal.name : '';
@@ -5503,6 +5681,7 @@
                                 <td>${monthNames[e.month]} ${e.day}</td>
                                 <td>${escapeHtml(e.name || 'Untitled Event')}</td>
                                 <td>${escapeHtml(e.time || '—')}</td>
+                                <td>${escapeHtml(e.location || '—')}</td>
                                 <td><span class="event-cal" style="color:${calColor}">${escapeHtml(calName)}</span></td>
                             </tr>`;
                         }).join('')}</tbody>
@@ -5513,11 +5692,12 @@
                 ? `<div class="print-events-single print-events-list">
                     <h3>${escapeHtml(subtitle || 'Events')} (Chronological)</h3>
                     <table>
-                        <thead><tr><th>Date</th><th>Event</th><th>Time</th></tr></thead>
+                        <thead><tr><th>Date</th><th>Event</th><th>Time</th><th>Location</th></tr></thead>
                         <tbody>${singleCalendarEvents.map(e => `<tr>
                             <td>${monthNames[e.month]} ${e.day}</td>
                             <td>${escapeHtml(e.name || 'Untitled Event')}</td>
                             <td>${escapeHtml(e.time || '—')}</td>
+                            <td>${escapeHtml(e.location || '—')}</td>
                         </tr>`).join('')}</tbody>
                     </table>
                 </div>`
@@ -5785,6 +5965,7 @@
                     <div class="at-a-glance-item-title">${(e.name || 'Untitled Event').replace(/</g, '&lt;')}</div>
                     <div class="at-a-glance-item-date">${monthNames[e.month]} ${e.day}, 2026${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
                     ${e.time ? `<div class="at-a-glance-item-time">⏰ ${e.time.replace(/</g, '&lt;')}</div>` : ''}
+                    ${e.location ? `<div class="at-a-glance-item-time">📍 ${(e.location || '').replace(/</g, '&lt;')}</div>` : ''}
                 </div>`;
             }).join('');
             listEl.querySelectorAll('.at-a-glance-item').forEach(item => {
@@ -6076,6 +6257,7 @@
                             <div class="event-card-title">${event.name || 'Untitled Event'}</div>
                             <div class="event-card-detail" style="font-size: 15px; color: #555;">${eventDate}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
                             ${event.time ? `<div class="event-card-detail">⏰ ${event.time}</div>` : ''}
+                            ${event.location ? `<div class="event-card-detail">📍 ${(event.location || '').replace(/</g, '&lt;')}</div>` : ''}
                             ${event.notes ? `<div class="event-card-notes">${event.notes}</div>` : ''}
                             <div class="event-card-actions">
                                 <button class="event-btn edit" style="padding: 6px 12px; font-size: 12px;" onclick="editEvent('${event.id}')">Edit</button>
@@ -6151,6 +6333,10 @@
                             <div class="event-field">
                                 <label for="eventTime">Time</label>
                                 <input type="text" id="eventTime" placeholder="e.g., 2:00 PM, all day, etc." />
+                            </div>
+                            <div class="event-field">
+                                <label for="eventLocation">Location (optional)</label>
+                                <input type="text" id="eventLocation" placeholder="e.g., Conference Room A, Zoom, etc." />
                             </div>
                             <div class="event-field">
                                 <label for="eventNotes">Notes</label>
@@ -6314,6 +6500,7 @@
             // Populate the form with event data
             document.getElementById('eventName').value = event.name || '';
             document.getElementById('eventTime').value = event.time || '';
+            document.getElementById('eventLocation').value = event.location || '';
             document.getElementById('eventNotes').value = event.notes || '';
             const startMonthEl = document.getElementById('eventStartMonth');
             const startDayEl = document.getElementById('eventStartDay');
@@ -6450,6 +6637,7 @@
             const endDayParsed = endDayVal ? (parseInt(endDayVal, 10) || null) : null;
             const name = document.getElementById('eventName').value.trim();
             const time = document.getElementById('eventTime').value.trim();
+            const location = (document.getElementById('eventLocation')?.value || '').trim();
             const notes = document.getElementById('eventNotes').value.trim();
             if (!name) {
                 showCustomAlert('Please enter an event name', 'Notification');
@@ -6475,6 +6663,7 @@
                     existingEvent.day = startDay;
                     existingEvent.name = name;
                     existingEvent.time = time;
+                    existingEvent.location = location;
                     existingEvent.notes = notes;
                     existingEvent.key = getEventKey(effectiveCalendarId, year, startMonth, startDay);
                     saveEvents();
@@ -6492,7 +6681,7 @@
                         key: eventKey,
                         calendarId: effectiveCalendarId,
                         year, month, day,
-                        name, time, notes
+                        name, time, location, notes
                     };
                     saveEvent(newEvent);
                 });
@@ -6517,6 +6706,7 @@
             const dates = getDatesInRange(start.month, start.day, end.month, end.day);
             const name = document.getElementById('eventName').value.trim();
             const time = document.getElementById('eventTime').value.trim();
+            const location = (document.getElementById('eventLocation')?.value || '').trim();
             const notes = document.getElementById('eventNotes').value.trim();
             if (!name) {
                 showCustomAlert('Please enter an event name', 'Notification');
@@ -6529,7 +6719,7 @@
                     key: eventKey,
                     calendarId: selectedCalendarId,
                     year, month, day,
-                    name, time, notes
+                    name, time, location, notes
                 };
                 saveEvent(newEvent);
             });
@@ -6546,6 +6736,7 @@
             
             const name = document.getElementById('eventName').value.trim();
             const time = document.getElementById('eventTime').value.trim();
+            const location = (document.getElementById('eventLocation')?.value || '').trim();
             const notes = document.getElementById('eventNotes').value.trim();
             
             if (!name) {
@@ -6562,6 +6753,7 @@
                     // Update existing event
                     existingEvent.name = name;
                     existingEvent.time = time;
+                    existingEvent.location = location;
                     existingEvent.notes = notes;
                     saveEvents();
                     renderYearView();
@@ -6578,6 +6770,7 @@
                     day: day,
                     name: name,
                     time: time,
+                    location: location,
                     notes: notes
                 };
                 saveEvent(newEvent);
