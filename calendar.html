@@ -926,9 +926,9 @@
         }
 
         .event-card.editing {
-            border-color: var(--event-accent-color, #157A6E);
-            background: color-mix(in srgb, var(--event-accent-color, #157A6E) 10%, white);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--event-accent-color, #157A6E) 15%, transparent);
+            border-color: #157A6E;
+            background: color-mix(in srgb, #157A6E 10%, white);
+            box-shadow: 0 0 0 3px color-mix(in srgb, #157A6E 15%, transparent);
         }
 
         .event-card-actions {
@@ -941,7 +941,18 @@
             font-size: 20px;
             font-weight: 600;
             color: #000;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
+        }
+
+        .event-recurring-badge {
+            font-size: 13px;
+            color: #999;
+            letter-spacing: 0.02em;
+            margin-bottom: 10px;
+        }
+
+        .event-repeat-until-field {
+            display: none;
         }
 
         .event-card-detail {
@@ -966,9 +977,9 @@
             width: 100%;
             padding: 12px 20px;
             border-radius: 8px;
-            border: 2px dashed var(--event-accent-color, #157A6E);
+            border: 2px dashed #157A6E;
             background: #fff;
-            color: var(--event-accent-color, #157A6E);
+            color: #157A6E;
             cursor: pointer;
             font-family: 'Work Sans', sans-serif;
             font-size: 16px;
@@ -978,9 +989,9 @@
         }
 
         .add-event-btn-side:hover {
-            background: color-mix(in srgb, var(--event-accent-color, #157A6E) 10%, white);
-            border-color: var(--event-accent-color, #157A6E);
-            color: var(--event-accent-color, #157A6E);
+            background: color-mix(in srgb, #157A6E 10%, white);
+            border-color: #157A6E;
+            color: #157A6E;
         }
 
 
@@ -1010,7 +1021,7 @@
 
         .event-field input:focus,
         .event-field textarea:focus {
-            border-color: var(--event-accent-color, #157A6E);
+            border-color: #157A6E;
         }
 
         .event-calendar-select {
@@ -1035,7 +1046,7 @@
 
         .event-calendar-select:focus {
             outline: none;
-            border-color: var(--event-accent-color, #157A6E);
+            border-color: #157A6E;
         }
 
         .event-field textarea {
@@ -1193,14 +1204,14 @@
         }
 
         .event-btn.primary {
-            background: var(--event-accent-color, #157A6E);
+            background: #157A6E;
             color: #fff;
-            border-color: var(--event-accent-color, #157A6E);
+            border-color: #157A6E;
         }
 
         .event-btn.primary:hover {
-            background: color-mix(in srgb, var(--event-accent-color, #157A6E) 85%, black);
-            border-color: color-mix(in srgb, var(--event-accent-color, #157A6E) 85%, black);
+            background: color-mix(in srgb, #157A6E 85%, black);
+            border-color: color-mix(in srgb, #157A6E 85%, black);
         }
 
         .event-btn.edit {
@@ -6664,9 +6675,13 @@
                     const cal = calendars.find(c => c.id === event.calendarId);
                     const calName = cal ? cal.name : '';
                     const calColor = cal ? getCalendarColor(cal) : '#157A6E';
+                    const recurLabel = event.recurringId
+                        ? `<div class="event-recurring-badge">↻ Repeating · ${event.recurrence ? event.recurrence.charAt(0).toUpperCase() + event.recurrence.slice(1) : ''}</div>`
+                        : '';
                     eventsHTML += `
                         <div class="event-card" data-event-id="${event.id}">
                             <div class="event-card-title">${event.name || 'Untitled Event'}</div>
+                            ${recurLabel}
                             <div class="event-card-detail" style="font-size: 15px; color: #555;">${eventDate}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
                             ${event.time ? `<div class="event-card-detail">⏰ ${event.time}</div>` : ''}
                             ${event.location ? `<div class="event-card-detail">📍 ${(event.location || '').replace(/</g, '&lt;')}</div>` : ''}
@@ -6739,6 +6754,28 @@
                                         <div class="date-picker-dropdown" id="eventEndDateDropdown"></div>
                                     </div>
                                     <div style="font-size: 13px; color: #888; margin-top: 2px;">Leave empty for single day</div>
+                                </div>
+                            </div>
+                            <div class="event-field" id="eventRepeatField">
+                                <label for="eventRepeat">Repeat</label>
+                                <select id="eventRepeat" class="event-calendar-select" onchange="onRepeatChange(this.value)">
+                                    <option value="">None</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </div>
+                            <div class="event-field event-repeat-until-field" id="eventRepeatUntilField">
+                                <label>Repeat until</label>
+                                <div class="date-picker" id="eventRepeatUntilPicker">
+                                    <input type="hidden" id="eventRepeatUntilMonth" value="" />
+                                    <input type="hidden" id="eventRepeatUntilDay" value="" />
+                                    <div class="date-picker-trigger" data-picker="repeatUntil">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                                        <span class="date-picker-label placeholder">Pick a date</span>
+                                    </div>
+                                    <div class="date-picker-dropdown" id="eventRepeatUntilDropdown"></div>
                                 </div>
                             </div>
                             <div class="event-field">
@@ -6941,9 +6978,47 @@
             if (addBtn) {
                 addBtn.style.display = 'none';
             }
-            
+
+            // Populate recurrence fields
+            const repeatEl = document.getElementById('eventRepeat');
+            if (repeatEl) repeatEl.value = event.recurrence || '';
+            const repeatUntilField = document.getElementById('eventRepeatUntilField');
+            const repeatUntilMonthEl = document.getElementById('eventRepeatUntilMonth');
+            const repeatUntilDayEl   = document.getElementById('eventRepeatUntilDay');
+            if (event.recurringId) {
+                // Find the last occurrence in the series to pre-fill "Repeat until"
+                const seriesEvents = events
+                    .filter(e => e.recurringId === event.recurringId)
+                    .sort((a, b) => a.month !== b.month ? a.month - b.month : a.day - b.day);
+                const last = seriesEvents[seriesEvents.length - 1];
+                if (last && repeatUntilMonthEl && repeatUntilDayEl) {
+                    repeatUntilMonthEl.value = last.month;
+                    repeatUntilDayEl.value   = last.day;
+                }
+                if (repeatUntilField) repeatUntilField.style.display = '';
+            } else {
+                if (repeatUntilMonthEl) repeatUntilMonthEl.value = '';
+                if (repeatUntilDayEl)   repeatUntilDayEl.value   = '';
+                if (repeatUntilField)   repeatUntilField.style.display = 'none';
+            }
+
             // Show the form
             showEventForm();
+
+            // If recurring, init the repeat-until picker with the pre-set values
+            if (event.recurringId) {
+                initRepeatUntilPicker(2026);
+                const ruPicker  = document.getElementById('eventRepeatUntilPicker');
+                const ruTrigger = ruPicker?.querySelector('.date-picker-trigger');
+                const ruLabel   = ruTrigger?.querySelector('.date-picker-label');
+                const rm = parseInt(repeatUntilMonthEl?.value || '', 10);
+                const rd = parseInt(repeatUntilDayEl?.value   || '', 10);
+                if (!isNaN(rm) && !isNaN(rd) && ruLabel) {
+                    ruLabel.textContent = `${monthNames[rm]} ${rd}, 2026`;
+                    ruLabel.classList.remove('placeholder');
+                    ruTrigger?.classList.add('has-value');
+                }
+            }
             
             // Store the event ID being edited
             window.editingEventId = eventId;
@@ -6978,6 +7053,24 @@
                 document.getElementById('eventName').value = '';
                 document.getElementById('eventTime').value = '';
                 document.getElementById('eventNotes').value = '';
+                // Reset recurrence fields
+                const repeatEl = document.getElementById('eventRepeat');
+                if (repeatEl) repeatEl.value = '';
+                const repeatUntilField = document.getElementById('eventRepeatUntilField');
+                if (repeatUntilField) repeatUntilField.style.display = 'none';
+                const repeatUntilMonthEl = document.getElementById('eventRepeatUntilMonth');
+                const repeatUntilDayEl   = document.getElementById('eventRepeatUntilDay');
+                if (repeatUntilMonthEl) repeatUntilMonthEl.value = '';
+                if (repeatUntilDayEl)   repeatUntilDayEl.value = '';
+                const repeatUntilTrigger = document.querySelector('#eventRepeatUntilPicker .date-picker-trigger');
+                if (repeatUntilTrigger) {
+                    const lbl = repeatUntilTrigger.querySelector('.date-picker-label');
+                    if (lbl) { lbl.textContent = 'Pick a date'; lbl.classList.add('placeholder'); }
+                    repeatUntilTrigger.classList.remove('has-value');
+                }
+                // Re-show repeat field (may have been hidden during edit)
+                const repeatField = document.getElementById('eventRepeatField');
+                if (repeatField) repeatField.style.display = '';
                 // Remove editing class from all event cards
                 document.querySelectorAll('.event-card').forEach(card => {
                     card.classList.remove('editing');
@@ -7005,6 +7098,7 @@
         window.editEvent = editEvent;
         window.showEventForm = showEventForm;
         window.hideEventForm = hideEventForm;
+        window.onRepeatChange = onRepeatChange;
 
         function closeEventModal() {
             const modal = document.getElementById('eventModal');
@@ -7029,7 +7123,174 @@
             }
         }
 
-        function saveEventFromForm(year) {
+        // ---- Recurring events helpers ----
+
+        function generateRecurringDates(startMonth, startDay, recurrence, untilMonth, untilDay) {
+            const year = 2026;
+            const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
+            const dates = [];
+            let m = startMonth, d = startDay;
+            let guard = 0;
+            while (guard++ < 500) {
+                if (m > 11) break;
+                if (m > untilMonth || (m === untilMonth && d > untilDay)) break;
+                dates.push({ month: m, day: d });
+                if (recurrence === 'daily') {
+                    const next = new Date(year, m, d + 1);
+                    m = next.getMonth(); d = next.getDate();
+                } else if (recurrence === 'weekly') {
+                    const next = new Date(year, m, d + 7);
+                    m = next.getMonth(); d = next.getDate();
+                } else if (recurrence === 'monthly') {
+                    m += 1;
+                    if (m > 11) break;
+                    d = Math.min(d, daysInMonth(m));
+                } else if (recurrence === 'yearly') {
+                    break; // next occurrence is 2027, outside 2026 scope
+                }
+            }
+            return dates;
+        }
+
+        function onRepeatChange(value) {
+            const repeatUntilField = document.getElementById('eventRepeatUntilField');
+            if (!repeatUntilField) return;
+            if (value) {
+                repeatUntilField.style.display = '';
+                // Clear end date — it conflicts with recurrence
+                const endMonthEl = document.getElementById('eventEndMonth');
+                const endDayEl = document.getElementById('eventEndDay');
+                if (endMonthEl) endMonthEl.value = '';
+                if (endDayEl) endDayEl.value = '';
+                const endTrigger = document.querySelector('#eventEndDatePicker .date-picker-trigger');
+                const endLabel = endTrigger?.querySelector('.date-picker-label');
+                if (endLabel) { endLabel.textContent = 'Pick a date'; endLabel.classList.add('placeholder'); }
+                endTrigger?.classList.remove('has-value');
+                initRepeatUntilPicker(2026);
+            } else {
+                repeatUntilField.style.display = 'none';
+            }
+        }
+
+        function initRepeatUntilPicker(year) {
+            const picker   = document.getElementById('eventRepeatUntilPicker');
+            const dropdown = document.getElementById('eventRepeatUntilDropdown');
+            const monthInput = document.getElementById('eventRepeatUntilMonth');
+            const dayInput   = document.getElementById('eventRepeatUntilDay');
+            if (!picker || !dropdown) return;
+
+            const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
+            let viewMonth = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
+
+            const render = () => {
+                const selMonth = monthInput?.value !== '' ? parseInt(monthInput.value, 10) : NaN;
+                const selDay   = dayInput?.value   !== '' ? parseInt(dayInput.value,   10) : NaN;
+                const firstDay = new Date(year, viewMonth, 1).getDay();
+                const days = daysInMonth(viewMonth);
+                let html = `<div class="date-picker-header">
+                    <span class="date-picker-month">${monthNames[viewMonth]} ${year}</span>
+                    <div class="date-picker-nav">
+                        <button type="button" class="date-picker-nav-btn" data-dir="-1">‹</button>
+                        <button type="button" class="date-picker-nav-btn" data-dir="1">›</button>
+                    </div></div>
+                    <div class="date-picker-weekdays">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => `<span class="date-picker-weekday">${d}</span>`).join('')}</div>
+                    <div class="date-picker-days">`;
+                for (let i = 0; i < firstDay; i++) html += `<button type="button" class="date-picker-day empty"></button>`;
+                for (let d = 1; d <= days; d++) {
+                    const sel = !isNaN(selMonth) && !isNaN(selDay) && viewMonth === selMonth && d === selDay ? ' selected' : '';
+                    html += `<button type="button" class="date-picker-day${sel}" data-day="${d}">${d}</button>`;
+                }
+                html += '</div>';
+                dropdown.innerHTML = html;
+                dropdown.querySelectorAll('.date-picker-nav-btn').forEach(btn => {
+                    btn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); viewMonth = (viewMonth + 12 + parseInt(btn.dataset.dir, 10)) % 12; render(); };
+                });
+                dropdown.querySelectorAll('.date-picker-day:not(.empty)').forEach(btn => {
+                    btn.onclick = () => {
+                        const d = parseInt(btn.dataset.day, 10);
+                        monthInput.value = viewMonth;
+                        dayInput.value = d;
+                        const trigger = picker.querySelector('.date-picker-trigger');
+                        trigger.querySelector('.date-picker-label').textContent = `${monthNames[viewMonth]} ${d}, ${year}`;
+                        trigger.querySelector('.date-picker-label').classList.remove('placeholder');
+                        trigger.classList.add('has-value');
+                        dropdown.classList.remove('open');
+                        render();
+                    };
+                });
+            };
+            render();
+            picker.querySelector('.date-picker-trigger').onclick = (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.date-picker-dropdown.open').forEach(d => d.classList.remove('open'));
+                dropdown.classList.toggle('open');
+                if (dropdown.classList.contains('open')) render();
+            };
+        }
+
+        function showRecurringDeleteConfirm(seriesCount) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModalOverlay');
+                const modalTitle = document.getElementById('customModalTitle');
+                const modalMessage = document.getElementById('customModalMessage');
+                const modalButtons = document.getElementById('customModalButtons');
+                modalTitle.textContent = 'Delete Recurring Event';
+                modalMessage.textContent = 'This event repeats. Delete just this occurrence, or all occurrences in the series?';
+                modalButtons.innerHTML = '';
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'custom-modal-btn';
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve(null); };
+                const thisOneBtn = document.createElement('button');
+                thisOneBtn.className = 'custom-modal-btn';
+                thisOneBtn.textContent = 'Just this one';
+                thisOneBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve('one'); };
+                const allBtn = document.createElement('button');
+                allBtn.className = 'custom-modal-btn danger';
+                allBtn.textContent = `All ${seriesCount} occurrences`;
+                allBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve('all'); };
+                modalButtons.appendChild(cancelBtn);
+                modalButtons.appendChild(thisOneBtn);
+                modalButtons.appendChild(allBtn);
+                overlay.classList.add('active');
+                document.body.classList.add('modal-open');
+                overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve(null); } };
+            });
+        }
+
+        function showRecurringEditConfirm() {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('customModalOverlay');
+                const modalTitle = document.getElementById('customModalTitle');
+                const modalMessage = document.getElementById('customModalMessage');
+                const modalButtons = document.getElementById('customModalButtons');
+                modalTitle.textContent = 'Edit Recurring Event';
+                modalMessage.textContent = 'Do you want to update just this occurrence, or all occurrences in the series?';
+                modalButtons.innerHTML = '';
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'custom-modal-btn';
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve(null); };
+                const thisOneBtn = document.createElement('button');
+                thisOneBtn.className = 'custom-modal-btn';
+                thisOneBtn.textContent = 'Just this one';
+                thisOneBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve('one'); };
+                const allBtn = document.createElement('button');
+                allBtn.className = 'custom-modal-btn primary';
+                allBtn.textContent = 'All occurrences';
+                allBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve('all'); };
+                modalButtons.appendChild(cancelBtn);
+                modalButtons.appendChild(thisOneBtn);
+                modalButtons.appendChild(allBtn);
+                overlay.classList.add('active');
+                document.body.classList.add('modal-open');
+                overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve(null); } };
+            });
+        }
+
+        // ---- End recurring helpers ----
+
+        async function saveEventFromForm(year) {
             let calendarId = selectedCalendarId;
             if (calendarId === 'all') {
                 const sel = document.getElementById('eventCalendarSelect');
@@ -7070,32 +7331,121 @@
             if (window.editingEventId) {
                 const existingEvent = events.find(e => e.id === window.editingEventId);
                 if (existingEvent) {
-                    existingEvent.month = startMonth;
-                    existingEvent.day = startDay;
-                    existingEvent.name = name;
-                    existingEvent.time = time;
-                    existingEvent.location = location;
-                    existingEvent.notes = notes;
-                    existingEvent.key = getEventKey(effectiveCalendarId, year, startMonth, startDay);
-                    saveEvents();
-                    renderYearView();
+                    const recurrence  = document.getElementById('eventRepeat')?.value || '';
+                    const untilMonthEl = document.getElementById('eventRepeatUntilMonth');
+                    const untilDayEl   = document.getElementById('eventRepeatUntilDay');
+                    const untilMonth = untilMonthEl?.value !== '' ? parseInt(untilMonthEl.value, 10) : null;
+                    const untilDay   = untilDayEl?.value   !== '' ? parseInt(untilDayEl.value,   10) : null;
+
+                    if (recurrence && (untilMonth === null || untilDay === null)) {
+                        showCustomAlert('Please select a "Repeat until" date', 'Notification');
+                        return;
+                    }
+
+                    if (existingEvent.recurringId) {
+                        // Editing a recurring event — ask what to update
+                        const choice = await showRecurringEditConfirm();
+                        if (choice === null) return;
+
+                        if (choice === 'one') {
+                            // Update just this occurrence and detach from series
+                            existingEvent.month = startMonth;
+                            existingEvent.day   = startDay;
+                            existingEvent.name  = name;
+                            existingEvent.time  = time;
+                            existingEvent.location = location;
+                            existingEvent.notes = notes;
+                            existingEvent.key   = getEventKey(effectiveCalendarId, year, startMonth, startDay);
+                            delete existingEvent.recurringId;
+                            delete existingEvent.recurrence;
+                            saveEvents();
+                            renderYearView();
+                        } else {
+                            // Update all occurrences — delete old series and regenerate
+                            const oldId = existingEvent.recurringId;
+                            const toDelete = events.filter(e => e.recurringId === oldId);
+                            const idsToDelete = new Set(toDelete.map(e => e.id));
+                            events = events.filter(e => !idsToDelete.has(e.id));
+                            toDelete.forEach(e => {
+                                if (!events.some(ev => ev.key === e.key)) {
+                                    localStorage.removeItem(`calendar-${e.calendarId}-${e.year}-${e.month + 1}-${e.day}`);
+                                }
+                            });
+                            if (recurrence && untilMonth !== null && untilDay !== null) {
+                                const newRecurringId = Date.now().toString() + '-rec-' + Math.random().toString(36).slice(2);
+                                const recurDates = generateRecurringDates(startMonth, startDay, recurrence, untilMonth, untilDay);
+                                recurDates.forEach(({ month, day }) => {
+                                    const eventKey = getEventKey(effectiveCalendarId, year, month, day);
+                                    saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month, day, name, time, location, notes, recurringId: newRecurringId, recurrence });
+                                });
+                            } else {
+                                // Recurrence removed — save as single standalone event
+                                const eventKey = getEventKey(effectiveCalendarId, year, startMonth, startDay);
+                                saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month: startMonth, day: startDay, name, time, location, notes });
+                            }
+                        }
+                    } else {
+                        // Non-recurring edit
+                        existingEvent.month = startMonth;
+                        existingEvent.day   = startDay;
+                        existingEvent.name  = name;
+                        existingEvent.time  = time;
+                        existingEvent.location = location;
+                        existingEvent.notes = notes;
+                        existingEvent.key   = getEventKey(effectiveCalendarId, year, startMonth, startDay);
+                        if (recurrence && untilMonth !== null && untilDay !== null) {
+                            // Non-recurring event is being given a recurrence — attach it to a new series
+                            const newRecurringId = Date.now().toString() + '-rec-' + Math.random().toString(36).slice(2);
+                            existingEvent.recurringId = newRecurringId;
+                            existingEvent.recurrence  = recurrence;
+                            // Generate remaining instances (skip startMonth/startDay since it already exists)
+                            const recurDates = generateRecurringDates(startMonth, startDay, recurrence, untilMonth, untilDay).slice(1);
+                            recurDates.forEach(({ month, day }) => {
+                                const eventKey = getEventKey(effectiveCalendarId, year, month, day);
+                                saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month, day, name, time, location, notes, recurringId: newRecurringId, recurrence });
+                            });
+                        }
+                        saveEvents();
+                        renderYearView();
+                    }
                     window.editingEventId = null;
                 }
             } else {
-                const dates = isRange
-                    ? getDatesInRange(startMonth, startDay, endMonthVal, endDayValNum)
-                    : [{ month: startMonth, day: startDay }];
-                dates.forEach(({ month, day }) => {
-                    const eventKey = getEventKey(effectiveCalendarId, year, month, day);
-                    const newEvent = {
-                        id: Date.now().toString() + '-' + Math.random().toString(36).slice(2),
-                        key: eventKey,
-                        calendarId: effectiveCalendarId,
-                        year, month, day,
-                        name, time, location, notes
-                    };
-                    saveEvent(newEvent);
-                });
+                const recurrence = document.getElementById('eventRepeat')?.value || '';
+                if (recurrence) {
+                    // Recurring event — generate all instances
+                    const untilMonthEl = document.getElementById('eventRepeatUntilMonth');
+                    const untilDayEl   = document.getElementById('eventRepeatUntilDay');
+                    const untilMonth = untilMonthEl?.value !== '' ? parseInt(untilMonthEl.value, 10) : null;
+                    const untilDay   = untilDayEl?.value   !== '' ? parseInt(untilDayEl.value,   10) : null;
+                    if (untilMonth === null || untilDay === null) {
+                        showCustomAlert('Please select a "Repeat until" date', 'Notification');
+                        return;
+                    }
+                    if (untilMonth < startMonth || (untilMonth === startMonth && untilDay < startDay)) {
+                        showCustomAlert('"Repeat until" must be on or after the start date', 'Notification');
+                        return;
+                    }
+                    const recurringId = Date.now().toString() + '-rec-' + Math.random().toString(36).slice(2);
+                    const recurDates = generateRecurringDates(startMonth, startDay, recurrence, untilMonth, untilDay);
+                    if (recurDates.length === 0) {
+                        showCustomAlert('No dates were generated for this recurrence rule', 'Notification');
+                        return;
+                    }
+                    recurDates.forEach(({ month, day }) => {
+                        const eventKey = getEventKey(effectiveCalendarId, year, month, day);
+                        saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month, day, name, time, location, notes, recurringId, recurrence });
+                    });
+                } else {
+                    // Non-recurring (existing logic)
+                    const dates = isRange
+                        ? getDatesInRange(startMonth, startDay, endMonthVal, endDayValNum)
+                        : [{ month: startMonth, day: startDay }];
+                    dates.forEach(({ month, day }) => {
+                        const eventKey = getEventKey(effectiveCalendarId, year, month, day);
+                        saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month, day, name, time, location, notes });
+                    });
+                }
             }
             document.querySelectorAll('.event-card').forEach(card => card.classList.remove('editing'));
             hideEventForm();
@@ -7212,15 +7562,36 @@
             }
         }
 
-        function deleteEventById(eventId) {
+        async function deleteEventById(eventId) {
             const event = events.find(e => e.id === eventId);
-            if (event) {
-                deleteEvent(eventId);
-                if (eventModalRange) {
-                    openEventModal(eventModalRange.start.month, eventModalRange.start.day, eventModalRange.end.month, eventModalRange.end.day);
+            if (!event) return;
+
+            if (event.recurringId) {
+                const seriesEvents = events.filter(e => e.recurringId === event.recurringId);
+                const choice = await showRecurringDeleteConfirm(seriesEvents.length);
+                if (choice === null) return; // cancelled
+                if (choice === 'all') {
+                    const idsToDelete = new Set(seriesEvents.map(e => e.id));
+                    const toDelete = events.filter(e => idsToDelete.has(e.id));
+                    events = events.filter(e => !idsToDelete.has(e.id));
+                    toDelete.forEach(e => {
+                        if (!events.some(ev => ev.key === e.key)) {
+                            localStorage.removeItem(`calendar-${e.calendarId}-${e.year}-${e.month + 1}-${e.day}`);
+                        }
+                    });
+                    saveEvents();
+                    renderYearView();
                 } else {
-                    openEventModal(event.month, event.day);
+                    deleteEvent(eventId);
                 }
+            } else {
+                deleteEvent(eventId);
+            }
+
+            if (eventModalRange) {
+                openEventModal(eventModalRange.start.month, eventModalRange.start.day, eventModalRange.end.month, eventModalRange.end.day);
+            } else {
+                openEventModal(event.month, event.day);
             }
         }
 
