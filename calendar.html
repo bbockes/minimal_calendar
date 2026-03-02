@@ -2528,9 +2528,10 @@
                     <tbody>
                         <tr><td><kbd>?</kbd></td><td>Show this shortcuts list</td></tr>
                         <tr><td><kbd>Escape</kbd></td><td>Close modal</td></tr>
-                        <tr><td><kbd>1</kbd> or <kbd>E</kbd></td><td>Switch to Events</td></tr>
-                        <tr><td><kbd>2</kbd> or <kbd>H</kbd></td><td>Switch to Habits</td></tr>
-                        <tr><td><kbd>3</kbd> or <kbd>J</kbd></td><td>Switch to Journal</td></tr>
+                        <tr><td><kbd>/</kbd></td><td>Open search</td></tr>
+                        <tr><td><kbd>E</kbd></td><td>Switch to Events</td></tr>
+                        <tr><td><kbd>H</kbd></td><td>Switch to Habits</td></tr>
+                        <tr><td><kbd>J</kbd></td><td>Switch to Journal</td></tr>
                         <tr><td><kbd>N</kbd></td><td>Create new (habit, calendar, or journal)</td></tr>
                         <tr><td><kbd>M</kbd></td><td>Mark today (Habits or Events)</td></tr>
                         <tr><td><kbd>A</kbd></td><td>Add event (Events mode)</td></tr>
@@ -2546,8 +2547,9 @@
                     <div style="font-weight: 600; color: #333; margin-bottom: 8px;">Tips</div>
                     <ol style="margin: 0; padding-left: 20px; font-size: 16px; color: #666; line-height: 1.6;">
                         <li style="margin-bottom: 12px;">Drag across days on the calendar to select multiple days at once — for <strong>Events</strong>, this creates an event spanning the range; for <strong>Habits</strong>, it marks or unmarks all days in the range.</li>
-                        <li style="margin-bottom: 12px;">Create multiple habits or calendars to organize different types of tracking.</li>
-                        <li>Export your data from the menu to back up your habits, events, and journal entries. You can import your export later to restore your data.</li>
+                        <li style="margin-bottom: 12px;">Create multiple calendars, habits, or journals to track different areas of your life.</li>
+                        <li style="margin-bottom: 12px;">Use <strong>Search</strong> (press <kbd style="font-size:13px;padding:1px 5px;border:1px solid #ccc;border-radius:3px;background:#f5f5f5">/</kbd>) to quickly jump to any event or journal entry by name or content.</li>
+                        <li>Export your data from the menu to keep a backup. You can re-import it at any time to restore everything back to how it was.</li>
                     </ol>
                 </div>
             </div>
@@ -2587,7 +2589,7 @@
                     <button type="button" class="custom-dropdown-item" id="exportDataBtn">Export data</button>
                     <button type="button" class="custom-dropdown-item" id="importDataBtn">Import data</button>
                     <button type="button" class="custom-dropdown-item" id="deleteAllDataBtn">Delete all data</button>
-                    <button type="button" class="custom-dropdown-item" id="keyboardShortcutsBtn">Keyboard shortcuts</button>
+                    <button type="button" class="custom-dropdown-item" id="keyboardShortcutsBtn">Shortcuts</button>
                     <button type="button" class="custom-dropdown-item" id="sendFeedbackBtn">Send feedback</button>
                 </div>
             </div>
@@ -7417,18 +7419,18 @@
             
             if (inInput) return;
             
-            // 1/2/3 or E/H/J to switch modes
-            if (e.key === '1' || e.key === 'e' || e.key === 'E') {
+            // E/H/J to switch modes
+            if (e.key === 'e' || e.key === 'E') {
                 switchMode('events');
                 e.preventDefault();
                 return;
             }
-            if (e.key === '2' || e.key === 'h' || e.key === 'H') {
+            if (e.key === 'h' || e.key === 'H') {
                 switchMode('habits');
                 e.preventDefault();
                 return;
             }
-            if (e.key === '3' || e.key === 'j' || e.key === 'J') {
+            if (e.key === 'j' || e.key === 'J') {
                 switchMode('journal');
                 e.preventDefault();
                 return;
