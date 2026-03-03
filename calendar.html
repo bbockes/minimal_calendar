@@ -2449,6 +2449,13 @@
             }
         }
 
+        /* Tablet: add gap so Edit Today and At a Glance don’t touch */
+        @media (min-width: 701px) and (max-width: 1100px) {
+            .controls-row {
+                gap: 16px;
+            }
+        }
+
         /* Progressive right-side button hiding — remove one at a time as viewport shrinks */
         @media (max-width: 950px) {
             #clearAllBtn { display: none; }
@@ -5939,6 +5946,8 @@
             const prevDay = currentDay;
             renderYearView();
             const calendarEl = document.getElementById('calendar');
+            const stripEl = document.getElementById('monthNamesStrip');
+            const stripClone = stripEl && stripEl.children.length ? stripEl.cloneNode(true) : null;
             const clone = calendarEl.cloneNode(true);
             clone.querySelectorAll('[onclick], [onmousedown], [onmousemove], [onmouseenter]').forEach(el => {
                 el.removeAttribute('onclick');
@@ -5970,6 +5979,8 @@
             const printStyles = `
                 body { margin: 0; padding: 20px; font-family: 'Work Sans', sans-serif; }
                 .print-first-page { page-break-inside: avoid; }
+                .print-calendar-wrap { display: flex; flex-direction: column; }
+                .print-calendar-wrap .month-names-strip { margin-top: 0 !important; margin-bottom: 0 !important; }
                 .year-view-container { margin-top: 0 !important; }
                 .year-view { overflow: visible !important; }
                 h1 { text-align: center; }
@@ -5986,9 +5997,12 @@
                     .print-subtitle { font-size: 15px !important; color: #666 !important; margin-bottom: 40px !important; }
                     /* Scale calendar to fit all 12 months + header on one landscape page */
                     .year-view .month-column { width: 80px !important; min-width: 80px !important; }
+                    .month-names-strip .month-name-cell { width: 80px !important; min-width: 80px !important; flex: 0 0 80px !important; font-size: 11px !important; padding: 4px 0 !important; }
                     .year-view .month-header { font-size: 11px !important; padding: 4px 0 !important; }
                     .year-view .day-row { min-height: 14px !important; }
                     .year-view .day-number, .year-view .day-name { font-size: 9px !important; padding: 1px 4px !important; }
+                    .year-view .day-number { width: 20px !important; min-width: 20px !important; }
+                    .year-view .day-name { flex: 0 0 auto !important; min-width: 0 !important; }
                     /* Remove today highlight and hover styling in print */
                     .year-view .day-row.today::before { display: none !important; }
                     .year-view .day-row.today .day-number { font-weight: normal !important; }
@@ -6021,9 +6035,12 @@
                 @media print {
                     .print-calendar-key { padding-top: 0; margin-top: 0; }
                     body.print-journal .year-view .month-column { width: 65px !important; min-width: 65px !important; }
+                    body.print-journal .month-names-strip .month-name-cell { width: 65px !important; min-width: 65px !important; flex: 0 0 65px !important; font-size: 11px !important; padding: 6px 0 !important; }
                     body.print-journal .year-view .month-header { font-size: 11px !important; padding: 6px 0 !important; }
                     body.print-journal .year-view .day-row { min-height: 16px !important; }
                     body.print-journal .year-view .day-number, body.print-journal .year-view .day-name { font-size: 9px !important; }
+                    body.print-journal .year-view .day-number { width: 20px !important; min-width: 20px !important; }
+                    body.print-journal .year-view .day-name { flex: 0 0 auto !important; min-width: 0 !important; }
                 }
             `;
             const bodyClass = isJournal ? ' class="print-journal"' : '';
@@ -6115,7 +6132,7 @@
                 <style>${printStyles.replace(/<\/style>/g, '<\\/style>')}</style>
             </head><body${bodyClass}>
                 <p class="print-tip">Tip: Use ${pageOrientation} orientation and uncheck "Headers and footers" in the print dialog for a cleaner print.</p>
-                <div class="print-first-page">${headerHtml}${clone.outerHTML}</div>${keyHtml}${singleCalendarEventsHtml}${journalEntriesHtml}</body></html>`;
+                <div class="print-first-page">${headerHtml}<div class="print-calendar-wrap">${stripClone ? stripClone.outerHTML : ''}${clone.outerHTML}</div></div>${keyHtml}${singleCalendarEventsHtml}${journalEntriesHtml}</body></html>`;
             if (window.electronAPI?.printHtml) {
                 if (prevView === 'day') renderDayView(prevMonth, prevDay);
                 window.electronAPI.printHtml(html);
