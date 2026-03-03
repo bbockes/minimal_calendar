@@ -5665,17 +5665,6 @@
             const ro = new ResizeObserver(syncStripWidth);
             ro.observe(yearView);
 
-            // Empty state hint when nothing is set up in this mode
-            let emptyMsg = '';
-            if (currentMode === 'habits' && habits.length === 0) emptyMsg = 'No habits yet. Click "New habit" to start tracking your year.';
-            else if (currentMode === 'events' && calendars.length === 0) emptyMsg = 'No calendars yet. Click "New calendar" to add one.';
-            else if (currentMode === 'journal' && journals.length === 0) emptyMsg = 'No journals yet. Click "New journal" to start.';
-            if (emptyMsg) {
-                const banner = document.createElement('div');
-                banner.className = 'year-view-empty-state';
-                banner.textContent = emptyMsg;
-                calendar.insertBefore(banner, yearView);
-            }
         }
 
         function renderMonthView(month) {
