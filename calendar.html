@@ -838,6 +838,9 @@
             width: 220px;
             text-align: center;
             flex-shrink: 0;
+            background: #e6f6f2;
+            padding: 8px 14px;
+            border-radius: 6px;
         }
         .at-a-glance-list {
             flex: 1;
@@ -845,6 +848,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            padding-right: 24px;
         }
         .at-a-glance-item {
             padding: 14px 16px;
@@ -922,7 +926,7 @@
             flex: 1;
             display: flex;
             flex-direction: row;
-            gap: 40px;
+            gap: 0;
             overflow: hidden;
         }
 
@@ -940,7 +944,7 @@
             flex-direction: column;
             gap: 20px;
             overflow-y: auto;
-            padding-right: 10px;
+            padding-right: 24px;
             align-items: flex-start;
         }
 
@@ -948,7 +952,7 @@
             width: 600px;
             flex-shrink: 0;
             border-left: 1px solid #e0e0e0;
-            padding-left: 40px;
+            padding-left: 24px;
             padding-right: 24px;
             display: flex;
             flex-direction: column;
@@ -1651,6 +1655,7 @@
         .search-results-list {
             max-height: 520px;
             overflow-y: auto;
+            padding-right: 14px;
         }
 
         .search-results-list:not(:empty) {
@@ -5909,6 +5914,16 @@
             return div.innerHTML;
         }
 
+        function stripMarkdownToPlain(s) {
+            if (!s) return '';
+            return String(s)
+                .replace(/\*\*(.+?)\*\*/g, '$1')
+                .replace(/__(.+?)__/g, '$1')
+                .replace(/\*(.+?)\*/g, '$1')
+                .replace(/_([^_]+)_/g, '$1')
+                .replace(/^#+\s*/gm, '');
+        }
+
         function printCalendarToPdf() {
             const hasData = (currentMode === 'habits' && selectedHabitId) ||
                 (currentMode === 'events' && selectedCalendarId) ||
@@ -6189,7 +6204,7 @@
                             if (!plain.toLowerCase().includes(query)) continue;
                             const idx = plain.toLowerCase().indexOf(query);
                             const start = Math.max(0, idx - 35);
-                            const snippet = (start > 0 ? '…' : '') +
+                            const snippetRaw = (start > 0 ? '…' : '') +
                                 plain.slice(start, idx + query.length + 50).trim() +
                                 (idx + query.length + 50 < plain.length ? '…' : '');
                             searchResults.push({
@@ -6197,7 +6212,7 @@
                                 month,
                                 day,
                                 title: journal.name,
-                                snippet: snippet.replace(/\n/g, ' '),
+                                snippet: stripMarkdownToPlain(snippetRaw).replace(/\n/g, ' '),
                                 journalId: journal.id,
                                 color: getJournalColor(journal),
                             });
@@ -6651,7 +6666,8 @@
                 return;
             }
             listEl.innerHTML = entries.map(e => {
-                const preview = e.plain.length > 120 ? e.plain.slice(0, 120) + '…' : e.plain;
+                const plainPreview = stripMarkdownToPlain(e.plain);
+                const preview = plainPreview.length > 120 ? plainPreview.slice(0, 120) + '…' : plainPreview;
                 return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}">
                     <div class="at-a-glance-item-title">${monthNames[e.month]} ${e.day}, ${displayYear}</div>
                     <div class="at-a-glance-item-preview">${escapeHtml(preview)}</div>
