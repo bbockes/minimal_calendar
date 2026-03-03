@@ -1912,18 +1912,45 @@
 
         .shortcuts-table th {
             font-weight: 600;
-            color: #333;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            padding-bottom: 8px;
         }
+
 
         .shortcuts-table kbd {
             display: inline-block;
             padding: 4px 8px;
             font-family: inherit;
             font-size: 13px;
-            background: #f0f0f0;
-            border: 1px solid #ccc;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
             border-radius: 4px;
-            box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+        }
+
+        .shortcuts-table .shortcuts-section-header {
+            font-weight: 600;
+            color: #333;
+            background: #fafafa;
+            border-bottom: 1px solid #eee;
+            padding: 10px 16px;
+        }
+        .shortcuts-table .shortcuts-section-header td {
+            border-bottom: none;
+            padding-top: 10px;
+            padding-bottom: 6px;
+        }
+        .shortcuts-table .shortcuts-section-header:first-child td {
+            padding-top: 10px;
+        }
+
+        .shortcuts-table .shortcuts-section-spacer td {
+            padding: 0;
+            height: 12px;
+            border-bottom: none;
+            background: transparent;
         }
 
         #shortcutsModal .stats-modal-content {
@@ -2597,24 +2624,40 @@
                         <tr><th>Shortcut</th><th>Action</th></tr>
                     </thead>
                     <tbody>
+                        <tr class="shortcuts-section-header"><td colspan="2">Navigation</td></tr>
                         <tr><td><kbd>?</kbd></td><td>Show this shortcuts list</td></tr>
-                        <tr><td><kbd>Escape</kbd></td><td>Close modal</td></tr>
                         <tr><td><kbd>/</kbd></td><td>Open search</td></tr>
                         <tr><td><kbd>E</kbd></td><td>Switch to Events</td></tr>
                         <tr><td><kbd>H</kbd></td><td>Switch to Habits</td></tr>
                         <tr><td><kbd>J</kbd></td><td>Switch to Journal</td></tr>
+                        <tr><td><kbd>Escape</kbd></td><td>Close modal</td></tr>
+                        <tr class="shortcuts-section-spacer"><td colspan="2"></td></tr>
+                        <tr class="shortcuts-section-header"><td colspan="2">Events</td></tr>
+                        <tr><td><kbd>0</kbd></td><td>View all calendars</td></tr>
+                        <tr><td><kbd>1</kbd>–<kbd>9</kbd></td><td>Select 1st–9th calendar</td></tr>
+                        <tr><td><kbd>A</kbd></td><td>Add event</td></tr>
+                        <tr><td><kbd>M</kbd></td><td>Mark today</td></tr>
+                        <tr class="shortcuts-section-spacer"><td colspan="2"></td></tr>
+                        <tr class="shortcuts-section-header"><td colspan="2">Habits</td></tr>
+                        <tr><td><kbd>1</kbd>–<kbd>9</kbd></td><td>Select 1st–9th habit</td></tr>
+                        <tr><td><kbd>M</kbd></td><td>Mark today</td></tr>
+                        <tr class="shortcuts-section-spacer"><td colspan="2"></td></tr>
+                        <tr class="shortcuts-section-header"><td colspan="2">Journal</td></tr>
+                        <tr><td><kbd>1</kbd>–<kbd>9</kbd></td><td>Select 1st–9th journal</td></tr>
+                        <tr><td><kbd>T</kbd></td><td>Edit today</td></tr>
+                        <tr class="shortcuts-section-spacer"><td colspan="2"></td></tr>
+                        <tr class="shortcuts-section-header"><td colspan="2">When Editing a Journal Entry</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>S</kbd></td><td>Save</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>Enter</kbd></td><td>Done / Close</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>⌫</kbd></td><td>Clear All</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>B</kbd></td><td>Bold</td></tr>
+                        <tr><td><kbd>⌘</kbd> + <kbd>I</kbd></td><td>Italic</td></tr>
+                        <tr class="shortcuts-section-spacer"><td colspan="2"></td></tr>
+                        <tr class="shortcuts-section-header"><td colspan="2">General</td></tr>
                         <tr><td><kbd>N</kbd></td><td>Create new (habit, calendar, or journal)</td></tr>
-                        <tr><td><kbd>M</kbd></td><td>Mark today (Habits or Events)</td></tr>
-                        <tr><td><kbd>A</kbd></td><td>Add event (Events mode)</td></tr>
-                        <tr><td><kbd>T</kbd></td><td>Edit today (Journal mode)</td></tr>
-                        <tr><td><kbd>⌘</kbd> + <kbd>S</kbd></td><td>Save (journal entry)</td></tr>
-                        <tr><td><kbd>⌘</kbd> + <kbd>Enter</kbd></td><td>Done / Close (journal modal)</td></tr>
-                        <tr><td><kbd>⌘</kbd> + <kbd>⌫</kbd></td><td>Clear All (journal, edit mode)</td></tr>
-                        <tr><td><kbd>⌘</kbd> + <kbd>B</kbd></td><td>Bold (journal entry)</td></tr>
-                        <tr><td><kbd>⌘</kbd> + <kbd>I</kbd></td><td>Italic (journal entry)</td></tr>
                     </tbody>
                 </table>
-                <div class="shortcuts-tips" style="margin-top: 8px; padding-top: 12px;">
+                <div class="shortcuts-tips" style="margin-top: 12px; padding-top: 12px;">
                     <div style="font-weight: 600; color: #333; margin-bottom: 8px;">Tips</div>
                     <ol style="margin: 0; padding-left: 20px; font-size: 16px; color: #666; line-height: 1.6;">
                         <li style="margin-bottom: 12px;">Drag across days on the calendar to select multiple days at once — for <strong>Events</strong>, this creates an event spanning the range; for <strong>Habits</strong>, it marks or unmarks all days in the range.</li>
@@ -2844,6 +2887,7 @@
                           'July', 'August', 'September', 'October', 'November', 'December'];
         const monthAbbr = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
                           'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        function monthAbbrTitle(m) { return monthAbbr[m].charAt(0) + monthAbbr[m].slice(1).toLowerCase(); }
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const dayAbbr = ['SU', 'M', 'T', 'W', 'TH', 'F', 'SA'];
         
@@ -6445,12 +6489,12 @@
             if (filter === 'week') {
                 const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
                 const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
-                return `${monthNames[startDate.getMonth()]} ${startDate.getDate()}–${monthNames[endDate.getMonth()]} ${endDate.getDate()}, ${year}`;
+                return `${monthAbbrTitle(startDate.getMonth())} ${startDate.getDate()}–${monthAbbrTitle(endDate.getMonth())} ${endDate.getDate()}, ${year}`;
             }
             if (filter === 'month') {
                 const m = todayMonth + offset;
                 if (m < 0 || m > 11) return '';
-                return `${monthNames[m]} ${year}`;
+                return `${monthAbbrTitle(m)} ${year}`;
             }
             if (filter === 'year') {
                 return String(currentYear + offset);
@@ -6575,12 +6619,12 @@
             if (filter === 'week') {
                 const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
                 const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
-                return `${monthNames[startDate.getMonth()]} ${startDate.getDate()}–${monthNames[endDate.getMonth()]} ${endDate.getDate()}, ${year}`;
+                return `${monthAbbrTitle(startDate.getMonth())} ${startDate.getDate()}–${monthAbbrTitle(endDate.getMonth())} ${endDate.getDate()}, ${year}`;
             }
             if (filter === 'month') {
                 const m = todayMonth + offset;
                 if (m < 0 || m > 11) return '';
-                return `${monthNames[m]} ${year}`;
+                return `${monthAbbrTitle(m)} ${year}`;
             }
             if (filter === 'year') {
                 return String(currentYear + offset);
@@ -7904,6 +7948,38 @@
                 switchMode('journal');
                 e.preventDefault();
                 return;
+            }
+            
+            // 0–9 to switch dropdown selection (1 = 1st, 2 = 2nd, …; in events 0 = All)
+            const numKey = e.key;
+            if (!inInput && (numKey === '0' || (numKey >= '1' && numKey <= '9'))) {
+                const num = numKey === '0' ? 0 : parseInt(numKey, 10);
+                let itemIndex = -1;
+                if (currentMode === 'events' && calendars.length > 0) {
+                    // 0 = All, 1 = 1st calendar, 2 = 2nd, …
+                    itemIndex = num === 0 ? 0 : num; // 0 → index 0 (All), 1 → index 1 (1st cal), …
+                    if (itemIndex > calendars.length) return; // 1-based calendar index
+                } else if (currentMode === 'habits' && habits.length > 0) {
+                    if (num === 0) return;
+                    itemIndex = num; // 1 → index 0 (1st habit) → itemIndex 1 means menu item at 1
+                    if (itemIndex > habits.length) return;
+                    itemIndex = num - 1; // 1 → 0, 2 → 1
+                } else if (currentMode === 'journal' && journals.length > 0) {
+                    if (num === 0) return;
+                    if (num > journals.length) return;
+                    itemIndex = num - 1;
+                }
+                if (itemIndex < 0) return;
+                const menu = currentMode === 'events' ? document.getElementById('calendarDropdownMenu')
+                    : currentMode === 'habits' ? document.getElementById('habitDropdownMenu')
+                    : document.getElementById('journalDropdownMenu');
+                const items = menu ? menu.querySelectorAll('.custom-dropdown-item') : [];
+                const item = items[itemIndex];
+                if (item && item.dataset.value !== '') {
+                    item.click();
+                    e.preventDefault();
+                    return;
+                }
             }
             
             // N for new (habit or calendar)
