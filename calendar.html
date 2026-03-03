@@ -6386,16 +6386,16 @@
         let atAGlanceOffset = 0; // 0 = current, 1 = next, -1 = prev
 
         function getUpcomingEventsInRange(filter, offset) {
-            const year = currentYear;
             const now = new Date();
-            const todayMonth = now.getFullYear() === year ? now.getMonth() : 0;
-            const todayDay = now.getFullYear() === year ? now.getDate() : 1;
+            const year = filter === 'year' ? currentYear + offset : currentYear;
+            const todayMonth = now.getFullYear() === currentYear ? now.getMonth() : 0;
+            const todayDay = now.getFullYear() === currentYear ? now.getDate() : 1;
             const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
 
             let startMonth, startDay, endMonth, endDay;
             if (filter === 'week') {
-                const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
-                const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
+                const startDate = new Date(currentYear, todayMonth, todayDay + (offset * 7));
+                const endDate = new Date(currentYear, todayMonth, todayDay + (offset * 7) + 6);
                 startMonth = startDate.getMonth();
                 startDay = startDate.getDate();
                 endMonth = endDate.getMonth();
@@ -6410,9 +6410,9 @@
                 endMonth = m;
                 endDay = daysInMonth(m);
             } else {
-                if (offset !== 0) return [];
-                startMonth = todayMonth;
-                startDay = todayDay;
+                // year: full year for currentYear + offset
+                startMonth = 0;
+                startDay = 1;
                 endMonth = 11;
                 endDay = 31;
             }
@@ -6452,6 +6452,9 @@
                 if (m < 0 || m > 11) return '';
                 return `${monthNames[m]} ${year}`;
             }
+            if (filter === 'year') {
+                return String(currentYear + offset);
+            }
             return `${year}`;
         }
 
@@ -6462,7 +6465,7 @@
             const navEl = document.getElementById('atAGlanceNav');
             const periodEl = document.getElementById('atAGlancePeriod');
 
-            const showNav = atAGlanceFilter === 'week' || atAGlanceFilter === 'month';
+            const showNav = atAGlanceFilter === 'week' || atAGlanceFilter === 'month' || atAGlanceFilter === 'year';
             if (navEl) navEl.classList.toggle('hidden', !showNav);
             if (periodEl) periodEl.textContent = getAtAGlancePeriodLabel(atAGlanceFilter, atAGlanceOffset);
 
@@ -6478,7 +6481,7 @@
                 const calName = cal ? cal.name : '';
                 return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}">
                     <div class="at-a-glance-item-title">${(e.name || 'Untitled Event').replace(/</g, '&lt;')}</div>
-                    <div class="at-a-glance-item-date">${monthNames[e.month]} ${e.day}, ${currentYear}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
+                    <div class="at-a-glance-item-date">${monthNames[e.month]} ${e.day}, ${e.year}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
                     ${e.time ? `<div class="at-a-glance-item-time">⏰ ${e.time.replace(/</g, '&lt;')}</div>` : ''}
                     ${e.location ? `<div class="at-a-glance-item-time">📍 ${(e.location || '').replace(/</g, '&lt;')}</div>` : ''}
                 </div>`;
@@ -6515,16 +6518,16 @@
 
         function getJournalEntriesInRange(filter, offset) {
             if (!selectedJournalId) return [];
-            const year = currentYear;
             const now = new Date();
-            const todayMonth = now.getFullYear() === year ? now.getMonth() : 0;
-            const todayDay = now.getFullYear() === year ? now.getDate() : 1;
+            const year = filter === 'year' ? currentYear + offset : currentYear;
+            const todayMonth = now.getFullYear() === currentYear ? now.getMonth() : 0;
+            const todayDay = now.getFullYear() === currentYear ? now.getDate() : 1;
             const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
 
             let startMonth, startDay, endMonth, endDay;
             if (filter === 'week') {
-                const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
-                const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
+                const startDate = new Date(currentYear, todayMonth, todayDay + (offset * 7));
+                const endDate = new Date(currentYear, todayMonth, todayDay + (offset * 7) + 6);
                 startMonth = startDate.getMonth();
                 startDay = startDate.getDate();
                 endMonth = endDate.getMonth();
@@ -6537,7 +6540,7 @@
                 endMonth = m;
                 endDay = daysInMonth(m);
             } else {
-                if (offset !== 0) return [];
+                // year: full year for currentYear + offset
                 startMonth = 0;
                 startDay = 1;
                 endMonth = 11;
@@ -6579,6 +6582,9 @@
                 if (m < 0 || m > 11) return '';
                 return `${monthNames[m]} ${year}`;
             }
+            if (filter === 'year') {
+                return String(currentYear + offset);
+            }
             return `${year}`;
         }
 
@@ -6589,12 +6595,13 @@
             const navEl = document.getElementById('journalAtAGlanceNav');
             const periodEl = document.getElementById('journalAtAGlancePeriod');
 
-            const showNav = journalAtAGlanceFilter === 'week' || journalAtAGlanceFilter === 'month';
+            const showNav = journalAtAGlanceFilter === 'week' || journalAtAGlanceFilter === 'month' || journalAtAGlanceFilter === 'year';
             if (navEl) navEl.classList.toggle('hidden', !showNav);
             if (periodEl) periodEl.textContent = getJournalAtAGlancePeriodLabel(journalAtAGlanceFilter, journalAtAGlanceOffset);
 
             const entries = getJournalEntriesInRange(journalAtAGlanceFilter, journalAtAGlanceOffset);
             const periodLabel = getJournalAtAGlancePeriodLabel(journalAtAGlanceFilter, journalAtAGlanceOffset);
+            const displayYear = journalAtAGlanceFilter === 'year' ? currentYear + journalAtAGlanceOffset : currentYear;
             if (entries.length === 0) {
                 listEl.innerHTML = `<div class="at-a-glance-empty">No journal entries in ${periodLabel || ('this ' + journalAtAGlanceFilter)}</div>`;
                 return;
@@ -6602,7 +6609,7 @@
             listEl.innerHTML = entries.map(e => {
                 const preview = e.plain.length > 120 ? e.plain.slice(0, 120) + '…' : e.plain;
                 return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}">
-                    <div class="at-a-glance-item-title">${monthNames[e.month]} ${e.day}, ${currentYear}</div>
+                    <div class="at-a-glance-item-title">${monthNames[e.month]} ${e.day}, ${displayYear}</div>
                     <div class="at-a-glance-item-preview">${escapeHtml(preview)}</div>
                 </div>`;
             }).join('');
