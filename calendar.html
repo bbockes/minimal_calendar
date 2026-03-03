@@ -3147,11 +3147,14 @@
                 }
             });
             
-            // If this habit was selected, clear selection
+            // If this habit was selected, select first in list
             if (selectedHabitId === habitId) {
-                selectedHabitId = null;
+                selectedHabitId = habits.length > 0 ? habits[0].id : null;
                 const button = document.getElementById('habitSelectButton');
-                button.textContent = 'Select Habit';
+                button.textContent = habits.length > 0 ? habits[0].name : 'Select Habit';
+                updateHabitButtonColor();
+                updateMarkTodayButton();
+                updateClearAllButton();
             }
             
             // Save and update UI
@@ -4126,12 +4129,13 @@
                 }
             });
             
-            // If this calendar was selected, clear selection
-            if (selectedCalendarId === calendarId) {
-                selectedCalendarId = null;
-                const button = document.getElementById('calendarSelectButton');
-                button.textContent = 'Select Calendar';
-            }
+            // After deleting any calendar, go to "all events" (or clear if none left)
+            selectedCalendarId = calendars.length > 0 ? 'all' : null;
+            const button = document.getElementById('calendarSelectButton');
+            button.textContent = calendars.length > 0 ? 'All' : 'Select Calendar';
+            updateCalendarButtonColor();
+            updateSelectedCalendarItem();
+            updateClearAllButton();
             
             saveCalendars();
             renderYearView();
@@ -4257,10 +4261,15 @@
                     button.textContent = calendar.name;
                     updateCalendarButtonColor();
                 } else {
-                    // Selected calendar was deleted; auto-select first if any remain
+                    // Selected calendar was deleted; stay on 'all' or go to first if we had a specific calendar
                     if (calendars.length > 0) {
-                        selectedCalendarId = calendars[0].id;
-                        button.textContent = calendars[0].name;
+                        if (currentValue === 'all') {
+                            selectedCalendarId = 'all';
+                            button.textContent = 'All';
+                        } else {
+                            selectedCalendarId = calendars[0].id;
+                            button.textContent = calendars[0].name;
+                        }
                     } else {
                         selectedCalendarId = null;
                         button.textContent = 'Add a new Calendar';
@@ -5524,6 +5533,15 @@
             }
             
             calendar.appendChild(yearView);
+
+            // Keep month strip same width as year-view viewport so scroll stays aligned (scrollbar narrows year-view)
+            function syncStripWidth() {
+                const yv = document.querySelector('.year-view');
+                if (yv && strip) strip.style.width = yv.clientWidth + 'px';
+            }
+            requestAnimationFrame(syncStripWidth);
+            const ro = new ResizeObserver(syncStripWidth);
+            ro.observe(yearView);
         }
 
         function renderMonthView(month) {
@@ -6363,7 +6381,7 @@
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = 'minimal-calendar-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.download = 'your-year-backup.json';
             a.click();
             URL.revokeObjectURL(a.href);
         }
