@@ -163,9 +163,13 @@
 
         .slider-item {
             cursor: pointer;
-            transition: color 0.2s;
+            transition: color 0.2s ease, transform 0.1s ease;
             user-select: none;
             color: #000;
+        }
+
+        .slider-item:active {
+            transform: translateY(1px);
         }
 
         .slider-item.selected {
@@ -201,6 +205,19 @@
             flex-direction: column;
             margin-top: 0;
             min-width: 0;
+            transition: opacity 0.08s ease-out;
+        }
+
+        .year-view-container.year-changing {
+            opacity: 0.4;
+        }
+
+        .year-view-empty-state {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            padding: 12px 16px;
+            margin-bottom: 8px;
         }
 
         .year-view {
@@ -247,7 +264,7 @@
             align-items: center;
             border-bottom: 1px solid #e5e5e5;
             min-height: 29px;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -263,7 +280,8 @@
         }
 
         .year-view .day-row:hover {
-            background-color: #d3d3d3;
+            background-color: #e0e0e0;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
         }
 
         .year-view .day-row.marked {
@@ -313,6 +331,14 @@
             font-weight: 700;
         }
 
+        .year-view .day-row.jump-highlight {
+            animation: jumpHighlight 0.7s ease-out;
+        }
+        @keyframes jumpHighlight {
+            0% { box-shadow: inset 0 0 0 3px rgba(14, 92, 82, 0.6); }
+            100% { box-shadow: inset 0 0 0 0 transparent; }
+        }
+
         .year-view .day-row.weekend:not(.marked) {
             background-color: rgba(230, 240, 255, 0.7) !important;
         }
@@ -323,6 +349,7 @@
 
         .year-view .day-row.weekend:hover:not(.marked) {
             background-color: rgba(200, 220, 255, 0.9) !important;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
         }
 
         .year-view .day-row.weekend.marked {
@@ -496,7 +523,7 @@
 
         /* Day View Modal */
         .modal-overlay {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0;
             left: 0;
@@ -506,10 +533,28 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
         }
 
         .modal-overlay.active {
-            display: flex;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity 0.25s ease-out;
+        }
+
+        .modal-overlay > * {
+            transform: scale(0.97);
+            opacity: 0;
+            transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+        }
+
+        .modal-overlay.active > * {
+            transform: scale(1);
+            opacity: 1;
         }
 
         .day-view {
@@ -530,6 +575,12 @@
         .day-view .day-header {
             text-align: left;
             margin-bottom: 30px;
+        }
+
+        .day-view .day-view-source {
+            font-size: 13px;
+            color: #888;
+            margin-top: 4px;
         }
 
         .day-view .day-date {
@@ -1502,6 +1553,10 @@
             background-color: #f5f5f5;
         }
 
+        .custom-dropdown-button:active {
+            transform: translateY(1px);
+        }
+
         .custom-dropdown-button.active {
             border-color: #157A6E;
             background-color: #fff;
@@ -1586,6 +1641,8 @@
         .custom-dropdown-item.selected {
             background: #555;
             color: #fff;
+            font-weight: 600;
+            box-shadow: inset 3px 0 0 #157A6E;
         }
 
         .custom-dropdown-item.selected:hover {
@@ -1837,6 +1894,10 @@
             border-color: #999;
         }
 
+        .create-habit-btn:active {
+            transform: translateY(1px);
+        }
+
         .create-habit-btn.active {
             border-color: #6b9bd1;
             background-color: #e8f0fa;
@@ -2005,7 +2066,7 @@
         }
 
         .create-habit-modal {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0;
             left: 0;
@@ -2015,10 +2076,28 @@
             z-index: 2000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
         }
 
         .create-habit-modal.active {
-            display: flex;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity 0.25s ease-out;
+        }
+
+        .create-habit-modal > * {
+            transform: scale(0.97);
+            opacity: 0;
+            transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+        }
+
+        .create-habit-modal.active > * {
+            transform: scale(1);
+            opacity: 1;
         }
 
         .create-habit-content {
@@ -2334,7 +2413,7 @@
 
         /* Custom Alert/Confirm Modal */
         .custom-modal-overlay {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0;
             left: 0;
@@ -2344,10 +2423,28 @@
             z-index: 3000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
         }
 
         .custom-modal-overlay.active {
-            display: flex;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity 0.25s ease-out;
+        }
+
+        .custom-modal-overlay > * {
+            transform: scale(0.97);
+            opacity: 0;
+            transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+        }
+
+        .custom-modal-overlay.active > * {
+            transform: scale(1);
+            opacity: 1;
         }
 
         .custom-modal {
@@ -4027,14 +4124,29 @@
         }
 
         function switchMode(mode) {
+            if (mode === 'journal' && highlightWeekends) {
+                highlightWeekends = false;
+                const btn = document.getElementById('highlightWeekendsBtn');
+                if (btn) btn.classList.remove('active');
+            }
             currentMode = mode;
             saveMode();
             updateModeUI();
         }
 
         function setYear(year) {
-            currentYear = Math.max(2020, Math.min(2100, year));
-            updateModeUI();
+            const calendar = document.getElementById('calendar');
+            if (calendar) calendar.classList.add('year-changing');
+            setTimeout(() => {
+                currentYear = Math.max(2020, Math.min(2100, year));
+                updateModeUI();
+                if (calendar) {
+                    calendar.classList.add('year-changing');
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => calendar.classList.remove('year-changing'));
+                    });
+                }
+            }, 80);
         }
 
         setInterval(() => {
@@ -4859,7 +4971,17 @@
                 highlightWeekendsBtn.addEventListener('click', () => {
                     highlightWeekends = !highlightWeekends;
                     highlightWeekendsBtn.classList.toggle('active', highlightWeekends);
-                    renderYearView();
+                    const calendar = document.getElementById('calendar');
+                    calendar.classList.toggle('weekends-highlighted', highlightWeekends);
+                    document.querySelectorAll('.year-view .day-row').forEach(row => {
+                        const y = parseInt(row.dataset.year, 10);
+                        const m = parseInt(row.dataset.month, 10);
+                        const d = parseInt(row.dataset.day, 10);
+                        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                            const dayOfWeek = new Date(y, m, d).getDay();
+                            row.classList.toggle('weekend', highlightWeekends && (dayOfWeek === 0 || dayOfWeek === 6));
+                        }
+                    });
                 });
             }
 
@@ -5328,7 +5450,7 @@
             // Populate month names strip in sticky header
             const strip = document.getElementById('monthNamesStrip');
             if (strip) {
-                strip.innerHTML = monthAbbr.map(m => `<div class="month-name-cell">${m}</div>`).join('');
+                strip.innerHTML = monthAbbr.map((m, i) => `<div class="month-name-cell" data-month="${i}">${m}</div>`).join('');
                 strip.style.display = 'flex';
             }
 
@@ -5542,6 +5664,18 @@
             requestAnimationFrame(syncStripWidth);
             const ro = new ResizeObserver(syncStripWidth);
             ro.observe(yearView);
+
+            // Empty state hint when nothing is set up in this mode
+            let emptyMsg = '';
+            if (currentMode === 'habits' && habits.length === 0) emptyMsg = 'No habits yet. Click "New habit" to start tracking your year.';
+            else if (currentMode === 'events' && calendars.length === 0) emptyMsg = 'No calendars yet. Click "New calendar" to add one.';
+            else if (currentMode === 'journal' && journals.length === 0) emptyMsg = 'No journals yet. Click "New journal" to start.';
+            if (emptyMsg) {
+                const banner = document.createElement('div');
+                banner.className = 'year-view-empty-state';
+                banner.textContent = emptyMsg;
+                calendar.insertBefore(banner, yearView);
+            }
         }
 
         function renderMonthView(month) {
@@ -5673,7 +5807,7 @@
             calendar.appendChild(container);
         }
 
-        function renderDayView(month, day) {
+        function renderDayView(month, day, source) {
             currentView = 'day';
             currentMonth = month;
             currentDay = day;
@@ -5694,10 +5828,13 @@
             const hasContent = (savedNotes || '').trim() !== '';
             const isEditMode = !hasContent;
 
+            const sourceLabel = source === 'search' ? 'From: Search' : source === 'atAGlance' ? 'From: At a Glance' : '';
+
             dayViewContent.innerHTML = `
                 <button class="modal-close" onclick="closeDayModal()">×</button>
                 <div class="day-header">
                     <div class="day-date">${monthNames[month]} ${day}, ${currentYear}</div>
+                    ${sourceLabel ? `<div class="day-view-source">${sourceLabel}</div>` : ''}
                 </div>
                 <div class="day-content" data-date="${dateKey}">
                     <div class="notes-display" id="dayNotesDisplay" data-placeholder="${placeholder}" style="${isEditMode ? 'display:none' : ''}"></div>
@@ -5758,6 +5895,19 @@
             
             modal.classList.add('active');
             document.body.classList.add('modal-open');
+
+            // Smooth scroll year view to this day and briefly highlight it
+            requestAnimationFrame(() => {
+                const yv = document.querySelector('.year-view');
+                if (!yv) return;
+                const monthCol = yv.querySelector(`.month-column:nth-child(${month + 1})`);
+                if (!monthCol) return;
+                const row = monthCol.querySelector(`.day-row:nth-child(${day})`);
+                if (!row) return;
+                row.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                row.classList.add('jump-highlight');
+                setTimeout(() => row.classList.remove('jump-highlight'), 700);
+            });
         }
 
         function rawForEdit(str) {
@@ -6327,7 +6477,7 @@
             if (result.type === 'event') {
                 openEventModal(result.month, result.day);
             } else {
-                renderDayView(result.month, result.day);
+                renderDayView(result.month, result.day, 'search');
             }
         }
 
@@ -6348,12 +6498,12 @@
                 e.preventDefault();
                 searchActiveIndex = Math.min(searchActiveIndex + 1, items.length - 1);
                 items.forEach((el, i) => el.classList.toggle('active', i === searchActiveIndex));
-                items[searchActiveIndex]?.scrollIntoView({ block: 'nearest' });
+                items[searchActiveIndex]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 searchActiveIndex = Math.max(searchActiveIndex - 1, 0);
                 items.forEach((el, i) => el.classList.toggle('active', i === searchActiveIndex));
-                items[searchActiveIndex]?.scrollIntoView({ block: 'nearest' });
+                items[searchActiveIndex]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else if (e.key === 'Enter' && searchActiveIndex >= 0) {
                 items[searchActiveIndex]?.click();
             }
@@ -6713,7 +6863,7 @@
                     const month = parseInt(item.dataset.month, 10);
                     const day = parseInt(item.dataset.day, 10);
                     closeJournalAtAGlanceModal();
-                    renderDayView(month, day);
+                    renderDayView(month, day, 'atAGlance');
                 });
             });
         }
