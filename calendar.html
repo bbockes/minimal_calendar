@@ -281,7 +281,7 @@
 
         .year-view .day-row:hover {
             background-color: #e0e0e0;
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+            box-shadow: none;
         }
 
         .year-view .day-row.marked {
@@ -583,6 +583,10 @@
             margin-top: 4px;
         }
 
+        .day-view .notes-input:focus {
+            border-color: #157A6E;
+        }
+
         .day-view .day-date {
             font-size: 22px;
             color: #000;
@@ -793,10 +797,6 @@
 
         .day-view-btn.danger:hover {
             background-color: #ffebee;
-        }
-
-        .day-view .notes-input:focus {
-            border-color: #999;
         }
 
         /* At a Glance Modal - fixed size, slightly lower, list scrolls internally */
