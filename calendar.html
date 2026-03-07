@@ -40,6 +40,7 @@
             padding-top: 30px;
             padding-bottom: 0;
             margin-top: -30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .controls-row {
@@ -97,9 +98,14 @@
             background: #c8c8c8;
         }
 
+        .year-nav-btn:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
         .year-nav-btn:disabled {
             opacity: 0.25;
-            cursor: default;
+            cursor: not-allowed;
         }
 
         .calendar-page {
@@ -136,6 +142,11 @@
 
         .title-circle-btn:hover {
             background: #c8c8c8;
+        }
+
+        .title-circle-btn:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
         }
 
         .title-circle-btn svg {
@@ -186,6 +197,11 @@
 
         .slider-item.greyed:hover {
             color: #666;
+        }
+
+        .slider-item:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
         }
 
         .slider-separator {
@@ -516,6 +532,11 @@
 
         .nav-btn:hover {
             background-color: #f5f5f5;
+        }
+
+        .nav-btn:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
         }
 
         .nav-btn:disabled {
@@ -854,6 +875,10 @@
             border-color: #999;
             background: #f5f5f5;
         }
+        .at-a-glance-filter:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
         .at-a-glance-filter.active {
             border-color: #157A6E;
             background: #157A6E;
@@ -930,6 +955,10 @@
         .at-a-glance-item:hover {
             border-color: var(--at-a-glance-color);
             background: color-mix(in srgb, var(--at-a-glance-color) 10%, white);
+        }
+        .at-a-glance-item:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
         }
         .at-a-glance-item-title {
             font-size: 18px;
@@ -1222,10 +1251,11 @@
 
         .event-card-notes {
             font-size: 16px;
-            line-height: 1.5;
+            line-height: 1.2;
             color: #333;
             margin-top: 8px;
             padding-top: 0;
+            white-space: pre-line;
         }
 
         .add-event-btn-side {
@@ -1489,6 +1519,11 @@
             background-color: #ffebee;
         }
 
+        .event-btn:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
         .modal-close {
             position: absolute;
             top: 15px;
@@ -1506,11 +1541,17 @@
             align-items: center;
             justify-content: center;
             line-height: 1;
+            transition: background 0.2s ease, color 0.2s ease;
         }
 
         .modal-close:hover {
             background: #e0e0e0;
             color: #000;
+        }
+
+        .modal-close:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
         }
 
         /* Habit Tracker Controls - inside calendar-page so 3-dot (in #title) stacks above */
@@ -1703,6 +1744,11 @@
             background-color: #fff;
         }
 
+        .custom-dropdown-button:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
         .custom-dropdown-button::after {
             content: '';
             position: absolute;
@@ -1783,7 +1829,6 @@
             background: #555;
             color: #fff;
             font-weight: 600;
-            box-shadow: inset 3px 0 0 #157A6E;
         }
 
         .custom-dropdown-item.selected:hover {
@@ -1885,6 +1930,11 @@
 
         .search-result-item:hover,
         .search-result-item.active { background: #f5f5f5; }
+
+        .search-result-item:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
 
         .search-result-dot {
             width: 10px;
@@ -2035,6 +2085,11 @@
             border-color: #999;
         }
 
+        .create-habit-btn:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
         .create-habit-btn:active {
             transform: translateY(1px);
         }
@@ -2090,10 +2145,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background 0.2s ease;
         }
 
         .stats-modal-close:hover {
             background: #e0e0e0;
+        }
+
+        .stats-modal-close:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
         }
 
         .stats-modal-title {
@@ -2493,6 +2554,11 @@
             border-color: #0E5C52;
         }
 
+        .create-habit-btn-modal:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
         .clear-all-btn {
             padding: 10px 16px;
             border-radius: 24px;
@@ -2513,6 +2579,15 @@
             background-color: #ffcccc;
         }
 
+        .clear-all-btn:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
+        .clear-all-btn:active {
+            transform: translateY(1px);
+        }
+
         .mark-today-btn {
             padding: 10px 16px;
             border-radius: 24px;
@@ -2522,6 +2597,7 @@
             font-family: 'Work Sans', sans-serif;
             font-size: 14px;
             font-weight: 500;
+            transition: all 0.2s ease;
             user-select: none;
             color: #000;
             position: relative;
@@ -2532,6 +2608,14 @@
             background-color: #e8f0ed;
         }
 
+        .mark-today-btn:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
+        .mark-today-btn:active {
+            transform: translateY(1px);
+        }
 
         /* Custom Alert/Confirm Modal */
         .custom-modal-overlay {
@@ -2643,6 +2727,11 @@
         .custom-modal-btn.danger:hover {
             background: #A03A2A;
             border-color: #A03A2A;
+        }
+
+        .custom-modal-btn:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
         }
 
         /* Hide Mark Today, Clear All, At a Glance, Weekends, and Stats buttons on mobile and tablet */
@@ -2792,6 +2881,14 @@
                 font-size: 14px;
             }
 
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
 
     </style>
