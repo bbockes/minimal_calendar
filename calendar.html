@@ -966,6 +966,32 @@
             margin-bottom: 20px;
         }
 
+        .event-view .event-date-block {
+            margin-bottom: 15px;
+        }
+
+        .event-view .event-day-of-week {
+            font-size: 32px;
+            font-weight: 700;
+            color: #000;
+            letter-spacing: 0.02em;
+            line-height: 1.2;
+        }
+
+        .event-view .event-date-full {
+            font-size: 18px;
+            font-weight: 700;
+            color: #000;
+            margin-top: 6px;
+            letter-spacing: 0.01em;
+        }
+
+        .event-view .event-date.event-date-range {
+            font-size: 22px;
+            color: #000;
+            font-weight: 700;
+        }
+
         .event-view .event-date {
             font-size: 22px;
             color: #000;
@@ -1024,38 +1050,113 @@
         }
 
         .event-card {
+            --event-card-color: #157A6E;
+            position: relative;
             border: 2px solid #ddd;
             border-radius: 8px;
-            padding: 28px;
             background: #fff;
             transition: all 0.2s ease;
-            cursor: default;
             width: 100%;
             max-width: 100%;
+            overflow: hidden;
+        }
+
+        .event-card::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            bottom: 10px;
+            width: 10px;
+            border-radius: 5px;
+            background: var(--event-card-color);
         }
 
         .event-card:hover {
-            border-color: #ddd;
+            border-color: var(--event-card-color);
             box-shadow: none;
+        }
+
+        .event-card:hover .event-card-summary {
+            background: color-mix(in srgb, var(--event-card-color) 10%, white);
         }
 
         .event-card.editing {
             border-color: #157A6E;
-            background: color-mix(in srgb, #157A6E 10%, white);
             box-shadow: 0 0 0 3px color-mix(in srgb, #157A6E 15%, transparent);
+        }
+
+        .event-card.editing .event-card-summary {
+            background: color-mix(in srgb, #157A6E 10%, white);
+        }
+
+        .event-card-summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px 12px 42px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .event-card-summary-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .event-card-summary .event-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .event-card-summary-meta {
+            font-size: 13px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .event-card-summary-meta .event-card-tag {
+            font-weight: 500;
+        }
+
+        .event-card-chevron {
+            flex-shrink: 0;
+            width: 14px;
+            height: 14px;
+            color: #999;
+            transition: transform 0.2s ease;
+            display: block;
+        }
+
+        .event-card-chevron path {
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .event-card.expanded .event-card-chevron {
+            transform: rotate(180deg);
+        }
+
+        .event-card-details {
+            display: none;
+            padding: 0 16px 16px 42px;
+            border-top: 1px solid #eee;
+        }
+
+        .event-card.expanded .event-card-details {
+            display: block;
+            padding: 16px 16px 20px 42px;
         }
 
         .event-card-actions {
             display: flex;
             gap: 12px;
             margin-top: 20px;
-        }
-
-        .event-card-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #000;
-            margin-bottom: 8px;
         }
 
         .event-recurring-badge {
@@ -3803,7 +3904,7 @@
 
             if (currentMode === 'habits') {
                 if (!selectedHabitId) {
-                    await showCustomAlert('Please select a habit first', 'Notification');
+                    await showCustomAlert('Please add a habit first', 'Notification');
                     return;
                 }
                 const habit = habits.find(h => h.id === selectedHabitId);
@@ -3821,7 +3922,7 @@
                 });
             } else if (currentMode === 'events') {
                 if (!selectedCalendarId) {
-                    await showCustomAlert('Please select a calendar first', 'Notification');
+                    await showCustomAlert('Please add a calendar first', 'Notification');
                     return;
                 }
                 if (selectedCalendarId === 'all') {
@@ -4863,7 +4964,7 @@
             if (addEventBtnHeader) {
                 addEventBtnHeader.addEventListener('click', async () => {
                     if (!selectedCalendarId) {
-                        await showCustomAlert('Please select a calendar first', 'Notification');
+                        await showCustomAlert('Please add a calendar first', 'Notification');
                         return;
                     }
                     const now = new Date();
@@ -4882,13 +4983,13 @@
                 atAGlanceBtn.addEventListener('click', () => {
                     if (currentMode === 'events') {
                         if (!selectedCalendarId) {
-                            showCustomAlert('Please select a calendar first', 'Notification');
+                            showCustomAlert('Please add a calendar first', 'Notification');
                             return;
                         }
                         openAtAGlanceModal();
                     } else if (currentMode === 'journal') {
                         if (!selectedJournalId) {
-                            showCustomAlert('Please select a journal first', 'Notification');
+                            showCustomAlert('Please add a journal first', 'Notification');
                             return;
                         }
                         openJournalAtAGlanceModal();
@@ -5036,7 +5137,7 @@
             if (editTodayJournalBtn) {
                 editTodayJournalBtn.addEventListener('click', () => {
                     if (!selectedJournalId) {
-                        showCustomAlert('Please select a journal first', 'Notification');
+                        showCustomAlert('Please add a journal first', 'Notification');
                         return;
                     }
                     const now = new Date();
@@ -5619,19 +5720,19 @@
                                     toggleCellWithHabitColor(dayRow);
                                     updateMarkTodayButton();
                                 } else {
-                                    await showCustomAlert('Please select a habit first', 'Notification');
+                                    await showCustomAlert('Please add a habit first', 'Notification');
                                 }
                             } else if (currentMode === 'events') {
                                 if (selectedCalendarId) {
                                     openEventModal(month, day);
                                 } else {
-                                    await showCustomAlert('Please select a calendar first', 'Notification');
+                                    await showCustomAlert('Please add a calendar first', 'Notification');
                                 }
                             } else if (currentMode === 'journal') {
                                 if (selectedJournalId) {
                                     renderDayView(month, day);
                                 } else {
-                                    showCustomAlert('Please select a journal first', 'Notification');
+                                    showCustomAlert('Please add a journal first', 'Notification');
                                 }
                             }
                         }
@@ -5769,7 +5870,7 @@
                                 toggleCellWithHabitColor(dayDiv);
                                 updateMarkTodayButton();
                             } else {
-                                await showCustomAlert('Please select a habit first', 'Notification');
+                                await showCustomAlert('Please add a habit first', 'Notification');
                             }
                         } else if (currentMode === 'journal') {
                             renderDayView(month, currentDayNum);
@@ -6093,8 +6194,8 @@
                 (currentMode === 'events' && selectedCalendarId) ||
                 (currentMode === 'journal' && selectedJournalId);
             if (!hasData) {
-                const msg = currentMode === 'habits' ? 'Please select a habit first' :
-                    currentMode === 'events' ? 'Please select a calendar first' : 'Please select a journal first';
+                const msg = currentMode === 'habits' ? 'Please add a habit first' :
+                    currentMode === 'events' ? 'Please add a calendar first' : 'Please add a journal first';
                 showCustomAlert(msg, 'Notification');
                 return;
             }
@@ -6964,6 +7065,28 @@
             return dates;
         }
 
+        /** Return sort key (minutes from midnight) for event.time. All-day/no time = 0, unparseable = 9999. */
+        function parseEventTimeForSort(timeStr) {
+            if (!timeStr || typeof timeStr !== 'string') return 0;
+            const t = timeStr.trim();
+            if (!t || /^all\s*day$/i.test(t) || /^all\s*day\s*$/i.test(t)) return 0;
+            const match = t.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
+            if (match) {
+                let h = parseInt(match[1], 10);
+                const m = parseInt(match[2] || '0', 10);
+                const pm = (match[3] || '').toLowerCase() === 'pm';
+                if (h === 12) h = pm ? 12 : 0;
+                else if (pm) h += 12;
+                return Math.min(h * 60 + m, 1439);
+            }
+            if (/^(morning|brunch|noon|afternoon|evening|night|eod|end of day)/i.test(t)) {
+                const map = { morning: 8*60, brunch: 10*60+30, noon: 12*60, afternoon: 14*60, evening: 18*60, night: 20*60, eod: 17*60, 'end of day': 17*60 };
+                const key = t.split(/\s+/)[0].toLowerCase();
+                return map[key] != null ? map[key] : 12*60;
+            }
+            return 9999;
+        }
+
         function openEventModal(month, day, endMonth, endDay) {
             if (!selectedCalendarId) return;
             
@@ -6977,10 +7100,16 @@
                 eventModalContext = { month, day };
             }
             
-            const dateStr = isRange
-                ? `${monthNames[month]} ${day} – ${monthNames[endMonth]} ${endDay}, ${currentYear}`
-                : `${monthNames[month]} ${day}, ${currentYear}`;
             const dayCount = isRange ? getDatesInRange(month, day, endMonth, endDay).length : 1;
+            let dateHeaderHTML;
+            if (isRange) {
+                const rangeStr = `${monthNames[month]} ${day} – ${monthNames[endMonth]} ${endDay}, ${currentYear}`;
+                dateHeaderHTML = `<div class="event-date event-date-range">${rangeStr}</div>`;
+            } else {
+                const dayOfWeek = new Date(year, month, day).toLocaleDateString('en-US', { weekday: 'long' });
+                const dateLine = `${monthNames[month]} ${day}, ${year}`;
+                dateHeaderHTML = `<div class="event-day-of-week">${dayOfWeek}</div><div class="event-date-full">${dateLine}</div>`;
+            }
             
             let existingEvents;
             const rangeDates = isRange ? getDatesInRange(month, day, endMonth, endDay) : [{ month, day }];
@@ -6996,6 +7125,12 @@
                     rangeDates.some(d => e.month === d.month && e.day === d.day)
                 );
             }
+            // Sort events chronologically by time (earliest first)
+            existingEvents = existingEvents.slice().sort((a, b) => {
+                const orderA = parseEventTimeForSort(a.time);
+                const orderB = parseEventTimeForSort(b.time);
+                return orderA - orderB;
+            });
             selectedEventId = null;
             
             const modal = document.getElementById('eventModal');
@@ -7011,17 +7146,29 @@
                     const recurLabel = event.recurringId
                         ? `<div class="event-recurring-badge">↻ Repeating · ${event.recurrence ? event.recurrence.charAt(0).toUpperCase() + event.recurrence.slice(1) : ''}</div>`
                         : '';
+                    const metaParts = [];
+                    if (event.time) metaParts.push(event.time);
+                    if (calName) metaParts.push(`<span class="event-card-tag" style="color: ${calColor};">#${calName}</span>`);
+                    const summaryMeta = metaParts.length ? `<div class="event-card-summary-meta">${metaParts.join(' · ')}</div>` : '';
                     eventsHTML += `
-                        <div class="event-card" data-event-id="${event.id}">
-                            <div class="event-card-title">${event.name || 'Untitled Event'}</div>
-                            ${recurLabel}
-                            <div class="event-card-detail" style="font-size: 15px; color: #555;">${eventDate}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
-                            ${event.time ? `<div class="event-card-detail">⏰ ${event.time}</div>` : ''}
-                            ${event.location ? `<div class="event-card-detail">📍 ${(event.location || '').replace(/</g, '&lt;')}</div>` : ''}
-                            ${event.notes ? `<div class="event-card-notes">${event.notes}</div>` : ''}
-                            <div class="event-card-actions">
-                                <button class="event-btn edit" style="padding: 6px 12px; font-size: 12px;" onclick="editEvent('${event.id}')">Edit</button>
-                                <button class="event-btn danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteEventById('${event.id}')">Delete</button>
+                        <div class="event-card" data-event-id="${event.id}" style="--event-card-color: ${calColor};">
+                            <div class="event-card-summary" onclick="toggleEventCardExpand(this)">
+                                <div class="event-card-summary-content">
+                                    <div class="event-card-title">${event.name || 'Untitled Event'}</div>
+                                    ${summaryMeta}
+                                </div>
+                                <svg class="event-card-chevron" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5 L7 9 L10 5.5"/></svg>
+                            </div>
+                            <div class="event-card-details">
+                                ${recurLabel}
+                                <div class="event-card-detail" style="font-size: 15px; color: #555;">${eventDate}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
+                                ${event.time ? `<div class="event-card-detail">⏰ ${event.time}</div>` : ''}
+                                ${event.location ? `<div class="event-card-detail">📍 ${(event.location || '').replace(/</g, '&lt;')}</div>` : ''}
+                                ${event.notes ? `<div class="event-card-notes">${event.notes}</div>` : ''}
+                                <div class="event-card-actions" onclick="event.stopPropagation()">
+                                    <button class="event-btn edit" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation(); editEvent('${event.id}')">Edit</button>
+                                    <button class="event-btn danger" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation(); deleteEventById('${event.id}')">Delete</button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -7035,7 +7182,7 @@
             eventViewContent.innerHTML = `
                 <button class="modal-close" onclick="closeEventModal()">×</button>
                 <div class="event-header">
-                    <div class="event-date">${dateStr}</div>
+                    <div class="event-date-block">${dateHeaderHTML}</div>
                     ${isRange && existingEvents.length > 0 ? `<button class="event-btn danger" style="margin-top: 12px; padding: 8px 16px;" onclick="deleteAllEventsInRange()">Delete All (${existingEvents.length} events)</button>` : ''}
                 </div>
                 <div class="event-content-wrapper">
@@ -7177,17 +7324,20 @@
                 }
             };
             const updateEventModalHeader = () => {
-                const headerEl = document.querySelector('.event-header .event-date');
-                if (!headerEl) return;
+                const dateBlock = document.querySelector('.event-header .event-date-block');
+                if (!dateBlock) return;
                 const sm = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
                 const sd = parseInt(document.getElementById('eventStartDay')?.value || '1', 10);
                 const em = document.getElementById('eventEndMonth')?.value?.trim();
                 const ed = document.getElementById('eventEndDay')?.value?.trim();
                 const isRange = em && ed && (parseInt(em, 10) !== sm || parseInt(ed, 10) !== sd);
                 if (isRange) {
-                    headerEl.textContent = `${monthNames[sm]} ${sd} – ${monthNames[parseInt(em, 10)]} ${parseInt(ed, 10)}, ${year}`;
+                    const rangeStr = `${monthNames[sm]} ${sd} – ${monthNames[parseInt(em, 10)]} ${parseInt(ed, 10)}, ${year}`;
+                    dateBlock.innerHTML = `<div class="event-date event-date-range">${rangeStr}</div>`;
                 } else {
-                    headerEl.textContent = `${monthNames[sm]} ${sd}, ${year}`;
+                    const dayOfWeek = new Date(year, sm, sd).toLocaleDateString('en-US', { weekday: 'long' });
+                    const dateLine = `${monthNames[sm]} ${sd}, ${year}`;
+                    dateBlock.innerHTML = `<div class="event-day-of-week">${dayOfWeek}</div><div class="event-date-full">${dateLine}</div>`;
                 }
             };
             ['start', 'end'].forEach(type => {
@@ -7272,10 +7422,10 @@
                 card.classList.remove('editing');
             });
             
-            // Add editing class to the selected event card
+            // Add editing class and expand the selected event card
             const eventCard = document.querySelector(`[data-event-id="${eventId}"]`);
             if (eventCard) {
-                eventCard.classList.add('editing');
+                eventCard.classList.add('editing', 'expanded');
             }
             
             // Populate the form with event data
@@ -7427,11 +7577,20 @@
             }
         }
 
+        function toggleEventCardExpand(summaryEl) {
+            const card = summaryEl.closest('.event-card');
+            if (!card) return;
+            const wasExpanded = card.classList.contains('expanded');
+            document.querySelectorAll('.event-card.expanded').forEach(c => c.classList.remove('expanded'));
+            if (!wasExpanded) card.classList.add('expanded');
+        }
+
         // Make functions available globally
         window.editEvent = editEvent;
         window.showEventForm = showEventForm;
         window.hideEventForm = hideEventForm;
         window.onRepeatChange = onRepeatChange;
+        window.toggleEventCardExpand = toggleEventCardExpand;
 
         function closeEventModal() {
             const modal = document.getElementById('eventModal');
