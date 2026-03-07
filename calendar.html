@@ -17,6 +17,7 @@
         body {
             font-family: 'Work Sans', sans-serif;
             padding: 30px;
+            --body-padding-right: 30px;
             background: #fff;
             color: #000;
             font-size: 16px;
@@ -24,6 +25,7 @@
 
         body.modal-open {
             overflow: hidden;
+            padding-right: calc(var(--body-padding-right) + var(--scrollbar-width, 0px));
         }
 
         .header {
@@ -238,9 +240,13 @@
         }
 
         .month-names-strip {
-            display: flex;
-            overflow-x: hidden;
+            overflow: hidden;
             margin-top: 28px;
+        }
+
+        .month-names-inner {
+            display: flex;
+            will-change: transform;
         }
 
         .month-names-strip .month-name-cell {
@@ -806,10 +812,10 @@
             padding-top: 60px;
         }
         .at-a-glance-modal {
-            width: 90vw;
-            max-width: 800px;
-            height: 80vh;
-            min-height: 450px;
+            width: 92vw;
+            max-width: 920px;
+            height: 85vh;
+            min-height: 520px;
             background: #fff;
             border: 1px solid #ddd;
             padding: 32px;
@@ -898,41 +904,80 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 20px;
             padding-right: 24px;
         }
         .at-a-glance-item {
-            padding: 14px 16px;
-            border: 2px solid #e5e5e5;
+            --at-a-glance-color: #157A6E;
+            position: relative;
+            padding: 12px 16px 12px 42px;
+            border: 2px solid var(--at-a-glance-color);
             border-radius: 8px;
             background: #fff;
             cursor: pointer;
             transition: all 0.2s ease;
         }
+        .at-a-glance-item::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            bottom: 10px;
+            width: 10px;
+            border-radius: 5px;
+            background: var(--at-a-glance-color);
+        }
         .at-a-glance-item:hover {
-            border-color: #157A6E;
-            background: color-mix(in srgb, #157A6E 8%, white);
+            border-color: var(--at-a-glance-color);
+            background: color-mix(in srgb, var(--at-a-glance-color) 10%, white);
         }
         .at-a-glance-item-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: #000;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .at-a-glance-item-date {
-            font-size: 14px;
+            font-size: 15px;
             color: #666;
         }
         .at-a-glance-item-time {
-            font-size: 13px;
+            font-size: 15px;
             color: #888;
-            margin-top: 8px;
+            margin-top: 6px;
         }
         .at-a-glance-empty {
-            padding: 40px;
+            padding: 48px 24px;
             text-align: center;
-            color: #999;
+            color: #666;
             font-size: 16px;
+            line-height: 1.6;
+        }
+        .at-a-glance-empty-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .at-a-glance-empty-cta {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #157A6E;
+        }
+        .at-a-glance-empty-btn {
+            margin-top: 12px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 2px solid #157A6E;
+            background: #fff;
+            color: #157A6E;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .at-a-glance-empty-btn:hover {
+            background: color-mix(in srgb, #157A6E 10%, white);
         }
         .at-a-glance-item-preview {
             font-size: 14px;
@@ -940,7 +985,7 @@
             margin-top: 6px;
             line-height: 1.4;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 1;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -971,7 +1016,7 @@
         }
 
         .event-view .event-day-of-week {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 700;
             color: #000;
             letter-spacing: 0.02em;
@@ -979,7 +1024,7 @@
         }
 
         .event-view .event-date-full {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 700;
             color: #000;
             margin-top: 6px;
@@ -1058,10 +1103,31 @@
             transition: all 0.2s ease;
             width: 100%;
             max-width: 100%;
-            overflow: hidden;
         }
 
-        .event-card::before {
+        .event-card:hover {
+            border-color: var(--event-card-color);
+            background: color-mix(in srgb, var(--event-card-color) 10%, white);
+            box-shadow: none;
+        }
+
+        .event-card.editing {
+            border-color: #157A6E;
+            background: color-mix(in srgb, #157A6E 10%, white);
+            box-shadow: 0 0 0 3px color-mix(in srgb, #157A6E 15%, transparent);
+        }
+
+        .event-card-summary {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px 12px 42px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .event-card-summary::before {
             content: '';
             position: absolute;
             left: 10px;
@@ -1072,40 +1138,13 @@
             background: var(--event-card-color);
         }
 
-        .event-card:hover {
-            border-color: var(--event-card-color);
-            box-shadow: none;
-        }
-
-        .event-card:hover .event-card-summary {
-            background: color-mix(in srgb, var(--event-card-color) 10%, white);
-        }
-
-        .event-card.editing {
-            border-color: #157A6E;
-            box-shadow: 0 0 0 3px color-mix(in srgb, #157A6E 15%, transparent);
-        }
-
-        .event-card.editing .event-card-summary {
-            background: color-mix(in srgb, #157A6E 10%, white);
-        }
-
-        .event-card-summary {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px 12px 42px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
         .event-card-summary-content {
             flex: 1;
             min-width: 0;
         }
 
         .event-card-summary .event-card-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: #000;
             margin: 0;
@@ -1115,9 +1154,9 @@
         }
 
         .event-card-summary-meta {
-            font-size: 13px;
+            font-size: 15px;
             color: #666;
-            margin-top: 2px;
+            margin-top: 8px;
         }
 
         .event-card-summary-meta .event-card-tag {
@@ -1144,26 +1183,28 @@
 
         .event-card-details {
             display: none;
-            padding: 0 16px 16px 42px;
-            border-top: 1px solid #eee;
+            padding: 0 16px 0 42px;
+            border-top: 1px solid #e0e0e0;
         }
 
         .event-card.expanded .event-card-details {
             display: block;
-            padding: 16px 16px 20px 42px;
+            padding: 10px 16px 20px 42px;
         }
 
         .event-card-actions {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 14px;
+            margin-bottom: 0;
+            min-height: 0;
         }
 
         .event-recurring-badge {
-            font-size: 13px;
+            font-size: 14px;
             color: #999;
             letter-spacing: 0.02em;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
         .event-repeat-until-field {
@@ -1171,21 +1212,20 @@
         }
 
         .event-card-detail {
-            font-size: 15px;
+            font-size: 16px;
             color: #666;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .event-card-notes {
-            font-size: 15px;
+            font-size: 16px;
             line-height: 1.5;
             color: #333;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #e0e0e0;
+            margin-top: 8px;
+            padding-top: 0;
         }
 
         .add-event-btn-side {
@@ -2097,17 +2137,14 @@
             border-radius: 4px;
         }
 
-        .shortcuts-table .shortcuts-section-header {
+        .shortcuts-table .shortcuts-section-header td {
             font-weight: 600;
             color: #333;
-            background: #fafafa;
-            border-bottom: 1px solid #eee;
-            padding: 10px 16px;
-        }
-        .shortcuts-table .shortcuts-section-header td {
+            padding-top: 20px;
+            padding-bottom: 8px;
             border-bottom: none;
-            padding-top: 10px;
-            padding-bottom: 6px;
+            border-top: none;
+            text-align: left;
         }
         .shortcuts-table .shortcuts-section-header:first-child td {
             padding-top: 10px;
@@ -2121,9 +2158,13 @@
         }
 
         #shortcutsModal .stats-modal-content {
-            width: 90vw;
-            max-width: 800px;
-            max-height: 80vh;
+            width: 92vw;
+            max-width: 920px;
+            height: 85vh;
+            min-height: 520px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .stats-section {
@@ -2491,26 +2532,6 @@
             background-color: #e8f0ed;
         }
 
-        .mark-today-btn::after {
-            content: '(M)';
-            font-size: 11px;
-            margin-left: 6px;
-            font-weight: normal;
-            color: #666;
-        }
-
-        .btn-with-shortcut::after {
-            content: attr(data-shortcut);
-            font-size: 11px;
-            margin-left: 6px;
-            font-weight: normal;
-            color: #666;
-        }
-
-        .mark-today-btn.btn-colored::after,
-        .btn-with-shortcut.btn-colored::after {
-            color: #fff;
-        }
 
         /* Custom Alert/Confirm Modal */
         .custom-modal-overlay {
@@ -2672,6 +2693,7 @@
         @media (max-width: 700px) {
             body {
                 padding: 20px 24px;
+                --body-padding-right: 24px;
                 overflow-x: hidden;
             }
 
@@ -2734,6 +2756,7 @@
         @media (max-width: 480px) {
             body {
                 padding: 15px 20px;
+                --body-padding-right: 20px;
                 overflow-x: hidden;
             }
 
@@ -2864,10 +2887,11 @@
                         <tr><td><kbd>⌘</kbd> + <kbd>I</kbd></td><td>Italic</td></tr>
                         <tr class="shortcuts-section-spacer"><td colspan="2"></td></tr>
                         <tr class="shortcuts-section-header"><td colspan="2">General</td></tr>
+                        <tr><td><kbd>Esc</kbd></td><td>Close modal</td></tr>
                         <tr><td><kbd>N</kbd></td><td>Create new (habit, calendar, or journal)</td></tr>
                     </tbody>
                 </table>
-                <div class="shortcuts-tips" style="margin-top: 12px; padding-top: 12px;">
+                <div class="shortcuts-tips" style="margin-top: 12px; padding-top: 24px;">
                     <div style="font-weight: 600; color: #333; margin-bottom: 8px;">Tips</div>
                     <ol style="margin: 0; padding-left: 20px; font-size: 16px; color: #666; line-height: 1.6;">
                         <li style="margin-bottom: 12px;">Drag across days on the calendar to select multiple days at once — for <strong>Events</strong>, this creates an event spanning the range; for <strong>Habits</strong>, it marks or unmarks all days in the range.</li>
@@ -2965,7 +2989,7 @@
                             <!-- Options will be populated by JavaScript -->
                         </div>
                     </div>
-                    <button class="create-habit-btn btn-with-shortcut" id="addEventBtnHeader" title="Add event with manual dates (or press A)" data-shortcut="(A)">+ Add Event</button>
+                    <button class="create-habit-btn" id="addEventBtnHeader" title="Add event with manual dates (or press A)">+ Add Event</button>
                 </div>
                 <!-- Journal Mode UI -->
                 <div id="journalModeUI" class="mode-ui" style="display: none;">
@@ -2978,7 +3002,7 @@
                             <!-- Options will be populated by JavaScript -->
                         </div>
                     </div>
-                    <button class="create-habit-btn btn-with-shortcut" id="editTodayJournalBtn" title="Edit today's journal (or press T)" data-shortcut="(T)">Edit Today</button>
+                    <button class="create-habit-btn" id="editTodayJournalBtn" title="Edit today's journal (or press T)">Edit Today</button>
                 </div>
             </div>
         </div>
@@ -3093,6 +3117,30 @@
     </div>
 
     <script>
+        function getScrollbarWidth() {
+            const div = document.createElement('div');
+            div.style.cssText = 'position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll;';
+            document.body.appendChild(div);
+            const w = div.offsetWidth - div.clientWidth;
+            document.body.removeChild(div);
+            return w;
+        }
+
+        let modalOpenCount = 0;
+        function lockScroll() {
+            modalOpenCount++;
+            if (modalOpenCount > 1) return;
+            const sbw = getScrollbarWidth();
+            document.documentElement.style.setProperty('--scrollbar-width', sbw + 'px');
+            document.body.classList.add('modal-open');
+        }
+
+        function unlockScroll() {
+            modalOpenCount = Math.max(0, modalOpenCount - 1);
+            if (modalOpenCount > 0) return;
+            document.body.classList.remove('modal-open');
+        }
+
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                           'July', 'August', 'September', 'October', 'November', 'December'];
         const monthAbbr = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
@@ -3236,19 +3284,19 @@
                 okBtn.textContent = 'OK';
                 okBtn.onclick = () => {
                     overlay.classList.remove('active');
-                    document.body.classList.remove('modal-open');
+                    unlockScroll();
                     resolve(true);
                 };
                 modalButtons.appendChild(okBtn);
                 
                 overlay.classList.add('active');
-                document.body.classList.add('modal-open');
+                lockScroll();
                 
                 // Close on overlay click
                 overlay.onclick = (e) => {
                     if (e.target === overlay) {
                         overlay.classList.remove('active');
-                        document.body.classList.remove('modal-open');
+                        unlockScroll();
                         resolve(true);
                     }
                 };
@@ -3271,7 +3319,7 @@
                 cancelBtn.textContent = 'Cancel';
                 cancelBtn.onclick = () => {
                     overlay.classList.remove('active');
-                    document.body.classList.remove('modal-open');
+                    unlockScroll();
                     resolve(false);
                 };
                 
@@ -3280,7 +3328,7 @@
                 confirmBtn.textContent = 'OK';
                 confirmBtn.onclick = () => {
                     overlay.classList.remove('active');
-                    document.body.classList.remove('modal-open');
+                    unlockScroll();
                     resolve(true);
                 };
                 
@@ -3288,13 +3336,13 @@
                 modalButtons.appendChild(confirmBtn);
                 
                 overlay.classList.add('active');
-                document.body.classList.add('modal-open');
+                lockScroll();
                 
                 // Close on overlay click (treats as cancel)
                 overlay.onclick = (e) => {
                     if (e.target === overlay) {
                         overlay.classList.remove('active');
-                        document.body.classList.remove('modal-open');
+                        unlockScroll();
                         resolve(false);
                     }
                 };
@@ -3573,7 +3621,7 @@
             const title = modal.querySelector('h3');
             const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
             input.value = '';
             input.placeholder = 'Enter habit name... (meditate for 2 minutes, do 5 pushups, read a page, etc.)';
             if (title) title.textContent = 'Create a New Habit';
@@ -3590,7 +3638,7 @@
             const title = modal.querySelector('h3');
             const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
             input.value = habit.name;
             input.placeholder = 'Enter habit name...';
             if (title) title.textContent = 'Edit Habit';
@@ -3618,7 +3666,7 @@
             const modal = document.getElementById('createHabitModal');
             const pickerDropdown = document.getElementById('customColorPickerDropdown');
             modal?.classList.remove('active');
-            document.body.classList.remove('modal-open');
+            unlockScroll();
             pickerDropdown?.classList.remove('active');
         }
 
@@ -3708,7 +3756,7 @@
             
             populateStatsModal();
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
         }
 
         // Close stats modal
@@ -3716,7 +3764,7 @@
             const modal = document.getElementById('statsModal');
             if (modal) {
                 modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
+                unlockScroll();
             }
         }
 
@@ -3724,7 +3772,7 @@
             const modal = document.getElementById('shortcutsModal');
             if (modal) {
                 modal.classList.add('active');
-                document.body.classList.add('modal-open');
+                lockScroll();
             }
         }
 
@@ -3732,7 +3780,7 @@
             const modal = document.getElementById('shortcutsModal');
             if (modal) {
                 modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
+                unlockScroll();
             }
         }
 
@@ -4312,7 +4360,7 @@
             const title = modal.querySelector('h3');
             const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
             input.value = calendar.name;
             input.placeholder = 'Enter calendar name...';
             if (title) title.textContent = 'Edit Calendar';
@@ -4634,7 +4682,7 @@
             const title = modal.querySelector('h3');
             const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
             input.value = journal.name;
             input.placeholder = 'Enter journal name...';
             if (title) title.textContent = 'Edit Journal';
@@ -4776,7 +4824,7 @@
             const title = modal.querySelector('h3');
             const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
             input.value = '';
             input.placeholder = 'Enter journal name... (daily notes, gratitude, lessons learned, etc.)';
             if (title) title.textContent = 'Create a New Journal';
@@ -4795,7 +4843,7 @@
             const title = modal.querySelector('h3');
             const saveBtn = document.getElementById('saveHabitBtn');
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
             input.value = '';
             input.placeholder = 'Enter calendar name... (birthdays, holidays, travel, plans, etc.)';
             if (title) title.textContent = 'Create a new Calendar';
@@ -5551,16 +5599,17 @@
             // Populate month names strip in sticky header
             const strip = document.getElementById('monthNamesStrip');
             if (strip) {
-                strip.innerHTML = monthAbbr.map((m, i) => `<div class="month-name-cell" data-month="${i}">${m}</div>`).join('');
-                strip.style.display = 'flex';
+                strip.innerHTML = `<div class="month-names-inner">${monthAbbr.map((m, i) => `<div class="month-name-cell" data-month="${i}">${m}</div>`).join('')}</div>`;
+                strip.style.display = 'block';
             }
 
             const yearView = document.createElement('div');
             yearView.className = 'year-view';
 
-            // Sync month names strip scroll with year view
+            // Sync month names strip with year view scroll via transform (compositor-driven, no layout lag)
             yearView.addEventListener('scroll', () => {
-                if (strip) strip.scrollLeft = yearView.scrollLeft;
+                const inner = strip && strip.querySelector('.month-names-inner');
+                if (inner) inner.style.transform = `translateX(-${yearView.scrollLeft}px)`;
             });
 
             // Create 12 month columns (no header — shown in sticky strip above)
@@ -5984,7 +6033,7 @@
             }
             
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
 
             // Smooth scroll year view to this day and briefly highlight it
             requestAnimationFrame(() => {
@@ -6151,7 +6200,7 @@
         function closeDayModal() {
             const modal = document.getElementById('dayModal');
             modal.classList.remove('active');
-            document.body.classList.remove('modal-open');
+            unlockScroll();
             currentView = currentView === 'year' ? 'year' : 'month';
             // If in journal mode, re-render to update highlighting
             if (currentMode === 'journal') {
@@ -6672,7 +6721,7 @@
                 cancelBtn.textContent = 'Cancel';
                 cancelBtn.onclick = () => {
                     overlay.classList.remove('active');
-                    document.body.classList.remove('modal-open');
+                    unlockScroll();
                     resolve(false);
                 };
 
@@ -6681,7 +6730,7 @@
                 deleteBtn.textContent = 'Delete all';
                 deleteBtn.onclick = () => {
                     overlay.classList.remove('active');
-                    document.body.classList.remove('modal-open');
+                    unlockScroll();
                     resolve(true);
                 };
 
@@ -6689,12 +6738,12 @@
                 modalButtons.appendChild(deleteBtn);
 
                 overlay.classList.add('active');
-                document.body.classList.add('modal-open');
+                lockScroll();
 
                 overlay.onclick = (e) => {
                     if (e.target === overlay) {
                         overlay.classList.remove('active');
-                        document.body.classList.remove('modal-open');
+                        unlockScroll();
                         resolve(false);
                     }
                 };
@@ -6766,7 +6815,8 @@
             }
             return filtered.sort((a, b) => {
                 if (a.month !== b.month) return a.month - b.month;
-                return a.day - b.day;
+                if (a.day !== b.day) return a.day - b.day;
+                return parseEventTimeForSort(a.time) - parseEventTimeForSort(b.time);
             });
         }
 
@@ -6779,7 +6829,7 @@
             if (filter === 'week') {
                 const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
                 const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
-                return `${monthAbbrTitle(startDate.getMonth())} ${startDate.getDate()}–${monthAbbrTitle(endDate.getMonth())} ${endDate.getDate()}, ${year}`;
+                return `${monthAbbrTitle(startDate.getMonth())} ${startDate.getDate()} – ${monthAbbrTitle(endDate.getMonth())} ${endDate.getDate()}, ${year}`;
             }
             if (filter === 'month') {
                 const m = todayMonth + offset;
@@ -6806,26 +6856,42 @@
             const upcoming = getUpcomingEventsInRange(atAGlanceFilter, atAGlanceOffset);
             const periodLabel = getAtAGlancePeriodLabel(atAGlanceFilter, atAGlanceOffset);
             if (upcoming.length === 0) {
-                listEl.innerHTML = `<div class="at-a-glance-empty">No events in ${periodLabel || ('this ' + atAGlanceFilter)}</div>`;
+                const periodText = periodLabel || ('this ' + atAGlanceFilter);
+                listEl.innerHTML = `
+                    <div class="at-a-glance-empty">
+                        <div class="at-a-glance-empty-title">No events in ${periodText}</div>
+                        <div class="at-a-glance-empty-cta">Click a day on the calendar to add an event, or try another period using the arrows above.</div>
+                        <button type="button" class="at-a-glance-empty-btn" onclick="closeAtAGlanceModal()">Close</button>
+                    </div>`;
                 return;
             }
             listEl.innerHTML = upcoming.map(e => {
                 const cal = calendars.find(c => c.id === e.calendarId);
                 const calColor = cal ? getCalendarColor(cal) : '#157A6E';
                 const calName = cal ? cal.name : '';
-                return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}">
+                return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}" style="--at-a-glance-color: ${calColor};" tabindex="0" role="button">
                     <div class="at-a-glance-item-title">${(e.name || 'Untitled Event').replace(/</g, '&lt;')}</div>
                     <div class="at-a-glance-item-date">${monthNames[e.month]} ${e.day}, ${e.year}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
                     ${e.time ? `<div class="at-a-glance-item-time">⏰ ${e.time.replace(/</g, '&lt;')}</div>` : ''}
-                    ${e.location ? `<div class="at-a-glance-item-time">📍 ${(e.location || '').replace(/</g, '&lt;')}</div>` : ''}
                 </div>`;
             }).join('');
             listEl.querySelectorAll('.at-a-glance-item').forEach(item => {
-                item.addEventListener('click', () => {
+                const activate = () => {
                     const month = parseInt(item.dataset.month, 10);
                     const day = parseInt(item.dataset.day, 10);
                     closeAtAGlanceModal();
                     openEventModal(month, day);
+                    requestAnimationFrame(() => {
+                        const firstCard = document.querySelector('.event-card');
+                        if (firstCard) firstCard.classList.add('expanded');
+                    });
+                };
+                item.addEventListener('click', activate);
+                item.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        activate();
+                    }
                 });
             });
         }
@@ -6836,14 +6902,18 @@
             atAGlanceOffset = 0;
             renderAtAGlanceList();
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
+            requestAnimationFrame(() => {
+                const firstFocusable = modal.querySelector('.at-a-glance-filter.active') || modal.querySelector('.at-a-glance-filter') || modal.querySelector('.modal-close');
+                if (firstFocusable) firstFocusable.focus();
+            });
         }
 
         function closeAtAGlanceModal() {
             const modal = document.getElementById('atAGlanceModal');
             if (modal) {
                 modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
+                unlockScroll();
             }
         }
 
@@ -6909,7 +6979,7 @@
             if (filter === 'week') {
                 const startDate = new Date(year, todayMonth, todayDay + (offset * 7));
                 const endDate = new Date(year, todayMonth, todayDay + (offset * 7) + 6);
-                return `${monthAbbrTitle(startDate.getMonth())} ${startDate.getDate()}–${monthAbbrTitle(endDate.getMonth())} ${endDate.getDate()}, ${year}`;
+                return `${monthAbbrTitle(startDate.getMonth())} ${startDate.getDate()} – ${monthAbbrTitle(endDate.getMonth())} ${endDate.getDate()}, ${year}`;
             }
             if (filter === 'month') {
                 const m = todayMonth + offset;
@@ -6942,7 +7012,8 @@
             }
             listEl.innerHTML = entries.map(e => {
                 const plainPreview = stripMarkdownToPlain(e.plain);
-                const preview = plainPreview.length > 120 ? plainPreview.slice(0, 120) + '…' : plainPreview;
+                const firstLine = plainPreview.split(/\r?\n/)[0].trim();
+                const preview = firstLine.length > 120 ? firstLine.slice(0, 120) + '…' : firstLine;
                 return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}">
                     <div class="at-a-glance-item-title">${monthNames[e.month]} ${e.day}, ${displayYear}</div>
                     <div class="at-a-glance-item-preview">${escapeHtml(preview)}</div>
@@ -6964,14 +7035,14 @@
             journalAtAGlanceOffset = 0;
             renderJournalAtAGlanceList();
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
         }
 
         function closeJournalAtAGlanceModal() {
             const modal = document.getElementById('journalAtAGlanceModal');
             if (modal) {
                 modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
+                unlockScroll();
             }
         }
 
@@ -7161,8 +7232,6 @@
                             </div>
                             <div class="event-card-details">
                                 ${recurLabel}
-                                <div class="event-card-detail" style="font-size: 15px; color: #555;">${eventDate}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
-                                ${event.time ? `<div class="event-card-detail">⏰ ${event.time}</div>` : ''}
                                 ${event.location ? `<div class="event-card-detail">📍 ${(event.location || '').replace(/</g, '&lt;')}</div>` : ''}
                                 ${event.notes ? `<div class="event-card-notes">${event.notes}</div>` : ''}
                                 <div class="event-card-actions" onclick="event.stopPropagation()">
@@ -7282,7 +7351,7 @@
             const accentColor = getSelectedCalendarColor() || '#157A6E';
             modal.style.setProperty('--event-accent-color', accentColor);
             modal.classList.add('active');
-            document.body.classList.add('modal-open');
+            lockScroll();
             initEventDatePickers(year);
         }
 
@@ -7595,7 +7664,7 @@
         function closeEventModal() {
             const modal = document.getElementById('eventModal');
             modal.classList.remove('active');
-            document.body.classList.remove('modal-open');
+            unlockScroll();
             eventModalRange = null;
             eventModalContext = null;
         }
@@ -7732,21 +7801,21 @@
                 const cancelBtn = document.createElement('button');
                 cancelBtn.className = 'custom-modal-btn';
                 cancelBtn.textContent = 'Cancel';
-                cancelBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve(null); };
+                cancelBtn.onclick = () => { overlay.classList.remove('active'); unlockScroll(); resolve(null); };
                 const thisOneBtn = document.createElement('button');
                 thisOneBtn.className = 'custom-modal-btn';
                 thisOneBtn.textContent = 'Just this one';
-                thisOneBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve('one'); };
+                thisOneBtn.onclick = () => { overlay.classList.remove('active'); unlockScroll(); resolve('one'); };
                 const allBtn = document.createElement('button');
                 allBtn.className = 'custom-modal-btn danger';
                 allBtn.textContent = `All ${seriesCount} occurrences`;
-                allBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve('all'); };
+                allBtn.onclick = () => { overlay.classList.remove('active'); unlockScroll(); resolve('all'); };
                 modalButtons.appendChild(cancelBtn);
                 modalButtons.appendChild(thisOneBtn);
                 modalButtons.appendChild(allBtn);
                 overlay.classList.add('active');
-                document.body.classList.add('modal-open');
-                overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve(null); } };
+                lockScroll();
+                overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('active'); unlockScroll(); resolve(null); } };
             });
         }
 
@@ -7762,21 +7831,21 @@
                 const cancelBtn = document.createElement('button');
                 cancelBtn.className = 'custom-modal-btn';
                 cancelBtn.textContent = 'Cancel';
-                cancelBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve(null); };
+                cancelBtn.onclick = () => { overlay.classList.remove('active'); unlockScroll(); resolve(null); };
                 const thisOneBtn = document.createElement('button');
                 thisOneBtn.className = 'custom-modal-btn';
                 thisOneBtn.textContent = 'Just this one';
-                thisOneBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve('one'); };
+                thisOneBtn.onclick = () => { overlay.classList.remove('active'); unlockScroll(); resolve('one'); };
                 const allBtn = document.createElement('button');
                 allBtn.className = 'custom-modal-btn primary';
                 allBtn.textContent = 'All occurrences';
-                allBtn.onclick = () => { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve('all'); };
+                allBtn.onclick = () => { overlay.classList.remove('active'); unlockScroll(); resolve('all'); };
                 modalButtons.appendChild(cancelBtn);
                 modalButtons.appendChild(thisOneBtn);
                 modalButtons.appendChild(allBtn);
                 overlay.classList.add('active');
-                document.body.classList.add('modal-open');
-                overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('active'); document.body.classList.remove('modal-open'); resolve(null); } };
+                lockScroll();
+                overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('active'); unlockScroll(); resolve(null); } };
             });
         }
 
