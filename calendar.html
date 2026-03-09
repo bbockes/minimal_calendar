@@ -346,7 +346,7 @@
             top: 0;
             bottom: 0;
             width: 3px;
-            background-color: var(--today-border-color, #0E5C52);
+            background-color: #000;
         }
 
         .year-view .day-row.today .day-number {
@@ -6064,7 +6064,7 @@
             const hasContent = (savedNotes || '').trim() !== '';
             const isEditMode = !hasContent;
 
-            const sourceLabel = source === 'search' ? 'From: Search' : source === 'atAGlance' ? 'From: At a Glance' : '';
+            const sourceLabel = source === 'search' ? 'From: Search' : '';
 
             dayViewContent.innerHTML = `
                 <button class="modal-close" onclick="closeDayModal()">×</button>
@@ -6131,19 +6131,6 @@
             
             modal.classList.add('active');
             lockScroll();
-
-            // Smooth scroll year view to this day and briefly highlight it
-            requestAnimationFrame(() => {
-                const yv = document.querySelector('.year-view');
-                if (!yv) return;
-                const monthCol = yv.querySelector(`.month-column:nth-child(${month + 1})`);
-                if (!monthCol) return;
-                const row = monthCol.querySelector(`.day-row:nth-child(${day})`);
-                if (!row) return;
-                row.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                row.classList.add('jump-highlight');
-                setTimeout(() => row.classList.remove('jump-highlight'), 700);
-            });
         }
 
         function rawForEdit(str) {
@@ -6362,6 +6349,9 @@
             clone.querySelectorAll('.day-row.event-drag-range').forEach(row => {
                 row.classList.remove('event-drag-range', 'edge-top', 'edge-bottom', 'edge-left', 'edge-right');
             });
+            clone.querySelectorAll('.day-row.today').forEach(row => {
+                row.classList.remove('today');
+            });
             let title = String(currentYear);
             let subtitle = '';
             if (currentMode === 'habits' && selectedHabitId) {
@@ -6395,13 +6385,19 @@
                 * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                 @page { margin: 0.5in; size: ${pageOrientation}; }
                 @media print {
-                    @page { margin: 0.5in; size: ${pageOrientation}; }
-                    body { padding: 8px 0; }
+                    @page { margin: ${pageOrientation === 'landscape' ? '0.25in' : '0.5in'}; size: ${pageOrientation}; }
+                    body { padding: 0.25in; width: 100%; box-sizing: border-box; }
                     h1 { font-size: 36px !important; font-weight: bold !important; text-align: center !important; }
                     .print-subtitle { font-size: 15px !important; color: #666 !important; margin-bottom: 40px !important; }
-                    /* Scale calendar to fit all 12 months + header on one landscape page */
-                    .year-view .month-column { width: 80px !important; min-width: 80px !important; }
-                    .month-names-strip .month-name-cell { width: 80px !important; min-width: 80px !important; flex: 0 0 80px !important; font-size: 11px !important; padding: 4px 0 !important; }
+                    /* Full-width calendar: use all available page width */
+                    .print-first-page { width: 100%; box-sizing: border-box; }
+                    .print-calendar-wrap { width: 100% !important; max-width: 100% !important; box-sizing: border-box; }
+                    .year-view-container { width: 100% !important; max-width: 100% !important; }
+                    .year-view { width: 100% !important; max-width: 100% !important; overflow: visible !important; }
+                    .year-view .month-column { flex: 1 1 0 !important; min-width: 0 !important; width: auto !important; }
+                    .month-names-strip { width: 100% !important; }
+                    .month-names-strip .month-names-inner { width: 100% !important; }
+                    .month-names-strip .month-name-cell { flex: 1 1 0 !important; min-width: 0 !important; width: auto !important; font-size: 11px !important; padding: 4px 0 !important; }
                     .year-view .month-header { font-size: 11px !important; padding: 4px 0 !important; }
                     .year-view .day-row { min-height: 14px !important; }
                     .year-view .day-number, .year-view .day-name { font-size: 9px !important; padding: 1px 4px !important; }
@@ -6412,19 +6408,19 @@
                     .year-view .day-row.today .day-number { font-weight: normal !important; }
                     .year-view .day-row:hover { background-color: inherit !important; }
                 }
-                .print-calendar-key { page-break-before: always; margin-top: 40px; padding-top: 24px; }
+                .print-calendar-key { margin-top: 16px; padding: 0.5in 0.25in 0.5in 0.25in; box-sizing: border-box; }
                 .print-calendar-key h2 { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 24px; }
                 .print-calendar-key ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: center; }
                 .print-calendar-key li { display: flex; align-items: center; gap: 10px; font-size: 16px; }
                 .print-calendar-key .key-swatch { width: 24px; height: 24px; border-radius: 4px; flex-shrink: 0; border: 1px solid #ccc; }
-                .print-events-list { margin-top: 32px; }
+                .print-events-list { margin-top: 32px; padding: 0.5in 0.25in 0.5in 0.25in; box-sizing: border-box; }
                 .print-events-list h3 { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
                 .print-events-list table { width: 100%; border-collapse: collapse; font-size: 14px; }
                 .print-events-list th { text-align: left; padding: 8px 12px; border-bottom: 2px solid #ddd; font-weight: 600; }
                 .print-events-list td { padding: 8px 12px; border-bottom: 1px solid #eee; }
                 .print-events-list .event-cal { font-weight: 500; }
                 .print-events-single { page-break-before: always; margin-top: 0; padding-top: 0; }
-                .print-journal-entries { page-break-before: always; margin-top: 0; padding-top: 0; max-width: 65ch; margin-left: 0; margin-right: auto; text-align: left; }
+                .print-journal-entries { page-break-before: always; margin-top: 0; padding: 0.5in 0.25in 0.5in 0.25in; box-sizing: border-box; max-width: 65ch; margin-left: 0; margin-right: auto; text-align: left; }
                 .print-journal-entries h3 { font-size: 28px; font-weight: bold; margin-bottom: 32px; text-align: left; }
                 .print-journal-entry { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid #e8e8e8; }
                 .print-journal-entry:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
@@ -6437,9 +6433,11 @@
                 .print-journal-entry-content u { text-decoration: underline; }
                 .print-journal-entry-content a { color: #157A6E; text-decoration: underline; }
                 @media print {
-                    .print-calendar-key { padding-top: 0; margin-top: 0; }
-                    body.print-journal .year-view .month-column { width: 65px !important; min-width: 65px !important; }
-                    body.print-journal .month-names-strip .month-name-cell { width: 65px !important; min-width: 65px !important; flex: 0 0 65px !important; font-size: 11px !important; padding: 6px 0 !important; }
+                    .print-calendar-key { padding: 0.5in 0.25in 0.5in 0.25in !important; margin-top: 16px !important; }
+                    .print-events-list { padding: 0.5in 0.25in 0.5in 0.25in !important; }
+                    .print-journal-entries { padding: 0.5in 0.25in 0.5in 0.25in !important; }
+                    body.print-journal .year-view .month-column { flex: 1 1 0 !important; min-width: 0 !important; width: auto !important; }
+                    body.print-journal .month-names-strip .month-name-cell { flex: 1 1 0 !important; min-width: 0 !important; width: auto !important; font-size: 11px !important; padding: 6px 0 !important; }
                     body.print-journal .year-view .month-header { font-size: 11px !important; padding: 6px 0 !important; }
                     body.print-journal .year-view .day-row { min-height: 16px !important; }
                     body.print-journal .year-view .day-number, body.print-journal .year-view .day-name { font-size: 9px !important; }
