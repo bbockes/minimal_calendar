@@ -4493,6 +4493,10 @@
 
         function deleteCalendar(calendarId) {
             calendars = calendars.filter(c => c.id !== calendarId);
+
+            // Remove all events that belonged to this calendar
+            events = events.filter(e => e.calendarId !== calendarId);
+            saveEvents();
             
             // Clear all marked dates for this calendar
             const keys = Object.keys(localStorage);
