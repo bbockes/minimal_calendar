@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Year — Your year, one view</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: #fff;
+            color: #000;
+            font-size: 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        main {
+            text-align: center;
+            max-width: 420px;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            font-size: 17px;
+            font-weight: 400;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        .cta {
+            display: inline-block;
+            padding: 14px 28px;
+            background: #157A6E;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .cta:hover {
+            background: #0E5C52;
+        }
+
+        .cta:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
+        .uvps {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 28px;
+            font-size: 15px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .uvps li {
+            padding: 6px 0;
+            padding-left: 1.2em;
+            position: relative;
+        }
+
+        .uvps li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.75em;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #157A6E;
+        }
+
+        .meta {
+            margin-top: 48px;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .meta a {
+            color: #157A6E;
+            text-decoration: none;
+        }
+
+        .meta a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Your Year</h1>
+        <p>Your year at a glance.</p>
+        <ul class="uvps">
+            <li>Track events, habits, and daily thoughts</li>
+            <li>Privacy-first — your data never leaves your device</li>
+            <li>Export anytime — backup or move your data</li>
+            <li>No account required — start in one click</li>
+            <li>Print your year when you're done</li>
+        </ul>
+        <a href="/demo" class="cta">Try it now</a>
+    </main>
+</body>
+</html>

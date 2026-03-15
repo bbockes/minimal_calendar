@@ -1,0 +1,2 @@
+# Serve calendar at /demo (Netlify)
+/demo    /calendar.html    200
