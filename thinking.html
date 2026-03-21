@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Calendar for Thinking — Your Year</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: #fff;
+            color: #111;
+            font-size: 18px;
+            line-height: 1.65;
+            min-height: 100vh;
+            padding: 48px 24px 80px;
+        }
+
+        .wrap {
+            max-width: 38rem;
+            margin: 0 auto;
+        }
+
+        .back {
+            display: inline-block;
+            font-size: 15px;
+            font-weight: 500;
+            color: #157A6E;
+            text-decoration: none;
+            margin-bottom: 2.5rem;
+        }
+
+        .back:hover {
+            text-decoration: underline;
+        }
+
+        .back:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
+        h1 {
+            font-size: clamp(1.75rem, 4vw, 2.25rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            margin-bottom: 2rem;
+            color: #000;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            color: #333;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        .lead {
+            font-size: 1.05rem;
+            color: #222;
+        }
+
+        p.section-label {
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p.section-label strong {
+            font-weight: 600;
+            color: #111;
+        }
+
+        .closing {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .closing-question {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #000;
+            font-style: italic;
+            margin-top: 1.5rem;
+            line-height: 1.5;
+        }
+
+        ul.questions {
+            list-style: none;
+            margin: 1.25rem 0 1.5rem;
+        }
+
+        ul.questions li {
+            position: relative;
+            padding-left: 1.15em;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        ul.questions li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.65em;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #157A6E;
+        }
+    </style>
+</head>
+<body>
+    <article class="wrap">
+        <a href="/" class="back">← Your Year</a>
+        <h1>A Calendar for Thinking</h1>
+
+        <p class="lead">James Clear, author of <em>Atomic Habits</em>, says the most important habit is reflection.</p>
+        <p>Because the real leverage in life isn’t effort—it’s direction.</p>
+        <p>Choosing the right thing to focus on can 10x or 100x your results.</p>
+        <p>But that only happens if you regularly step back and ask:</p>
+        <p>What are you using your time for?</p>
+
+        <p>It’s harder than it sounds.</p>
+        <p>Your time is scattered across calendars, habit trackers, and notes—fragmented into pieces that never quite come together.</p>
+        <p>So you stay busy. You move forward.</p>
+        <p>But you’re not always sure where it leads.</p>
+        <p>You only notice when you stop and notice something’s missing.</p>
+
+        <p class="section-label"><strong>Here’s the problem:</strong></p>
+        <p>Most tools aren’t built for reflection.</p>
+        <p>Calendars organize your time.</p>
+        <p>Productivity apps optimize your output.</p>
+        <p>AI helps you move faster.</p>
+        <p>But none of them are designed to show you what your life is adding up to.</p>
+        <p>And if you can’t see it, you can’t reflect on it—learn from it, improve on it.</p>
+
+        <p class="section-label"><strong>What’s missing is simple:</strong></p>
+        <p>A clear, continuous view of your time—your days, your habits, your thoughts—all in one place. A way to see your year up close, and step back to see what it’s becoming.</p>
+
+        <p class="section-label"><strong>That’s why I built Your Year.</strong></p>
+        <p>A minimal, linear calendar for your days, habits, and thoughts—seen across an entire year.</p>
+        <p>Not as isolated entries, but as a story.</p>
+        <p>A place to zoom out and ask:</p>
+        <ul class="questions">
+            <li>What did I actually do this month?</li>
+            <li>Did my time reflect what I said mattered?</li>
+            <li>What is my life adding up to?</li>
+        </ul>
+        <p>Because reflection is how you course-correct.</p>
+        <p>It’s how you close the gap between what you value and how you actually spend your time. And it’s how you recognize the progress you’ve made along the way.</p>
+
+        <div class="closing">
+            <p>This year—and the next, and the one after that—it’s going to pass regardless.</p>
+            <p>The question is:</p>
+            <p class="closing-question">Will it pass by default—<br>or by design?</p>
+        </div>
+    </article>
+</body>
+</html>

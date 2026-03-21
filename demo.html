@@ -47,14 +47,6 @@
             margin-bottom: 28px;
         }
 
-        .cta-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
-            align-items: center;
-        }
-
         .cta {
             display: inline-block;
             padding: 14px 28px;
@@ -64,40 +56,16 @@
             font-weight: 500;
             font-size: 16px;
             border-radius: 8px;
-            border: 2px solid #157A6E;
+            border: none;
             cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
+            transition: background-color 0.2s;
         }
 
         .cta:hover {
             background: #0E5C52;
-            border-color: #0E5C52;
         }
 
         .cta:focus-visible {
-            outline: 2px solid #157A6E;
-            outline-offset: 2px;
-        }
-
-        .cta-secondary {
-            display: inline-block;
-            padding: 14px 28px;
-            background: transparent;
-            color: #157A6E;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 16px;
-            border-radius: 8px;
-            border: 2px solid #157A6E;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
-        }
-
-        .cta-secondary:hover {
-            background: rgba(21, 122, 110, 0.08);
-        }
-
-        .cta-secondary:focus-visible {
             outline: 2px solid #157A6E;
             outline-offset: 2px;
         }
@@ -155,10 +123,7 @@
             <li>No account required — start in one click</li>
             <li>Print your year when you're done</li>
         </ul>
-        <div class="cta-row">
-            <a href="/demo" class="cta">Try it now</a>
-            <a href="/about.html" class="cta-secondary">About</a>
-        </div>
+        <a href="/demo" class="cta">Try it now</a>
     </main>
 </body>
 </html>
