@@ -48,6 +48,15 @@
             margin-bottom: 28px;
         }
 
+        .tagline {
+            font-size: clamp(1.2rem, 3.2vw, 1.45rem);
+            font-weight: 500;
+            color: #141414;
+            line-height: 1.4;
+            letter-spacing: -0.02em;
+            margin-bottom: 26px;
+        }
+
         .cta {
             display: inline-block;
             padding: 14px 28px;
@@ -75,24 +84,24 @@
             list-style: none;
             text-align: left;
             margin-bottom: 28px;
-            font-size: 15px;
+            font-size: 17px;
             color: #333;
             line-height: 1.6;
         }
 
         .uvps li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65em;
             padding: 6px 0;
-            padding-left: 1.2em;
-            position: relative;
         }
 
         .uvps li::before {
             content: '';
-            position: absolute;
-            left: 0;
-            top: 0.75em;
+            flex-shrink: 0;
             width: 5px;
             height: 5px;
+            margin-top: calc(0.8em - 2.5px);
             border-radius: 50%;
             background: #157A6E;
         }
@@ -116,12 +125,12 @@
 <body>
     <main>
         <h1>Your Year</h1>
-        <p>Your year at a glance.</p>
+        <p class="tagline">Your year at a glance.</p>
         <ul class="uvps">
-            <li>Track events, habits, and daily thoughts</li>
-            <li>Privacy-first — your data never leaves your device</li>
-            <li>Export anytime — backup or move your data</li>
-            <li>No account required — start in one click</li>
+            <li>Track your events, habits, and daily thoughts</li>
+            <li>Private by design — your data never leaves your device</li>
+            <li>Start instantly — no account required</li>
+            <li>Export anytime</li>
             <li>Print your year when you're done</li>
         </ul>
         <a href="/demo" class="cta">Try it now</a>
