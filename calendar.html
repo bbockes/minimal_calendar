@@ -1451,6 +1451,13 @@
         .date-picker-nav-btn:hover {
             background: #e0e0e0;
         }
+        .date-picker-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        .date-picker-nav-btn:disabled:hover {
+            background: #f0f0f0;
+        }
         .date-picker-weekdays {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -3294,6 +3301,8 @@
         const dayAbbr = ['SU', 'M', 'T', 'W', 'TH', 'F', 'SA'];
         
         let currentYear = new Date().getFullYear();
+        const EVENT_PICKER_YEAR_MIN = 2020;
+        const EVENT_PICKER_YEAR_MAX = 2050;
         let currentView = 'year';
         let currentMonth = 0;
         let currentDay = null;
@@ -7037,7 +7046,7 @@
                 const cal = calendars.find(c => c.id === e.calendarId);
                 const calColor = cal ? getCalendarColor(cal) : '#157A6E';
                 const calName = cal ? cal.name : '';
-                return `<div class="at-a-glance-item" data-month="${e.month}" data-day="${e.day}" data-event-id="${e.id}" style="--at-a-glance-color: ${calColor};" tabindex="0" role="button">
+                return `<div class="at-a-glance-item" data-year="${e.year}" data-month="${e.month}" data-day="${e.day}" data-event-id="${e.id}" style="--at-a-glance-color: ${calColor};" tabindex="0" role="button">
                     <div class="at-a-glance-item-title">${(e.name || 'Untitled Event').replace(/</g, '&lt;')}</div>
                     <div class="at-a-glance-item-date">${monthNames[e.month]} ${e.day}, ${e.year}${calName ? ` · <span style="color: ${calColor}; font-weight: 500;">#${calName}</span>` : ''}</div>
                     ${e.time ? `<div class="at-a-glance-item-time">⏰ ${e.time.replace(/</g, '&lt;')}</div>` : ''}
@@ -7045,11 +7054,12 @@
             }).join('');
             listEl.querySelectorAll('.at-a-glance-item').forEach(item => {
                 const activate = () => {
+                    const year = parseInt(item.dataset.year, 10);
                     const month = parseInt(item.dataset.month, 10);
                     const day = parseInt(item.dataset.day, 10);
                     const eventId = item.dataset.eventId || null;
                     closeAtAGlanceModal();
-                    openEventModal(month, day, undefined, undefined, eventId);
+                    openEventModal(month, day, undefined, undefined, eventId, { startYear: year });
                 };
                 item.addEventListener('click', activate);
                 item.addEventListener('keydown', (e) => {
@@ -7303,6 +7313,19 @@
             return dates;
         }
 
+        /** Inclusive calendar days from start through end (for event form ranges and recurrence). */
+        function getChronologicalDatesInclusive(startYear, startMonth, startDay, endYear, endMonth, endDay) {
+            const out = [];
+            const cur = new Date(startYear, startMonth, startDay);
+            const end = new Date(endYear, endMonth, endDay);
+            if (cur > end) return out;
+            while (cur <= end) {
+                out.push({ year: cur.getFullYear(), month: cur.getMonth(), day: cur.getDate() });
+                cur.setDate(cur.getDate() + 1);
+            }
+            return out;
+        }
+
         /** Return sort key (minutes from midnight) for event.time. All-day/no time = 0, unparseable = 9999. */
         function parseEventTimeForSort(timeStr) {
             if (!timeStr || typeof timeStr !== 'string') return 0;
@@ -7325,42 +7348,60 @@
             return 9999;
         }
 
-        function openEventModal(month, day, endMonth, endDay, expandEventId) {
+        function openEventModal(month, day, endMonth, endDay, expandEventId, modalRangeYears) {
             if (!selectedCalendarId) return;
             
-            const year = currentYear;
+            const startYear = (modalRangeYears && modalRangeYears.startYear != null) ? modalRangeYears.startYear : currentYear;
             const isRange = endMonth !== undefined && endDay !== undefined && (endMonth !== month || endDay !== day);
+            const endYearSame = isRange
+                ? ((modalRangeYears && modalRangeYears.endYear != null) ? modalRangeYears.endYear : startYear)
+                : startYear;
             if (isRange) {
-                eventModalRange = { start: { month, day }, end: { month: endMonth, day: endDay } };
-                eventModalContext = { month, day, endMonth, endDay };
+                eventModalRange = {
+                    start: { year: startYear, month, day },
+                    end: { year: endYearSame, month: endMonth, day: endDay },
+                    deleteAsChronological: false
+                };
+                eventModalContext = { month, day, endMonth, endDay, startYear, endYear: endYearSame };
             } else {
                 eventModalRange = null;
-                eventModalContext = { month, day };
+                eventModalContext = { month, day, startYear };
             }
             
-            const dayCount = isRange ? getDatesInRange(month, day, endMonth, endDay).length : 1;
+            const dayCount = isRange
+                ? (startYear !== endYearSame
+                    ? getChronologicalDatesInclusive(startYear, month, day, endYearSame, endMonth, endDay).length
+                    : getDatesInRange(month, day, endMonth, endDay).length)
+                : 1;
             let dateHeaderHTML;
             if (isRange) {
-                const rangeStr = `${monthNames[month]} ${day} – ${monthNames[endMonth]} ${endDay}, ${currentYear}`;
+                const rangeStr = startYear === endYearSame
+                    ? `${monthNames[month]} ${day} – ${monthNames[endMonth]} ${endDay}, ${startYear}`
+                    : `${monthNames[month]} ${day}, ${startYear} – ${monthNames[endMonth]} ${endDay}, ${endYearSame}`;
                 dateHeaderHTML = `<div class="event-date event-date-range">${rangeStr}</div>`;
             } else {
-                const dayOfWeek = new Date(year, month, day).toLocaleDateString('en-US', { weekday: 'long' });
-                const dateLine = `${monthNames[month]} ${day}, ${year}`;
+                const dayOfWeek = new Date(startYear, month, day).toLocaleDateString('en-US', { weekday: 'long' });
+                const dateLine = `${monthNames[month]} ${day}, ${startYear}`;
                 dateHeaderHTML = `<div class="event-day-of-week">${dayOfWeek}</div><div class="event-date-full">${dateLine}</div>`;
             }
             
             let existingEvents;
             const rangeDates = isRange ? getDatesInRange(month, day, endMonth, endDay) : [{ month, day }];
+            const matchesModalDate = (e) => {
+                if (!isRange) {
+                    return e.year === startYear && e.month === month && e.day === day;
+                }
+                if (startYear !== endYearSame) {
+                    const chrono = getChronologicalDatesInclusive(startYear, month, day, endYearSame, endMonth, endDay);
+                    return chrono.some(d => d.year === e.year && d.month === e.month && d.day === e.day);
+                }
+                return e.year === startYear && rangeDates.some(d => e.month === d.month && e.day === d.day);
+            };
             if (selectedCalendarId === 'all') {
-                existingEvents = events.filter(e =>
-                    e.year === year && rangeDates.some(d => e.month === d.month && e.day === d.day)
-                );
+                existingEvents = events.filter(matchesModalDate);
             } else {
-                // Filter by calendarId so only events from the selected calendar show
                 existingEvents = events.filter(e =>
-                    e.calendarId === selectedCalendarId &&
-                    e.year === year &&
-                    rangeDates.some(d => e.month === d.month && e.day === d.day)
+                    e.calendarId === selectedCalendarId && matchesModalDate(e)
                 );
             }
             // Sort events chronologically by time (earliest first)
@@ -7449,11 +7490,12 @@
                                 <div style="flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 8px;">
                                     <label>Start Date</label>
                                     <div class="date-picker" id="eventStartDatePicker">
+                                        <input type="hidden" id="eventStartYear" value="${startYear}" />
                                         <input type="hidden" id="eventStartMonth" value="${month}" />
                                         <input type="hidden" id="eventStartDay" value="${day}" />
                                         <div class="date-picker-trigger has-value" data-picker="start">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                                            <span class="date-picker-label">${monthNames[month]} ${day}, ${year}</span>
+                                            <span class="date-picker-label">${monthNames[month]} ${day}, ${startYear}</span>
                                         </div>
                                         <div class="date-picker-dropdown" id="eventStartDateDropdown"></div>
                                     </div>
@@ -7461,11 +7503,12 @@
                                 <div style="flex: 1; min-width: 140px; display: flex; flex-direction: column; gap: 8px;">
                                     <label>End Date</label>
                                     <div class="date-picker" id="eventEndDatePicker">
+                                        <input type="hidden" id="eventEndYear" value="${isRange ? endYearSame : ''}" />
                                         <input type="hidden" id="eventEndMonth" value="${isRange ? endMonth : ''}" />
                                         <input type="hidden" id="eventEndDay" value="${isRange ? endDay : ''}" />
                                         <div class="date-picker-trigger ${isRange ? 'has-value' : ''}" data-picker="end">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                                            <span class="date-picker-label ${!isRange ? 'placeholder' : ''}">${isRange ? `${monthNames[endMonth]} ${endDay}, ${currentYear}` : 'Pick a date'}</span>
+                                            <span class="date-picker-label ${!isRange ? 'placeholder' : ''}">${isRange ? `${monthNames[endMonth]} ${endDay}, ${endYearSame}` : 'Pick a date'}</span>
                                         </div>
                                         <div class="date-picker-dropdown" id="eventEndDateDropdown"></div>
                                     </div>
@@ -7485,6 +7528,7 @@
                             <div class="event-field event-repeat-until-field" id="eventRepeatUntilField">
                                 <label>Repeat until</label>
                                 <div class="date-picker" id="eventRepeatUntilPicker">
+                                    <input type="hidden" id="eventRepeatUntilYear" value="" />
                                     <input type="hidden" id="eventRepeatUntilMonth" value="" />
                                     <input type="hidden" id="eventRepeatUntilDay" value="" />
                                     <div class="date-picker-trigger" data-picker="repeatUntil">
@@ -7520,7 +7564,7 @@
             const wasAlreadyOpen = modal.classList.contains('active');
             modal.classList.add('active');
             if (!wasAlreadyOpen) lockScroll();
-            initEventDatePickers(year);
+            initEventDatePickers();
             if (expandEventId) {
                 requestAnimationFrame(() => {
                     const card = document.querySelector(`.event-card[data-event-id="${expandEventId}"]`);
@@ -7529,36 +7573,40 @@
             }
         }
 
-        function initEventDatePickers(year) {
-            const renderPickerCalendar = (pickerId, viewMonth, selectedMonth, selectedDay, isEndPicker) => {
-                const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
-                const firstDay = new Date(year, viewMonth, 1).getDay();
-                const days = daysInMonth(viewMonth);
+        function initEventDatePickers() {
+            const renderPickerCalendar = (viewYear, viewMonth, selYear, selMonth, selDay, isEndPicker) => {
+                const dim = (y, m) => new Date(y, m + 1, 0).getDate();
+                const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+                const days = dim(viewYear, viewMonth);
+                const prevDisabled = viewYear <= EVENT_PICKER_YEAR_MIN && viewMonth <= 0;
+                const nextDisabled = viewYear >= EVENT_PICKER_YEAR_MAX && viewMonth >= 11;
                 let html = `<div class="date-picker-header">
-                    <span class="date-picker-month">${monthNames[viewMonth]} ${year}</span>
+                    <span class="date-picker-month">${monthNames[viewMonth]} ${viewYear}</span>
                     <div class="date-picker-nav">
-                        <button type="button" class="date-picker-nav-btn" data-dir="-1">‹</button>
-                        <button type="button" class="date-picker-nav-btn" data-dir="1">›</button>
+                        <button type="button" class="date-picker-nav-btn" data-dir="-1" ${prevDisabled ? 'disabled' : ''}>‹</button>
+                        <button type="button" class="date-picker-nav-btn" data-dir="1" ${nextDisabled ? 'disabled' : ''}>›</button>
                     </div>
                 </div>
                 <div class="date-picker-weekdays">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => `<span class="date-picker-weekday">${d}</span>`).join('')}</div>
                 <div class="date-picker-days">`;
                 for (let i = 0; i < firstDay; i++) html += `<button type="button" class="date-picker-day empty"></button>`;
                 for (let d = 1; d <= days; d++) {
-                    const sel = !isNaN(selectedMonth) && !isNaN(selectedDay) && viewMonth === selectedMonth && d === selectedDay ? ' selected' : '';
+                    const sel = !isNaN(selYear) && !isNaN(selMonth) && !isNaN(selDay)
+                        && viewYear === selYear && viewMonth === selMonth && d === selDay ? ' selected' : '';
                     html += `<button type="button" class="date-picker-day${sel}" data-day="${d}">${d}</button>`;
                 }
                 html += '</div>';
-                if (isEndPicker && !isNaN(selectedMonth) && !isNaN(selectedDay)) {
+                if (isEndPicker && !isNaN(selMonth) && !isNaN(selDay)) {
                     html += `<button type="button" class="event-btn" style="margin-top: 10px; width: 100%; font-size: 12px;" data-clear="true">Clear (single day)</button>`;
                 }
                 return html;
             };
-            const updateTrigger = (picker, month, day) => {
+            const updateTrigger = (picker, y, month, day) => {
                 const trigger = picker.querySelector('.date-picker-trigger');
                 const label = trigger.querySelector('.date-picker-label');
-                if (month !== null && day) {
-                    label.textContent = `${monthNames[month]} ${day}, ${year}`;
+                if (month !== null && day && y != null) {
+                    label.textContent = `${monthNames[month]} ${day}, ${y}`;
+                    label.classList.remove('placeholder');
                     trigger.classList.add('has-value');
                 } else {
                     label.textContent = 'Pick a date';
@@ -7569,50 +7617,85 @@
             const updateEventModalHeader = () => {
                 const dateBlock = document.querySelector('.event-header .event-date-block');
                 if (!dateBlock) return;
+                const sy = parseInt(document.getElementById('eventStartYear')?.value || String(currentYear), 10);
                 const sm = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
                 const sd = parseInt(document.getElementById('eventStartDay')?.value || '1', 10);
+                const eyRaw = document.getElementById('eventEndYear')?.value?.trim();
                 const em = document.getElementById('eventEndMonth')?.value?.trim();
                 const ed = document.getElementById('eventEndDay')?.value?.trim();
-                const isRange = em && ed && (parseInt(em, 10) !== sm || parseInt(ed, 10) !== sd);
+                const ey = eyRaw !== '' && eyRaw != null ? parseInt(eyRaw, 10) : sy;
+                const isRange = em !== '' && em != null && ed !== '' && ed != null && (parseInt(em, 10) !== sm || parseInt(ed, 10) !== sd);
                 if (isRange) {
-                    const rangeStr = `${monthNames[sm]} ${sd} – ${monthNames[parseInt(em, 10)]} ${parseInt(ed, 10)}, ${year}`;
+                    const emNum = parseInt(em, 10);
+                    const edNum = parseInt(ed, 10);
+                    const rangeStr = sy === ey
+                        ? `${monthNames[sm]} ${sd} – ${monthNames[emNum]} ${edNum}, ${sy}`
+                        : `${monthNames[sm]} ${sd}, ${sy} – ${monthNames[emNum]} ${edNum}, ${ey}`;
                     dateBlock.innerHTML = `<div class="event-date event-date-range">${rangeStr}</div>`;
                 } else {
-                    const dayOfWeek = new Date(year, sm, sd).toLocaleDateString('en-US', { weekday: 'long' });
-                    const dateLine = `${monthNames[sm]} ${sd}, ${year}`;
+                    const dayOfWeek = new Date(sy, sm, sd).toLocaleDateString('en-US', { weekday: 'long' });
+                    const dateLine = `${monthNames[sm]} ${sd}, ${sy}`;
                     dateBlock.innerHTML = `<div class="event-day-of-week">${dayOfWeek}</div><div class="event-date-full">${dateLine}</div>`;
                 }
             };
             ['start', 'end'].forEach(type => {
                 const picker = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}DatePicker`);
                 const dropdown = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}DateDropdown`);
-                const monthInput = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}Month`);
-                const dayInput = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}Day`);
-                if (!picker || !dropdown) return;
+                const yearInput = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}Year`);
+                let monthInput = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}Month`);
+                let dayInput = document.getElementById(`event${type === 'start' ? 'Start' : 'End'}Day`);
+                if (!picker || !dropdown || !yearInput) return;
+                const clampYear = (y) => Math.max(EVENT_PICKER_YEAR_MIN, Math.min(EVENT_PICKER_YEAR_MAX, y));
+                const defaultY = () => clampYear(parseInt(
+                    yearInput.value || document.getElementById('eventStartYear')?.value || String(currentYear),
+                    10
+                ));
+                let viewYear = defaultY();
                 let viewMonth = parseInt(monthInput?.value || '0', 10);
-                let viewDay = parseInt(dayInput?.value || '1', 10);
-                if (type === 'end' && !monthInput?.value && !dayInput?.value) {
+                if (type === 'end' && (!monthInput?.value || monthInput.value === '') && (!dayInput?.value || dayInput.value === '')) {
+                    viewYear = clampYear(parseInt(document.getElementById('eventStartYear')?.value || String(currentYear), 10));
                     viewMonth = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
-                    viewDay = parseInt(document.getElementById('eventStartDay')?.value || '1', 10);
                 }
                 const render = () => {
-                    const selMonth = parseInt(monthInput?.value || '0', 10);
-                    const selDay = parseInt(dayInput?.value || '1', 10);
-                    dropdown.innerHTML = renderPickerCalendar(picker.id, viewMonth, selMonth, selDay, type === 'end');
-                    dropdown.querySelectorAll('.date-picker-nav-btn').forEach(btn => {
-                        btn.onclick = (e) => {
+                    const selY = yearInput.value !== '' ? clampYear(parseInt(yearInput.value, 10)) : NaN;
+                    const selMonth = monthInput?.value !== '' ? parseInt(monthInput.value, 10) : NaN;
+                    const selDay = dayInput?.value !== '' ? parseInt(dayInput.value, 10) : NaN;
+                    dropdown.innerHTML = renderPickerCalendar(viewYear, viewMonth, selY, selMonth, selDay, type === 'end');
+                    const prevBtn = dropdown.querySelector('.date-picker-nav-btn[data-dir="-1"]');
+                    const nextBtn = dropdown.querySelector('.date-picker-nav-btn[data-dir="1"]');
+                    if (prevBtn) {
+                        prevBtn.onclick = (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            viewMonth = (viewMonth + 12 + parseInt(btn.dataset.dir, 10)) % 12;
+                            let m = viewMonth - 1;
+                            let y = viewYear;
+                            if (m < 0) { m = 11; y--; }
+                            if (y < EVENT_PICKER_YEAR_MIN) return;
+                            viewYear = y;
+                            viewMonth = m;
                             render();
                         };
-                    });
+                    }
+                    if (nextBtn) {
+                        nextBtn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            let m = viewMonth + 1;
+                            let y = viewYear;
+                            if (m > 11) { m = 0; y++; }
+                            if (y > EVENT_PICKER_YEAR_MAX) return;
+                            viewYear = y;
+                            viewMonth = m;
+                            render();
+                        };
+                    }
                     dropdown.querySelectorAll('.date-picker-day:not(.empty)').forEach(btn => {
                         btn.onclick = () => {
                             const d = parseInt(btn.dataset.day, 10);
-                            monthInput.value = viewMonth;
-                            dayInput.value = d;
-                            updateTrigger(picker, viewMonth, d);
+                            yearInput.value = String(viewYear);
+                            monthInput.value = String(viewMonth);
+                            dayInput.value = String(d);
+                            updateTrigger(picker, viewYear, viewMonth, d);
                             picker.querySelector('.date-picker-trigger').classList.add('has-value');
                             updateEventModalHeader();
                             dropdown.classList.remove('open');
@@ -7622,6 +7705,7 @@
                     dropdown.querySelector('[data-clear="true"]')?.addEventListener('click', () => {
                         monthInput.value = '';
                         dayInput.value = '';
+                        yearInput.value = '';
                         const trigger = picker.querySelector('.date-picker-trigger');
                         const label = trigger.querySelector('.date-picker-label');
                         label.textContent = 'Pick a date';
@@ -7638,10 +7722,19 @@
                     document.querySelectorAll('.date-picker-dropdown.open').forEach(d => d.classList.remove('open'));
                     dropdown.classList.toggle('open');
                     if (dropdown.classList.contains('open')) {
-                        const sm = parseInt(monthInput?.value || document.getElementById('eventStartMonth')?.value || '0', 10);
-                        const sd = parseInt(dayInput?.value || document.getElementById('eventStartDay')?.value || '1', 10);
-                        viewMonth = sm;
-                        viewDay = sd;
+                        if (type === 'end' && (!monthInput.value || !dayInput.value)) {
+                            viewYear = clampYear(parseInt(document.getElementById('eventStartYear')?.value || String(currentYear), 10));
+                            viewMonth = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
+                        } else if (yearInput.value) {
+                            viewYear = clampYear(parseInt(yearInput.value, 10));
+                            viewMonth = parseInt(monthInput?.value || '0', 10);
+                        } else if (type === 'end') {
+                            viewYear = clampYear(parseInt(document.getElementById('eventStartYear')?.value || String(currentYear), 10));
+                            viewMonth = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
+                        } else {
+                            viewYear = clampYear(parseInt(yearInput.value || String(currentYear), 10));
+                            viewMonth = parseInt(monthInput?.value || '0', 10);
+                        }
                         render();
                     }
                 };
@@ -7680,14 +7773,18 @@
             const startDayEl = document.getElementById('eventStartDay');
             const endMonthEl = document.getElementById('eventEndMonth');
             const endDayEl = document.getElementById('eventEndDay');
+            const startYearEl = document.getElementById('eventStartYear');
+            if (startYearEl) startYearEl.value = String(event.year);
             if (startMonthEl) startMonthEl.value = event.month;
             if (startDayEl) startDayEl.value = event.day;
             if (endMonthEl) endMonthEl.value = '';
             if (endDayEl) endDayEl.value = '';
+            const endYearEl = document.getElementById('eventEndYear');
+            if (endYearEl) endYearEl.value = '';
             const startTrigger = document.querySelector('#eventStartDatePicker .date-picker-trigger');
             const startLabel = startTrigger?.querySelector('.date-picker-label');
             if (startLabel) {
-                startLabel.textContent = `${monthNames[event.month]} ${event.day}, ${currentYear}`;
+                startLabel.textContent = `${monthNames[event.month]} ${event.day}, ${event.year}`;
                 startLabel.classList.remove('placeholder');
                 startTrigger?.classList.add('has-value');
             }
@@ -7715,32 +7812,38 @@
                 // Find the last occurrence in the series to pre-fill "Repeat until"
                 const seriesEvents = events
                     .filter(e => e.recurringId === event.recurringId)
-                    .sort((a, b) => a.month !== b.month ? a.month - b.month : a.day - b.day);
+                    .sort((a, b) => (a.year - b.year) || (a.month - b.month) || (a.day - b.day));
                 const last = seriesEvents[seriesEvents.length - 1];
+                const repeatUntilYearEl = document.getElementById('eventRepeatUntilYear');
                 if (last && repeatUntilMonthEl && repeatUntilDayEl) {
                     repeatUntilMonthEl.value = last.month;
                     repeatUntilDayEl.value   = last.day;
+                    if (repeatUntilYearEl) repeatUntilYearEl.value = String(last.year);
                 }
                 if (repeatUntilField) repeatUntilField.style.display = '';
             } else {
                 if (repeatUntilMonthEl) repeatUntilMonthEl.value = '';
                 if (repeatUntilDayEl)   repeatUntilDayEl.value   = '';
+                const repeatUntilYearEl = document.getElementById('eventRepeatUntilYear');
+                if (repeatUntilYearEl) repeatUntilYearEl.value = '';
                 if (repeatUntilField)   repeatUntilField.style.display = 'none';
             }
 
             // Show the form
             showEventForm();
+            initEventDatePickers();
 
             // If recurring, init the repeat-until picker with the pre-set values
             if (event.recurringId) {
-                initRepeatUntilPicker(currentYear);
+                initRepeatUntilPicker();
                 const ruPicker  = document.getElementById('eventRepeatUntilPicker');
                 const ruTrigger = ruPicker?.querySelector('.date-picker-trigger');
                 const ruLabel   = ruTrigger?.querySelector('.date-picker-label');
                 const rm = parseInt(repeatUntilMonthEl?.value || '', 10);
                 const rd = parseInt(repeatUntilDayEl?.value   || '', 10);
-                if (!isNaN(rm) && !isNaN(rd) && ruLabel) {
-                    ruLabel.textContent = `${monthNames[rm]} ${rd}, ${currentYear}`;
+                const ry = parseInt(document.getElementById('eventRepeatUntilYear')?.value || '', 10);
+                if (!isNaN(rm) && !isNaN(rd) && !isNaN(ry) && ruLabel) {
+                    ruLabel.textContent = `${monthNames[rm]} ${rd}, ${ry}`;
                     ruLabel.classList.remove('placeholder');
                     ruTrigger?.classList.add('has-value');
                 }
@@ -7786,8 +7889,17 @@
                 if (repeatUntilField) repeatUntilField.style.display = 'none';
                 const repeatUntilMonthEl = document.getElementById('eventRepeatUntilMonth');
                 const repeatUntilDayEl   = document.getElementById('eventRepeatUntilDay');
+                const repeatUntilYearEl  = document.getElementById('eventRepeatUntilYear');
                 if (repeatUntilMonthEl) repeatUntilMonthEl.value = '';
                 if (repeatUntilDayEl)   repeatUntilDayEl.value = '';
+                if (repeatUntilYearEl)  repeatUntilYearEl.value = '';
+                const eventStartYearEl = document.getElementById('eventStartYear');
+                if (eventStartYearEl) {
+                    const ctxY = eventModalContext && eventModalContext.startYear != null ? eventModalContext.startYear : currentYear;
+                    eventStartYearEl.value = String(ctxY);
+                }
+                const eventEndYearEl = document.getElementById('eventEndYear');
+                if (eventEndYearEl) eventEndYearEl.value = '';
                 const repeatUntilTrigger = document.querySelector('#eventRepeatUntilPicker .date-picker-trigger');
                 if (repeatUntilTrigger) {
                     const lbl = repeatUntilTrigger.querySelector('.date-picker-label');
@@ -7850,38 +7962,46 @@
                 closeEventModal();
                 return;
             }
-            const { month, day, endMonth, endDay } = eventModalContext;
-            if (endMonth !== undefined && endDay !== undefined) {
-                openEventModal(month, day, endMonth, endDay);
+            const ctx = eventModalContext;
+            const sy = ctx.startYear != null ? ctx.startYear : currentYear;
+            if (ctx.endMonth !== undefined && ctx.endDay !== undefined) {
+                const ey = ctx.endYear != null ? ctx.endYear : sy;
+                openEventModal(ctx.month, ctx.day, ctx.endMonth, ctx.endDay, undefined, { startYear: sy, endYear: ey });
             } else {
-                openEventModal(month, day);
+                openEventModal(ctx.month, ctx.day, undefined, undefined, undefined, { startYear: sy });
             }
         }
 
         // ---- Recurring events helpers ----
 
-        function generateRecurringDates(startMonth, startDay, recurrence, untilMonth, untilDay) {
-            const year = currentYear;
-            const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
+        function generateRecurringDates(startYear, startMonth, startDay, recurrence, untilYear, untilMonth, untilDay) {
             const dates = [];
-            let m = startMonth, d = startDay;
+            const cur = new Date(startYear, startMonth, startDay);
+            const until = new Date(untilYear, untilMonth, untilDay);
+            const dim = (y, mo) => new Date(y, mo + 1, 0).getDate();
             let guard = 0;
-            while (guard++ < 500) {
-                if (m > 11) break;
-                if (m > untilMonth || (m === untilMonth && d > untilDay)) break;
-                dates.push({ month: m, day: d });
+            while (cur <= until && guard++ < 2000) {
+                dates.push({ year: cur.getFullYear(), month: cur.getMonth(), day: cur.getDate() });
                 if (recurrence === 'daily') {
-                    const next = new Date(year, m, d + 1);
-                    m = next.getMonth(); d = next.getDate();
+                    cur.setDate(cur.getDate() + 1);
                 } else if (recurrence === 'weekly') {
-                    const next = new Date(year, m, d + 7);
-                    m = next.getMonth(); d = next.getDate();
+                    cur.setDate(cur.getDate() + 7);
                 } else if (recurrence === 'monthly') {
-                    m += 1;
-                    if (m > 11) break;
-                    d = Math.min(d, daysInMonth(m));
+                    let y = cur.getFullYear();
+                    let mo = cur.getMonth();
+                    const d0 = cur.getDate();
+                    mo += 1;
+                    if (mo > 11) { mo = 0; y += 1; }
+                    const maxD = dim(y, mo);
+                    cur.setFullYear(y, mo, Math.min(d0, maxD));
                 } else if (recurrence === 'yearly') {
-                    break; // next occurrence is 2027, outside currentYear scope
+                    let y = cur.getFullYear() + 1;
+                    const mo = cur.getMonth();
+                    const d0 = cur.getDate();
+                    const maxD = dim(y, mo);
+                    cur.setFullYear(y, mo, Math.min(d0, maxD));
+                } else {
+                    break;
                 }
             }
             return dates;
@@ -7895,58 +8015,93 @@
                 // Clear end date — it conflicts with recurrence
                 const endMonthEl = document.getElementById('eventEndMonth');
                 const endDayEl = document.getElementById('eventEndDay');
+                const endYearEl = document.getElementById('eventEndYear');
                 if (endMonthEl) endMonthEl.value = '';
                 if (endDayEl) endDayEl.value = '';
+                if (endYearEl) endYearEl.value = '';
                 const endTrigger = document.querySelector('#eventEndDatePicker .date-picker-trigger');
                 const endLabel = endTrigger?.querySelector('.date-picker-label');
                 if (endLabel) { endLabel.textContent = 'Pick a date'; endLabel.classList.add('placeholder'); }
                 endTrigger?.classList.remove('has-value');
-                initRepeatUntilPicker(currentYear);
+                initRepeatUntilPicker();
             } else {
                 repeatUntilField.style.display = 'none';
             }
         }
 
-        function initRepeatUntilPicker(year) {
-            const picker   = document.getElementById('eventRepeatUntilPicker');
+        function initRepeatUntilPicker() {
+            const picker = document.getElementById('eventRepeatUntilPicker');
             const dropdown = document.getElementById('eventRepeatUntilDropdown');
+            const yearInput = document.getElementById('eventRepeatUntilYear');
             const monthInput = document.getElementById('eventRepeatUntilMonth');
-            const dayInput   = document.getElementById('eventRepeatUntilDay');
-            if (!picker || !dropdown) return;
+            const dayInput = document.getElementById('eventRepeatUntilDay');
+            if (!picker || !dropdown || !yearInput) return;
 
-            const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
+            const clampYear = (y) => Math.max(EVENT_PICKER_YEAR_MIN, Math.min(EVENT_PICKER_YEAR_MAX, y));
+            let viewYear = clampYear(parseInt(document.getElementById('eventStartYear')?.value || String(currentYear), 10));
             let viewMonth = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
 
             const render = () => {
+                const selY = yearInput.value !== '' ? clampYear(parseInt(yearInput.value, 10)) : NaN;
                 const selMonth = monthInput?.value !== '' ? parseInt(monthInput.value, 10) : NaN;
-                const selDay   = dayInput?.value   !== '' ? parseInt(dayInput.value,   10) : NaN;
-                const firstDay = new Date(year, viewMonth, 1).getDay();
-                const days = daysInMonth(viewMonth);
+                const selDay = dayInput?.value !== '' ? parseInt(dayInput.value, 10) : NaN;
+                const dim = (y, m) => new Date(y, m + 1, 0).getDate();
+                const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+                const days = dim(viewYear, viewMonth);
+                const prevDisabled = viewYear <= EVENT_PICKER_YEAR_MIN && viewMonth <= 0;
+                const nextDisabled = viewYear >= EVENT_PICKER_YEAR_MAX && viewMonth >= 11;
                 let html = `<div class="date-picker-header">
-                    <span class="date-picker-month">${monthNames[viewMonth]} ${year}</span>
+                    <span class="date-picker-month">${monthNames[viewMonth]} ${viewYear}</span>
                     <div class="date-picker-nav">
-                        <button type="button" class="date-picker-nav-btn" data-dir="-1">‹</button>
-                        <button type="button" class="date-picker-nav-btn" data-dir="1">›</button>
+                        <button type="button" class="date-picker-nav-btn" data-dir="-1" ${prevDisabled ? 'disabled' : ''}>‹</button>
+                        <button type="button" class="date-picker-nav-btn" data-dir="1" ${nextDisabled ? 'disabled' : ''}>›</button>
                     </div></div>
                     <div class="date-picker-weekdays">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => `<span class="date-picker-weekday">${d}</span>`).join('')}</div>
                     <div class="date-picker-days">`;
                 for (let i = 0; i < firstDay; i++) html += `<button type="button" class="date-picker-day empty"></button>`;
                 for (let d = 1; d <= days; d++) {
-                    const sel = !isNaN(selMonth) && !isNaN(selDay) && viewMonth === selMonth && d === selDay ? ' selected' : '';
+                    const sel = !isNaN(selY) && !isNaN(selMonth) && !isNaN(selDay)
+                        && viewYear === selY && viewMonth === selMonth && d === selDay ? ' selected' : '';
                     html += `<button type="button" class="date-picker-day${sel}" data-day="${d}">${d}</button>`;
                 }
                 html += '</div>';
                 dropdown.innerHTML = html;
-                dropdown.querySelectorAll('.date-picker-nav-btn').forEach(btn => {
-                    btn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); viewMonth = (viewMonth + 12 + parseInt(btn.dataset.dir, 10)) % 12; render(); };
-                });
+                const prevBtn = dropdown.querySelector('.date-picker-nav-btn[data-dir="-1"]');
+                const nextBtn = dropdown.querySelector('.date-picker-nav-btn[data-dir="1"]');
+                if (prevBtn) {
+                    prevBtn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let m = viewMonth - 1;
+                        let y = viewYear;
+                        if (m < 0) { m = 11; y--; }
+                        if (y < EVENT_PICKER_YEAR_MIN) return;
+                        viewYear = y;
+                        viewMonth = m;
+                        render();
+                    };
+                }
+                if (nextBtn) {
+                    nextBtn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let m = viewMonth + 1;
+                        let y = viewYear;
+                        if (m > 11) { m = 0; y++; }
+                        if (y > EVENT_PICKER_YEAR_MAX) return;
+                        viewYear = y;
+                        viewMonth = m;
+                        render();
+                    };
+                }
                 dropdown.querySelectorAll('.date-picker-day:not(.empty)').forEach(btn => {
                     btn.onclick = () => {
                         const d = parseInt(btn.dataset.day, 10);
-                        monthInput.value = viewMonth;
-                        dayInput.value = d;
+                        yearInput.value = String(viewYear);
+                        monthInput.value = String(viewMonth);
+                        dayInput.value = String(d);
                         const trigger = picker.querySelector('.date-picker-trigger');
-                        trigger.querySelector('.date-picker-label').textContent = `${monthNames[viewMonth]} ${d}, ${year}`;
+                        trigger.querySelector('.date-picker-label').textContent = `${monthNames[viewMonth]} ${d}, ${viewYear}`;
                         trigger.querySelector('.date-picker-label').classList.remove('placeholder');
                         trigger.classList.add('has-value');
                         dropdown.classList.remove('open');
@@ -7959,7 +8114,16 @@
                 e.stopPropagation();
                 document.querySelectorAll('.date-picker-dropdown.open').forEach(d => d.classList.remove('open'));
                 dropdown.classList.toggle('open');
-                if (dropdown.classList.contains('open')) render();
+                if (dropdown.classList.contains('open')) {
+                    if (yearInput.value) {
+                        viewYear = clampYear(parseInt(yearInput.value, 10));
+                        viewMonth = parseInt(monthInput?.value || '0', 10);
+                    } else {
+                        viewYear = clampYear(parseInt(document.getElementById('eventStartYear')?.value || String(currentYear), 10));
+                        viewMonth = parseInt(document.getElementById('eventStartMonth')?.value || '0', 10);
+                    }
+                    render();
+                }
             };
         }
 
@@ -8032,11 +8196,15 @@
                 calendarId = sel ? sel.value : null;
             }
             if (!calendarId) return;
+            const clampEventYear = (y) => Math.max(EVENT_PICKER_YEAR_MIN, Math.min(EVENT_PICKER_YEAR_MAX, y));
+            const startYearEl = document.getElementById('eventStartYear');
             const startMonthEl = document.getElementById('eventStartMonth');
             const startDayEl = document.getElementById('eventStartDay');
+            const endYearEl = document.getElementById('eventEndYear');
             const endMonthEl = document.getElementById('eventEndMonth');
             const endDayEl = document.getElementById('eventEndDay');
             if (!startMonthEl || !startDayEl) return;
+            const startYear = clampEventYear(parseInt(startYearEl?.value || String(year), 10));
             const startMonth = parseInt(startMonthEl.value, 10);
             const startDay = parseInt(startDayEl.value, 10) || 1;
             const endDayVal = endDayEl?.value?.trim();
@@ -8051,17 +8219,24 @@
                 return;
             }
             const effectiveCalendarId = calendarId;
-            const daysInMonth = (m) => new Date(year, m + 1, 0).getDate();
-            if (startDay < 1 || startDay > daysInMonth(startMonth)) {
-                showCustomAlert(`Please enter a valid day (1–${daysInMonth(startMonth)}) for ${monthNames[startMonth]}`, 'Invalid Date');
+            const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
+            if (startDay < 1 || startDay > daysInMonth(startYear, startMonth)) {
+                showCustomAlert(`Please enter a valid day (1–${daysInMonth(startYear, startMonth)}) for ${monthNames[startMonth]}`, 'Invalid Date');
                 return;
             }
             const isRange = endDayParsed !== null && !isNaN(endDayParsed) && (startMonth !== endMonth || startDay !== endDayParsed);
             const endMonthVal = isRange ? endMonth : startMonth;
-            const endDayValNum = isRange ? Math.min(endDayParsed, daysInMonth(endMonthVal)) : startDay;
-            if (isRange && (endMonthVal < startMonth || (endMonthVal === startMonth && endDayValNum < startDay))) {
-                showCustomAlert('End date must be on or after start date', 'Invalid Date');
-                return;
+            const endYearForRange = isRange
+                ? clampEventYear(parseInt((endYearEl?.value && endYearEl.value !== '') ? endYearEl.value : String(startYear), 10))
+                : startYear;
+            const endDayValNum = isRange ? Math.min(endDayParsed, daysInMonth(endYearForRange, endMonthVal)) : startDay;
+            if (isRange) {
+                const startTs = new Date(startYear, startMonth, startDay);
+                const endTs = new Date(endYearForRange, endMonthVal, endDayValNum);
+                if (endTs < startTs) {
+                    showCustomAlert('End date must be on or after start date', 'Invalid Date');
+                    return;
+                }
             }
             if (window.editingEventId) {
                 const existingEvent = events.find(e => e.id === window.editingEventId);
@@ -8069,8 +8244,12 @@
                     const recurrence  = document.getElementById('eventRepeat')?.value || '';
                     const untilMonthEl = document.getElementById('eventRepeatUntilMonth');
                     const untilDayEl   = document.getElementById('eventRepeatUntilDay');
+                    const untilYearEl  = document.getElementById('eventRepeatUntilYear');
                     const untilMonth = untilMonthEl?.value !== '' ? parseInt(untilMonthEl.value, 10) : null;
                     const untilDay   = untilDayEl?.value   !== '' ? parseInt(untilDayEl.value,   10) : null;
+                    const untilYear  = (untilYearEl?.value !== '' && untilYearEl?.value != null)
+                        ? clampEventYear(parseInt(untilYearEl.value, 10))
+                        : startYear;
 
                     if (recurrence && (untilMonth === null || untilDay === null)) {
                         showCustomAlert('Please select a "Repeat until" date', 'Notification');
@@ -8084,13 +8263,14 @@
 
                         if (choice === 'one') {
                             // Update just this occurrence and detach from series
+                            existingEvent.year  = startYear;
                             existingEvent.month = startMonth;
                             existingEvent.day   = startDay;
                             existingEvent.name  = name;
                             existingEvent.time  = time;
                             existingEvent.location = location;
                             existingEvent.notes = notes;
-                            existingEvent.key   = getEventKey(effectiveCalendarId, year, startMonth, startDay);
+                            existingEvent.key   = getEventKey(effectiveCalendarId, startYear, startMonth, startDay);
                             delete existingEvent.recurringId;
                             delete existingEvent.recurrence;
                             saveEvents();
@@ -8108,36 +8288,37 @@
                             });
                             if (recurrence && untilMonth !== null && untilDay !== null) {
                                 const newRecurringId = Date.now().toString() + '-rec-' + Math.random().toString(36).slice(2);
-                                const recurDates = generateRecurringDates(startMonth, startDay, recurrence, untilMonth, untilDay);
-                                recurDates.forEach(({ month, day }) => {
-                                    const eventKey = getEventKey(effectiveCalendarId, year, month, day);
-                                    saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month, day, name, time, location, notes, recurringId: newRecurringId, recurrence });
+                                const recurDates = generateRecurringDates(startYear, startMonth, startDay, recurrence, untilYear, untilMonth, untilDay);
+                                recurDates.forEach(({ year: y, month, day }) => {
+                                    const eventKey = getEventKey(effectiveCalendarId, y, month, day);
+                                    saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year: y, month, day, name, time, location, notes, recurringId: newRecurringId, recurrence });
                                 });
                             } else {
                                 // Recurrence removed — save as single standalone event
-                                const eventKey = getEventKey(effectiveCalendarId, year, startMonth, startDay);
-                                saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month: startMonth, day: startDay, name, time, location, notes });
+                                const eventKey = getEventKey(effectiveCalendarId, startYear, startMonth, startDay);
+                                saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year: startYear, month: startMonth, day: startDay, name, time, location, notes });
                             }
                         }
                     } else {
                         // Non-recurring edit
+                        existingEvent.year  = startYear;
                         existingEvent.month = startMonth;
                         existingEvent.day   = startDay;
                         existingEvent.name  = name;
                         existingEvent.time  = time;
                         existingEvent.location = location;
                         existingEvent.notes = notes;
-                        existingEvent.key   = getEventKey(effectiveCalendarId, year, startMonth, startDay);
+                        existingEvent.key   = getEventKey(effectiveCalendarId, startYear, startMonth, startDay);
                         if (recurrence && untilMonth !== null && untilDay !== null) {
                             // Non-recurring event is being given a recurrence — attach it to a new series
                             const newRecurringId = Date.now().toString() + '-rec-' + Math.random().toString(36).slice(2);
                             existingEvent.recurringId = newRecurringId;
                             existingEvent.recurrence  = recurrence;
-                            // Generate remaining instances (skip startMonth/startDay since it already exists)
-                            const recurDates = generateRecurringDates(startMonth, startDay, recurrence, untilMonth, untilDay).slice(1);
-                            recurDates.forEach(({ month, day }) => {
-                                const eventKey = getEventKey(effectiveCalendarId, year, month, day);
-                                saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month, day, name, time, location, notes, recurringId: newRecurringId, recurrence });
+                            // Generate remaining instances (skip start date since it already exists)
+                            const recurDates = generateRecurringDates(startYear, startMonth, startDay, recurrence, untilYear, untilMonth, untilDay).slice(1);
+                            recurDates.forEach(({ year: y, month, day }) => {
+                                const eventKey = getEventKey(effectiveCalendarId, y, month, day);
+                                saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year: y, month, day, name, time, location, notes, recurringId: newRecurringId, recurrence });
                             });
                         }
                         saveEvents();
@@ -8151,34 +8332,39 @@
                     // Recurring event — generate all instances
                     const untilMonthEl = document.getElementById('eventRepeatUntilMonth');
                     const untilDayEl   = document.getElementById('eventRepeatUntilDay');
+                    const untilYearEl  = document.getElementById('eventRepeatUntilYear');
                     const untilMonth = untilMonthEl?.value !== '' ? parseInt(untilMonthEl.value, 10) : null;
                     const untilDay   = untilDayEl?.value   !== '' ? parseInt(untilDayEl.value,   10) : null;
+                    const untilYear  = (untilYearEl?.value !== '' && untilYearEl?.value != null)
+                        ? clampEventYear(parseInt(untilYearEl.value, 10))
+                        : startYear;
                     if (untilMonth === null || untilDay === null) {
                         showCustomAlert('Please select a "Repeat until" date', 'Notification');
                         return;
                     }
-                    if (untilMonth < startMonth || (untilMonth === startMonth && untilDay < startDay)) {
+                    const untilTs = new Date(untilYear, untilMonth, untilDay);
+                    const startTs = new Date(startYear, startMonth, startDay);
+                    if (untilTs < startTs) {
                         showCustomAlert('"Repeat until" must be on or after the start date', 'Notification');
                         return;
                     }
                     const recurringId = Date.now().toString() + '-rec-' + Math.random().toString(36).slice(2);
-                    const recurDates = generateRecurringDates(startMonth, startDay, recurrence, untilMonth, untilDay);
+                    const recurDates = generateRecurringDates(startYear, startMonth, startDay, recurrence, untilYear, untilMonth, untilDay);
                     if (recurDates.length === 0) {
                         showCustomAlert('No dates were generated for this recurrence rule', 'Notification');
                         return;
                     }
-                    recurDates.forEach(({ month, day }) => {
-                        const eventKey = getEventKey(effectiveCalendarId, year, month, day);
-                        saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month, day, name, time, location, notes, recurringId, recurrence });
+                    recurDates.forEach(({ year: y, month, day }) => {
+                        const eventKey = getEventKey(effectiveCalendarId, y, month, day);
+                        saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year: y, month, day, name, time, location, notes, recurringId, recurrence });
                     });
                 } else {
-                    // Non-recurring (existing logic)
                     const dates = isRange
-                        ? getDatesInRange(startMonth, startDay, endMonthVal, endDayValNum)
-                        : [{ month: startMonth, day: startDay }];
-                    dates.forEach(({ month, day }) => {
-                        const eventKey = getEventKey(effectiveCalendarId, year, month, day);
-                        saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year, month, day, name, time, location, notes });
+                        ? getChronologicalDatesInclusive(startYear, startMonth, startDay, endYearForRange, endMonthVal, endDayValNum)
+                        : [{ year: startYear, month: startMonth, day: startDay }];
+                    dates.forEach(({ year: y, month, day }) => {
+                        const eventKey = getEventKey(effectiveCalendarId, y, month, day);
+                        saveEvent({ id: Date.now().toString() + '-' + Math.random().toString(36).slice(2), key: eventKey, calendarId: effectiveCalendarId, year: y, month, day, name, time, location, notes });
                     });
                 }
             }
@@ -8188,18 +8374,27 @@
             if (saveBtn) saveBtn.textContent = 'Save Event';
             const addBtn = document.querySelector('.add-event-btn-side');
             if (addBtn) addBtn.style.display = '';
-            eventModalRange = isRange ? { start: { month: startMonth, day: startDay }, end: { month: endMonthVal, day: endDayValNum } } : null;
+            eventModalRange = isRange ? {
+                start: { year: startYear, month: startMonth, day: startDay },
+                end: { year: endYearForRange, month: endMonthVal, day: endDayValNum },
+                deleteAsChronological: true
+            } : null;
+            if (startYear !== currentYear) setYear(startYear);
             if (eventModalRange) {
-                openEventModal(startMonth, startDay, endMonthVal, endDayValNum);
+                openEventModal(startMonth, startDay, endMonthVal, endDayValNum, undefined, { startYear, endYear: endYearForRange });
             } else {
-                openEventModal(startMonth, startDay);
+                openEventModal(startMonth, startDay, undefined, undefined, undefined, { startYear });
             }
         }
 
         function saveEventFromModalRange(year) {
             if (!selectedCalendarId || !eventModalRange) return;
             const { start, end } = eventModalRange;
-            const dates = getDatesInRange(start.month, start.day, end.month, end.day);
+            const sy = start.year != null ? start.year : year;
+            const ey = end.year != null ? end.year : sy;
+            const dates = sy === ey
+                ? getDatesInRange(start.month, start.day, end.month, end.day).map(d => ({ year: sy, month: d.month, day: d.day }))
+                : getChronologicalDatesInclusive(sy, start.month, start.day, ey, end.month, end.day);
             const name = document.getElementById('eventName').value.trim();
             const time = document.getElementById('eventTime').value.trim();
             const location = (document.getElementById('eventLocation')?.value || '').trim();
@@ -8208,13 +8403,13 @@
                 showCustomAlert('Please enter an event name', 'Notification');
                 return;
             }
-            dates.forEach(({ month, day }) => {
-                const eventKey = getEventKey(selectedCalendarId, year, month, day);
+            dates.forEach(({ year: y, month, day }) => {
+                const eventKey = getEventKey(selectedCalendarId, y, month, day);
                 const newEvent = {
                     id: Date.now().toString() + '-' + Math.random().toString(36).slice(2),
                     key: eventKey,
                     calendarId: selectedCalendarId,
-                    year, month, day,
+                    year: y, month, day,
                     name, time, location, notes
                 };
                 saveEvent(newEvent);
@@ -8224,7 +8419,7 @@
             if (saveBtn) saveBtn.textContent = 'Save Event';
             const addBtn = document.querySelector('.add-event-btn-side');
             if (addBtn) addBtn.style.display = '';
-            openEventModal(start.month, start.day, end.month, end.day);
+            openEventModal(start.month, start.day, end.month, end.day, undefined, { startYear: sy, endYear: ey });
         }
 
         function saveEventFromModal(year, month, day) {
@@ -8291,9 +8486,13 @@
             }
             // Reopen modal to refresh the list
             if (eventModalRange) {
-                openEventModal(eventModalRange.start.month, eventModalRange.start.day, eventModalRange.end.month, eventModalRange.end.day);
+                const rs = eventModalRange.start;
+                const re = eventModalRange.end;
+                const rsy = rs.year != null ? rs.year : currentYear;
+                const rey = re.year != null ? re.year : rsy;
+                openEventModal(rs.month, rs.day, re.month, re.day, undefined, { startYear: rsy, endYear: rey });
             } else {
-                openEventModal(month, day);
+                openEventModal(month, day, undefined, undefined, undefined, { startYear: year });
             }
         }
 
@@ -8324,22 +8523,32 @@
             }
 
             if (eventModalRange) {
-                openEventModal(eventModalRange.start.month, eventModalRange.start.day, eventModalRange.end.month, eventModalRange.end.day);
+                const rs = eventModalRange.start;
+                const re = eventModalRange.end;
+                const rsy = rs.year != null ? rs.year : currentYear;
+                const rey = re.year != null ? re.year : rsy;
+                openEventModal(rs.month, rs.day, re.month, re.day, undefined, { startYear: rsy, endYear: rey });
             } else {
-                openEventModal(event.month, event.day);
+                openEventModal(event.month, event.day, undefined, undefined, undefined, { startYear: event.year });
             }
         }
 
         async function deleteAllEventsInRange() {
             if (!selectedCalendarId || !eventModalRange) return;
-            const { start, end } = eventModalRange;
-            const rangeDates = getDatesInRange(start.month, start.day, end.month, end.day);
-            const year = currentYear;
+            const { start, end, deleteAsChronological } = eventModalRange;
+            const sy = start.year != null ? start.year : currentYear;
+            const ey = end.year != null ? end.year : sy;
+            let rangeDates;
+            if (deleteAsChronological || sy !== ey) {
+                rangeDates = getChronologicalDatesInclusive(sy, start.month, start.day, ey, end.month, end.day);
+            } else {
+                rangeDates = getDatesInRange(start.month, start.day, end.month, end.day).map(d => ({ year: sy, month: d.month, day: d.day }));
+            }
             const eventsToDelete = selectedCalendarId === 'all'
-                ? events.filter(e => e.year === year && rangeDates.some(d => e.month === d.month && e.day === d.day))
+                ? events.filter(e => rangeDates.some(d => d.year === e.year && d.month === e.month && d.day === e.day))
                 : events.filter(e =>
                     e.calendarId === selectedCalendarId &&
-                    rangeDates.some(d => e.key === getEventKey(selectedCalendarId, year, d.month, d.day))
+                    rangeDates.some(d => e.key === getEventKey(selectedCalendarId, d.year, d.month, d.day))
                 );
             if (eventsToDelete.length === 0) return;
             const confirmed = await showCustomConfirm(
