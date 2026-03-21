@@ -156,6 +156,36 @@
             color: #333;
         }
 
+        .title-demo-link {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 14px;
+            min-height: 40px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            text-decoration: none;
+            border: none;
+            border-radius: 20px;
+            background: #e0e0e0;
+            transition: background-color 0.2s, color 0.2s;
+            white-space: nowrap;
+        }
+
+        .title-demo-link:hover {
+            background: #157A6E;
+            color: #fff;
+        }
+
+        .title-demo-link:focus-visible {
+            outline: 2px solid #157A6E;
+            outline-offset: 2px;
+        }
+
         .slider {
             display: flex;
             align-items: center;
@@ -3041,6 +3071,7 @@
                 </button>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
+            <a class="title-demo-link" id="guidedDemoLink" href="https://example.com/your-guided-demo-video" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Watch tour</a>
             <button class="title-circle-btn" id="searchBtn" title="Search (/)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="11" cy="11" r="7" stroke="#333" stroke-width="2"/>
@@ -4345,6 +4376,7 @@
             const statsBtn = document.getElementById('statsBtn');
             const highlightWeekendsBtn = document.getElementById('highlightWeekendsBtn');
             const searchBtn = document.getElementById('searchBtn');
+            const guidedDemoLink = document.getElementById('guidedDemoLink');
             
             // Hide all mode UIs first
             habitsUI.style.display = 'none';
@@ -4357,18 +4389,21 @@
                 if (statsBtn) statsBtn.style.display = '';
                 if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = '';
                 if (searchBtn) searchBtn.style.display = 'none';
+                if (guidedDemoLink) guidedDemoLink.style.display = 'none';
             } else if (currentMode === 'events') {
                 eventsUI.style.display = 'flex';
                 modeButton.textContent = 'Events';
                 if (statsBtn) statsBtn.style.display = 'none';
                 if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = '';
                 if (searchBtn) searchBtn.style.display = '';
+                if (guidedDemoLink) guidedDemoLink.style.display = '';
             } else if (currentMode === 'journal') {
                 journalUI.style.display = 'flex';
                 modeButton.textContent = 'Journal';
                 if (statsBtn) statsBtn.style.display = 'none';
                 if (highlightWeekendsBtn) highlightWeekendsBtn.style.display = 'none';
                 if (searchBtn) searchBtn.style.display = '';
+                if (guidedDemoLink) guidedDemoLink.style.display = '';
             }
             
             // Update selected item in mode dropdown
